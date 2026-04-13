@@ -192,7 +192,8 @@ GameObject:
   - component: {fileID: 8367518003126455761}
   - component: {fileID: 4427576363008023203}
   - component: {fileID: 2349764125191514206}
-  - component: {fileID: 3087232710702159318}
+  - component: {fileID: 6431817907356763935}
+  - component: {fileID: 5889519113890572239}
   m_Layer: 5
   m_Name: HealthUI
   m_TagString: Untagged
@@ -265,7 +266,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!114 &2349764125191514206
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -283,7 +284,19 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &3087232710702159318
+--- !u!225 &6431817907356763935
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7742757959425203175}
+  m_Enabled: 1
+  m_Alpha: 0
+  m_Interactable: 0
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &5889519113890572239
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -292,10 +305,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 7742757959425203175}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 84a98eb6f1dd13f4ab290e5adaa95b13, type: 3}
+  m_Script: {fileID: 11500000, guid: 881a76c4d7482124893f43ffd9346594, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   slider: {fileID: 683376420776475225}
+  canvasRoot: {fileID: 4582017036163959931}
 --- !u!1 &8263549410828870317
 GameObject:
   m_ObjectHideFlags: 0

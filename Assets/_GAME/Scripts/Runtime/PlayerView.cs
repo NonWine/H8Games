@@ -4,11 +4,11 @@ using Zenject;
 
 public class PlayerView : MonoBehaviour, ICombatTarget
 {
-    [SerializeField] private TeamId teamId = TeamId.Player;
+    [SerializeField] private TeamId teamId;
     [SerializeField] private Transform attackPoint;
     [SerializeField] private Transform cameraAnchor;
     [SerializeField] private LayerMask detectionMask = ~0;
-    [SerializeField] private HeroHealthBarView healthBarView;
+    [SerializeField] private WorldHealthBarView healthBarView;
     [SerializeField] private SimpleProjectileView projectilePrefab;
     [SerializeField] private CharacterController characterController;
 

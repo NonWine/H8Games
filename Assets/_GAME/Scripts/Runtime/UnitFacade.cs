@@ -4,7 +4,7 @@ using Zenject;
 
 public class UnitFacade : MonoBehaviour, ICombatTarget
 {
-    [SerializeField] private TeamId teamId = TeamId.Enemy;
+    [SerializeField] private TeamId teamId;
     [SerializeField] private UnitStats stats = new();
     [SerializeField] private Transform attackPoint;
     [SerializeField] private WorldHealthBarView healthBarView;
@@ -23,8 +23,6 @@ public class UnitFacade : MonoBehaviour, ICombatTarget
     public event Action<UnitFacade> Died;
 
     public TeamId TeamId => teamId;
-    public UnitStats RuntimeStats => runtimeStats;
-    public UnitStats StatsTemplate => stats;
     public bool IsAlive => healthService != null && healthService.IsAlive;
     public Transform AttackOrigin => attackPoint != null ? attackPoint : transform;
 
@@ -61,28 +59,9 @@ public class UnitFacade : MonoBehaviour, ICombatTarget
         rewardOnDeathService?.Dispose();
     }
 
-    public void ApplyRuntimeStats(UnitStats overrideStats)
-    {
-        runtimeStats = overrideStats != null ? new UnitStats(overrideStats) : new UnitStats(stats);
-        if (healthService != null)
-        {
-            healthService.HealthChanged -= OnHealthChanged;
-            healthService.Died -= OnDeath;
-        }
-
-        initialized = false;
-        EnsureInitialized();
-    }
-
-    public void OverrideTeam(TeamId overrideTeam)
-    {
-        teamId = overrideTeam;
-    }
-
     private void Update()
     {
-        if (!IsAlive)
-            return;
+        if (!IsAlive) return;
 
         if (currentTarget == null || !currentTarget.IsAlive || !IsWithinDetection(currentTarget.transform))
         {
@@ -93,14 +72,12 @@ public class UnitFacade : MonoBehaviour, ICombatTarget
             return;
 
         Vector3 direction = currentTarget.transform.position - transform.position;
-        if (direction.sqrMagnitude > 0.0001f)
-            transform.forward = direction.normalized;
+        if (direction.sqrMagnitude > 0.0001f) transform.forward = direction.normalized;
 
         float distance = direction.magnitude;
         if (distance > runtimeStats.AttackRange)
         {
-            transform.position = Vector3.MoveTowards(transform.position, currentTarget.transform.position,
-                runtimeStats.MoveSpeed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, currentTarget.transform.position, runtimeStats.MoveSpeed * Time.deltaTime);
             return;
         }
 

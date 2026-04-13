@@ -44,19 +44,6 @@ public sealed class BarracksUpgradeService
         UpgradeDefinition definition = config?.GetDefinition(kind);
         if (definition == null)
             return;
-
-        switch (kind)
-        {
-            case UpgradeKind.BarracksSpawnSpeed:
-                stats.ReduceSpawnInterval(definition.Amount);
-                break;
-            case UpgradeKind.BarracksUnitHealth:
-                stats.MultiplyUnitHealth(1f + definition.Amount);
-                break;
-            case UpgradeKind.BarracksUnitDamage:
-                stats.MultiplyUnitDamage(1f + definition.Amount);
-                break;
-        }
     }
 
     private static bool IsBarracksUpgrade(UpgradeKind kind)
