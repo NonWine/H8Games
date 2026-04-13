@@ -4,31 +4,25 @@ using Zenject;
 [CreateAssetMenu(fileName = "CombatRuntimeInstaller", menuName = "Installers/Combat/Runtime Installer")]
 public class CombatRuntimeInstaller : ScriptableObjectInstaller<CombatRuntimeInstaller>
 {
-    [SerializeField] private HeroStats heroStatsTemplate = new();
-    [SerializeField] private BarracksStats barracksStatsTemplate = new();
-    [SerializeField] private UpgradeDefinition heroDamageUpgradeTemplate = new();
-    [SerializeField] private UpgradeDefinition heroMaxHealthUpgradeTemplate = new();
-    [SerializeField] private UpgradeDefinition heroAttackRateUpgradeTemplate = new();
-    [SerializeField] private UpgradeDefinition barracksSpawnSpeedUpgradeTemplate = new();
-    [SerializeField] private UpgradeDefinition barracksUnitHealthUpgradeTemplate = new();
-    [SerializeField] private UpgradeDefinition barracksUnitDamageUpgradeTemplate = new();
+    [SerializeField] private HeroRuntimeInstaller heroRuntimeInstaller;
+    [SerializeField] private BarracksRuntimeInstaller barracksRuntimeInstaller;
+    [SerializeField] private HeroUpgradeRuntimeInstaller heroUpgradeRuntimeInstaller;
+    [SerializeField] private BarracksUpgradeRuntimeInstaller barracksUpgradeRuntimeInstaller;
 
     public override void InstallBindings()
     {
-        Container.BindInstance(new HeroStats(heroStatsTemplate));
-        Container.BindInstance(new BarracksStats(barracksStatsTemplate));
-
-        BindUpgrade(UpgradeKind.HeroDamage, heroDamageUpgradeTemplate);
-        BindUpgrade(UpgradeKind.HeroMaxHealth, heroMaxHealthUpgradeTemplate);
-        BindUpgrade(UpgradeKind.HeroAttackRate, heroAttackRateUpgradeTemplate);
-        BindUpgrade(UpgradeKind.BarracksSpawnSpeed, barracksSpawnSpeedUpgradeTemplate);
-        BindUpgrade(UpgradeKind.BarracksUnitHealth, barracksUnitHealthUpgradeTemplate);
-        BindUpgrade(UpgradeKind.BarracksUnitDamage, barracksUnitDamageUpgradeTemplate);
+        InstallChild(heroRuntimeInstaller);
+        InstallChild(barracksRuntimeInstaller);
+        InstallChild(heroUpgradeRuntimeInstaller);
+        InstallChild(barracksUpgradeRuntimeInstaller);
     }
 
-    private void BindUpgrade(UpgradeKind kind, UpgradeDefinition template)
+    private void InstallChild(ScriptableObjectInstallerBase installer)
     {
-        Container.BindInstance(template != null ? new UpgradeDefinition(template) : new UpgradeDefinition())
-            .WithId(kind);
+        if (installer == null)
+            return;
+
+        Container.Inject(installer);
+        installer.InstallBindings();
     }
 }

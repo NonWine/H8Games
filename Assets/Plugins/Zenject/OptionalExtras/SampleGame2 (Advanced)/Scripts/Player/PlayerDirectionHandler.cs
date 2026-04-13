@@ -7,9 +7,7 @@ namespace Zenject.SpaceFighter
         readonly Player _player;
         readonly Camera _mainCamera;
 
-        public PlayerDirectionHandler(
-            Camera mainCamera,
-            Player player)
+        public PlayerDirectionHandler(Camera mainCamera, Player player)
         {
             _player = player;
             _mainCamera = mainCamera;

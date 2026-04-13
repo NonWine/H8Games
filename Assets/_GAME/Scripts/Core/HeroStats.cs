@@ -22,8 +22,4 @@ public class HeroStats
         PickupRadius = source.PickupRadius;
     }
 
-    public HeroStats Clone()
-    {
-        return new HeroStats(this);
-    }
 }

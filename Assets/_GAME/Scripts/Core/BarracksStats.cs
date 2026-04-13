@@ -30,11 +30,6 @@ public class BarracksStats
         UnitDamageMultiplier = source.UnitDamageMultiplier;
     }
 
-    public BarracksStats Clone()
-    {
-        return new BarracksStats(this);
-    }
-
     public void ReduceSpawnInterval(float amount)
     {
         SpawnInterval = Mathf.Max(0.15f, SpawnInterval - amount);
@@ -50,9 +45,10 @@ public class BarracksStats
         UnitDamageMultiplier *= Mathf.Max(1f, multiplier);
     }
 
-    public UnitStats BuildSpawnStats()
+    public UnitStats BuildSpawnStats(UnitStats source = null)
     {
-        var runtime = spawnUnit != null ? new UnitStats(spawnUnit) : new UnitStats();
+        UnitStats template = source ?? spawnUnit;
+        var runtime = template != null ? new UnitStats(template) : new UnitStats();
         runtime.MultiplyMaxHealth(UnitHealthMultiplier);
         runtime.MultiplyDamage(UnitDamageMultiplier);
         return runtime;

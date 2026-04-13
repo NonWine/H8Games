@@ -32,11 +32,6 @@ public class UnitStats
         DeathReward = source.DeathReward;
     }
 
-    public UnitStats Clone()
-    {
-        return new UnitStats(this);
-    }
-
     public void IncreaseMaxHealth(float amount)
     {
         MaxHealth = Mathf.Max(1f, MaxHealth + amount);

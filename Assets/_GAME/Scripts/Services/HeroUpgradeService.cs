@@ -3,12 +3,14 @@ using System.Collections.Generic;
 public sealed class HeroUpgradeService
 {
     private readonly HeroStats stats;
+    private readonly HeroUpgradeConfig config;
     private readonly HealthService healthService;
     private readonly Dictionary<UpgradeKind, int> levels = new();
 
-    public HeroUpgradeService(HeroStats stats, HealthService healthService = null)
+    public HeroUpgradeService(HeroStats stats, HeroUpgradeConfig config, HealthService healthService = null)
     {
         this.stats = stats;
+        this.config = config;
         this.healthService = healthService;
     }
 
@@ -17,10 +19,16 @@ public sealed class HeroUpgradeService
         return levels.TryGetValue(kind, out int level) ? level : 0;
     }
 
-    public bool TryUpgrade(UpgradeKind kind, UpgradeDefinition definition, CurrencyService currencyService,
-        UpgradePriceService upgradePriceService, out int spentCost)
+    public UpgradeDefinition GetDefinition(UpgradeKind kind)
+    {
+        return IsHeroUpgrade(kind) ? config?.GetDefinition(kind) : null;
+    }
+
+    public bool TryUpgrade(UpgradeKind kind, CurrencyService currencyService, UpgradePriceService upgradePriceService,
+        out int spentCost)
     {
         spentCost = 0;
+        UpgradeDefinition definition = config?.GetDefinition(kind);
         if (!IsHeroUpgrade(kind) || definition == null || GetLevel(kind) >= definition.MaxLevel)
             return false;
 
@@ -28,13 +36,14 @@ public sealed class HeroUpgradeService
         if (!upgradePriceService.TryBuy(currencyService, definition, level, out spentCost))
             return false;
 
-        Apply(kind, definition);
+        Apply(kind);
         levels[kind] = level + 1;
         return true;
     }
 
-    public void Apply(UpgradeKind kind, UpgradeDefinition definition)
+    public void Apply(UpgradeKind kind)
     {
+        UpgradeDefinition definition = config?.GetDefinition(kind);
         if (definition == null)
             return;
 
