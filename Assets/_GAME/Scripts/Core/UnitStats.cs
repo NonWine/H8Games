@@ -7,7 +7,6 @@ public class UnitStats
     [Min(1f)] public float MaxHealth = 30f;
     [Min(0f)] public float MoveSpeed = 3.5f;
     [Min(0.25f)] public float DetectionRadius = 8f;
-    [Min(0.25f)] public float AttackRange = 4f;
     [Min(0.05f)] public float AttackCooldown = 1f;
     [Min(0f)] public float Damage = 5f;
     [Min(0f)] public float ProjectileSpeed = 12f;
@@ -25,7 +24,6 @@ public class UnitStats
         MaxHealth = source.MaxHealth;
         MoveSpeed = source.MoveSpeed;
         DetectionRadius = source.DetectionRadius;
-        AttackRange = source.AttackRange;
         AttackCooldown = source.AttackCooldown;
         Damage = source.Damage;
         ProjectileSpeed = source.ProjectileSpeed;

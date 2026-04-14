@@ -1,8 +1,9 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-public class PlayerView : MonoBehaviour, ICombatTarget
+public class PlayerView : MonoBehaviour, ICombatTarget, ITargetReservation
 {
     [SerializeField] private TeamId teamId;
     [SerializeField] private Transform attackPoint;
@@ -30,10 +31,18 @@ public class PlayerView : MonoBehaviour, ICombatTarget
     public Joystick MovementJoystick => movementJoystick;
     public CharacterController CharacterController => characterController;
     public Animator Animator => animator;
+    public int ReservationCount => reservationAttackers.Count;
+
+    private readonly HashSet<Component> reservationAttackers = new();
 
     public void GetDamage(float damage, Vector3 sourceWorldPosition)
     {
         DamageReceived?.Invoke(damage, sourceWorldPosition);
+    }
+
+    private void OnDisable()
+    {
+        ClearReservations();
     }
 
     public void SetHealth(float current, float max)
@@ -51,5 +60,26 @@ public class PlayerView : MonoBehaviour, ICombatTarget
     {
         SimpleProjectileView projectile = Instantiate(projectilePrefab, AttackOrigin.position, Quaternion.identity);
         projectile.Launch(target, projectileSpeed);
+    }
+
+    public bool TryRegisterAttacker(Component attacker)
+    {
+        if (attacker == null)
+            return false;
+
+        return reservationAttackers.Add(attacker);
+    }
+
+    public bool TryUnregisterAttacker(Component attacker)
+    {
+        if (attacker == null)
+            return false;
+
+        return reservationAttackers.Remove(attacker);
+    }
+
+    public void ClearReservations()
+    {
+        reservationAttackers.Clear();
     }
 }

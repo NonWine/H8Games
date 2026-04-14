@@ -6,6 +6,11 @@ public sealed class EnemyCombatAgent : MonoBehaviour
     private SquadCombatCoordinator squadCombatCoordinator;
     private AttackService attackService;
     private ICombatTarget currentTarget;
+    private float nextRetargetTime;
+    private float targetLockUntil;
+    private const float reservationPenalty = 3f;
+    private const float retargetInterval = 0.35f;
+    private const float targetLockDuration = 0.35f;
 
     public void Initialize(StaticEnemyAgent owner)
     {
@@ -20,11 +25,21 @@ public sealed class EnemyCombatAgent : MonoBehaviour
     {
         this.squadCombatCoordinator = squadCombatCoordinator;
         attackService?.ResetCooldown();
+        nextRetargetTime = 0f;
+        targetLockUntil = 0f;
     }
 
     public void Deactivate()
     {
-        currentTarget = null;
+        SetCurrentTarget(null);
+        squadCombatCoordinator = null;
+        nextRetargetTime = 0f;
+        targetLockUntil = 0f;
+    }
+
+    private void OnDisable()
+    {
+        Deactivate();
     }
 
     private void Update()
@@ -32,8 +47,16 @@ public sealed class EnemyCombatAgent : MonoBehaviour
         if (!owner.IsAlive || squadCombatCoordinator == null)
             return;
 
-        currentTarget = squadCombatCoordinator.GetClosestLivingAlly(owner.transform.position) as ICombatTarget;
-        if (currentTarget == null || !currentTarget.IsAlive)
+        if (!IsCurrentTargetValid())
+        {
+            TryAcquireTarget();
+        }
+        else if (Time.time >= nextRetargetTime && Time.time >= targetLockUntil)
+        {
+            TryAcquireTarget();
+        }
+
+        if (!IsCurrentTargetValid())
             return;
 
         Vector3 direction = currentTarget.transform.position - owner.transform.position;
@@ -42,12 +65,61 @@ public sealed class EnemyCombatAgent : MonoBehaviour
             return;
 
         transform.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
-
-        float sqrRange = owner.RuntimeStats.AttackRange * owner.RuntimeStats.AttackRange;
-        if (direction.sqrMagnitude > sqrRange)
-            return;
+        
 
         if (attackService.Tick(Time.deltaTime, currentTarget))
             owner.SpawnProjectileVisual(currentTarget.transform);
+    }
+
+    private bool TryAcquireTarget()
+    {
+        if (squadCombatCoordinator == null)
+        {
+            SetCurrentTarget(null);
+            return false;
+        }
+
+        ICombatTarget target = squadCombatCoordinator.GetBestLivingAllyTarget(owner.transform.position, reservationPenalty);
+        if (target == null)
+        {
+            nextRetargetTime = Time.time + retargetInterval;
+            targetLockUntil = 0f;
+            return false;
+        }
+
+        SetCurrentTarget(target);
+        nextRetargetTime = Time.time + retargetInterval;
+        targetLockUntil = Time.time + targetLockDuration;
+        return true;
+    }
+
+    private void SetCurrentTarget(ICombatTarget newTarget)
+    {
+        if (ReferenceEquals(currentTarget, newTarget))
+            return;
+
+        ReleaseCurrentTarget();
+        currentTarget = newTarget;
+
+        if (currentTarget is Component targetComponent && targetComponent is ITargetReservation reservationTarget)
+            reservationTarget.TryRegisterAttacker(this);
+    }
+
+    private void ReleaseCurrentTarget()
+    {
+        if (currentTarget is Component targetComponent && targetComponent is ITargetReservation reservationTarget)
+            reservationTarget.TryUnregisterAttacker(this);
+    }
+
+    private bool IsCurrentTargetValid()
+    {
+        if (currentTarget == null || !currentTarget.IsAlive)
+            return false;
+
+        if (currentTarget is not Component targetComponent || !targetComponent.gameObject.activeInHierarchy)
+            return false;
+
+
+        return true;
     }
 }

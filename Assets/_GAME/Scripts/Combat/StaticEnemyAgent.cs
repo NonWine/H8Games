@@ -1,8 +1,9 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(EnemyCombatAgent))]
-public sealed class StaticEnemyAgent : BaseCombatUnitView, ICombatTarget
+public sealed class StaticEnemyAgent : BaseCombatUnitView, ICombatTarget, ITargetReservation
 {
     [SerializeField] private TeamId teamId = TeamId.Enemy;
     [SerializeField] private UnitStats stats = new();
@@ -24,6 +25,9 @@ public sealed class StaticEnemyAgent : BaseCombatUnitView, ICombatTarget
     public EnemyGroupFacade Group { get; private set; }
     public StaticEnemyState State { get; private set; } = StaticEnemyState.Idle;
     public int CurrentWeight { get; set; }
+    public int ReservationCount => reservationAttackers.Count;
+
+    private readonly HashSet<Component> reservationAttackers = new();
 
     private void Awake()
     {
@@ -39,6 +43,11 @@ public sealed class StaticEnemyAgent : BaseCombatUnitView, ICombatTarget
 
         healthService.HealthChanged -= HandleHealthChanged;
         healthService.Died -= HandleDeath;
+    }
+
+    private void OnDisable()
+    {
+        ClearReservations();
     }
 
     public void SetGroup(EnemyGroupFacade group)
@@ -76,6 +85,7 @@ public sealed class StaticEnemyAgent : BaseCombatUnitView, ICombatTarget
         EnsureInitialized();
         if (combatAgent == null) combatAgent = GetComponent<EnemyCombatAgent>();
         combatAgent.Deactivate();
+        ClearReservations();
         healthService.RestoreFull();
 
         State = StaticEnemyState.Idle;
@@ -105,5 +115,26 @@ public sealed class StaticEnemyAgent : BaseCombatUnitView, ICombatTarget
         combatAgent.Deactivate();
         Died?.Invoke(this);
         gameObject.SetActive(false);
+    }
+
+    public bool TryRegisterAttacker(Component attacker)
+    {
+        if (attacker == null)
+            return false;
+
+        return reservationAttackers.Add(attacker);
+    }
+
+    public bool TryUnregisterAttacker(Component attacker)
+    {
+        if (attacker == null)
+            return false;
+
+        return reservationAttackers.Remove(attacker);
+    }
+
+    public void ClearReservations()
+    {
+        reservationAttackers.Clear();
     }
 }

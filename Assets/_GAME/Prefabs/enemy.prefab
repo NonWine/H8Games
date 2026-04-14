@@ -98,10 +98,9 @@ MonoBehaviour:
   emissionHitColor: {r: 830.7925, g: 387.9644, b: 387.9644, a: 1}
   teamId: 3
   stats:
-    MaxHealth: 90
+    MaxHealth: 30
     MoveSpeed: 3.5
     DetectionRadius: 12
-    AttackRange: 7
     AttackCooldown: 1
     Damage: 5
     ProjectileSpeed: 12

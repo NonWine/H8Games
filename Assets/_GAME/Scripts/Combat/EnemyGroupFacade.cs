@@ -74,6 +74,48 @@ public sealed class EnemyGroupFacade : MonoBehaviour
         return closest;
     }
 
+    public ICombatTarget GetBestLivingEnemyTarget(Vector3 worldPosition, float reservationPenalty)
+    {
+        StaticEnemyAgent bestTarget = null;
+        float bestScore = float.MaxValue;
+
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            StaticEnemyAgent enemy = enemies[i];
+            if (enemy == null || !enemy.IsAlive)
+                continue;
+
+            int reservationCount = enemy is ITargetReservation reservationTarget ? reservationTarget.ReservationCount : 0;
+            float score = CombatTargetScoringUtility.CalculateScore(
+                worldPosition,
+                enemy.transform.position,
+                reservationCount,
+                reservationPenalty);
+
+            if (score >= bestScore)
+                continue;
+
+            bestTarget = enemy;
+            bestScore = score;
+        }
+
+        return bestTarget;
+    }
+
+    public bool ContainsEnemy(ICombatTarget target)
+    {
+        if (target == null)
+            return false;
+
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            if (ReferenceEquals(enemies[i], target))
+                return enemies[i] != null && enemies[i].IsAlive;
+        }
+
+        return false;
+    }
+
     public bool HasLivingEnemies()
     {
         for (int i = 0; i < enemies.Count; i++)
@@ -132,4 +174,3 @@ public sealed class EnemyGroupFacade : MonoBehaviour
         Cleared?.Invoke(this);
     }
 }
-
