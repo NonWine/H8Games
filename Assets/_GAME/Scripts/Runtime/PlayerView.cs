@@ -11,7 +11,8 @@ public class PlayerView : MonoBehaviour, ICombatTarget
     [SerializeField] private WorldHealthBarView healthBarView;
     [SerializeField] private SimpleProjectileView projectilePrefab;
     [SerializeField] private CharacterController characterController;
-
+    [SerializeField] private Animator animator;
+    
     [Inject] private Joystick movementJoystick;
     [Inject] private IHeroStateReader stateReader;
     [Inject] private IHeroUpgradeAccess upgradeAccess;
@@ -27,6 +28,7 @@ public class PlayerView : MonoBehaviour, ICombatTarget
     public LayerMask DetectionMask => detectionMask;
     public Joystick MovementJoystick => movementJoystick;
     public CharacterController CharacterController => characterController;
+    public Animator Animator => animator;
 
     public void GetDamage(float damage, Vector3 sourceWorldPosition)
     {

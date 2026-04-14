@@ -34,6 +34,8 @@ public sealed class HeroPresenter : IInitializable, ITickable, System.IDisposabl
             return;
 
         Vector3 movementDirection = inputReader.ReadMovement();
+        heroView.Animator.SetFloat("Speed", movementDirection.magnitude);
+
         if (movementDirection.sqrMagnitude > 0f)
         {
             heroMover.Move(movementDirection, runtime.RuntimeStats.Combat.MoveSpeed, Time.deltaTime);
