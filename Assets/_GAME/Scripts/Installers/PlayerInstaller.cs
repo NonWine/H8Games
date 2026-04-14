@@ -13,9 +13,6 @@ public class PlayerInstaller : MonoInstaller
         Container.BindInterfacesAndSelfTo<HeroCombatRuntime>().AsSingle();
         Container.Bind<IHeroInputReader>().To<HeroJoystickInputReader>().AsSingle();
         Container.Bind<IHeroMover>().To<HeroKinematicMover>().AsSingle();
-        Container.Bind<TargetSelector>().AsSingle();
         Container.BindInterfacesAndSelfTo<HeroPresenter>().AsSingle();
     }
-
-
 }

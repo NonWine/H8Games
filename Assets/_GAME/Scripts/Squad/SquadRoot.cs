@@ -4,6 +4,8 @@ using Zenject;
 
 public sealed class SquadRoot : MonoBehaviour
 {
+    public event System.Action MovementTargetReached;
+
     public enum MovementMode
     {
         Forward = 0,
@@ -28,15 +30,39 @@ public sealed class SquadRoot : MonoBehaviour
     private FormationLayoutService formationLayoutService;
     private SquadFollowSettings settings;
     private int capacity;
-    private bool isMoving;
     private bool hasStaticTargetPoint;
     private Vector3 staticTargetPoint;
+    private bool movementTargetReachedRaised;
+    private Vector3 homePosition;
+    private Quaternion homeRotation;
 
-    public bool IsMoving => isMoving;
+    public bool IsMoving => State == SquadRootState.MovingToZone || State == SquadRootState.ReturningToRegroup;
     public int Capacity => capacity;
     public int SoldierCount => soldiers.Count;
     public bool HasFreeSlot => soldiers.Count < capacity;
     public IReadOnlyList<FormationSlot> Slots => slots;
+    public Vector3 HomePosition => homePosition;
+    public Quaternion HomeRotation => homeRotation;
+    public SquadRootState State { get; private set; } = SquadRootState.WaitingStart;
+    public bool IsFormationSettled
+    {
+        get
+        {
+            float threshold = settings != null ? settings.SlotReachThreshold * 1.5f : 0.2f;
+
+            for (int i = 0; i < soldiers.Count; i++)
+            {
+                SoldierFollower soldier = soldiers[i];
+                if (soldier == null || !soldier.gameObject.activeInHierarchy)
+                    continue;
+
+                if (!soldier.IsInAssignedSlot(threshold))
+                    return false;
+            }
+
+            return true;
+        }
+    }
 
     [Inject]
     public void Construct(
@@ -49,13 +75,15 @@ public sealed class SquadRoot : MonoBehaviour
 
     private void Awake()
     {
+        homePosition = transform.position;
+        homeRotation = transform.rotation;
         capacity = Mathf.Max(0, initialCapacity);
         RebuildFormation();
     }
 
     private void Update()
     {
-        if (!isMoving || settings == null)
+        if (!IsMoving || settings == null)
             return;
 
         switch (movementMode)
@@ -147,20 +175,75 @@ public sealed class SquadRoot : MonoBehaviour
         return GetSlotWorldPosition(slots[slotIndex]);
     }
 
-    public void StartMovement()
+    public void StartSearchingForNextZone()
     {
-        isMoving = true;
+        State = SquadRootState.SearchingNextZone;
     }
 
     public void StopMovement()
     {
-        isMoving = false;
+        State = SquadRootState.WaitingStart;
+    }
+
+    public void StopForEncounter()
+    {
+        State = SquadRootState.FightingZone;
+    }
+
+    public void ResumeAfterEncounter()
+    {
+        State = SquadRootState.SearchingNextZone;
+    }
+
+    public void MoveToZone(Transform target)
+    {
+        SetMovementTarget(target);
+        movementMode = MovementMode.TargetPoint;
+        State = SquadRootState.MovingToZone;
+    }
+
+    public void MoveToZone(Vector3 worldPosition)
+    {
+        SetMovementTarget(worldPosition);
+        movementMode = MovementMode.TargetPoint;
+        State = SquadRootState.MovingToZone;
+    }
+
+    public void StartReturningToRegroup(Transform target)
+    {
+        SetMovementTarget(target);
+        movementMode = MovementMode.TargetPoint;
+        State = SquadRootState.ReturningToRegroup;
+    }
+
+    public void StartReturningToRegroup(Vector3 worldPosition)
+    {
+        SetMovementTarget(worldPosition);
+        movementMode = MovementMode.TargetPoint;
+        State = SquadRootState.ReturningToRegroup;
+    }
+
+    public void EnterIdleInPreparation()
+    {
+        transform.position = homePosition;
+        transform.rotation = homeRotation;
+        hasStaticTargetPoint = false;
+        testTargetPoint = null;
+        movementTargetReachedRaised = false;
+        RebuildFormation();
+        State = SquadRootState.IdleInPreparation;
+    }
+
+    public void MarkDefeated()
+    {
+        State = SquadRootState.Defeated;
     }
 
     public void SetMovementTarget(Transform target)
     {
         testTargetPoint = target;
         hasStaticTargetPoint = false;
+        movementTargetReachedRaised = false;
     }
 
     public void SetMovementTarget(Vector3 worldPosition)
@@ -168,20 +251,17 @@ public sealed class SquadRoot : MonoBehaviour
         staticTargetPoint = worldPosition;
         hasStaticTargetPoint = true;
         testTargetPoint = null;
+        movementTargetReachedRaised = false;
     }
 
     public void StartMoveTo(Transform target)
     {
-        SetMovementTarget(target);
-        movementMode = MovementMode.TargetPoint;
-        StartMovement();
+        MoveToZone(target);
     }
 
     public void StartMoveTo(Vector3 worldPosition)
     {
-        SetMovementTarget(worldPosition);
-        movementMode = MovementMode.TargetPoint;
-        StartMovement();
+        MoveToZone(worldPosition);
     }
 
     public void SetForwardDirection(Vector3 direction)
@@ -215,8 +295,7 @@ public sealed class SquadRoot : MonoBehaviour
 
         if (toTarget.sqrMagnitude <= targetReachThreshold * targetReachThreshold)
         {
-            if (stopOnTargetReached)
-                isMoving = false;
+            RaiseMovementTargetReached();
 
             return;
         }
@@ -255,6 +334,18 @@ public sealed class SquadRoot : MonoBehaviour
 
         targetPosition = transform.position;
         return false;
+    }
+
+    private void RaiseMovementTargetReached()
+    {
+        if (movementTargetReachedRaised)
+            return;
+
+        movementTargetReachedRaised = true;
+        MovementTargetReached?.Invoke();
+
+        if (!stopOnTargetReached)
+            movementTargetReachedRaised = false;
     }
 
     private void PruneSoldiers()

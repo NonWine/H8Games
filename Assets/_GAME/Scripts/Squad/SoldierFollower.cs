@@ -89,6 +89,17 @@ public sealed class SoldierFollower : MonoBehaviour
         State = SoldierFormationState.WaitingInFormation;
     }
 
+    public bool IsInAssignedSlot(float threshold)
+    {
+        if (squadRoot == null || assignedSlot == null)
+            return false;
+
+        Vector3 targetPosition = squadRoot.GetSlotWorldPosition(assignedSlot);
+        Vector3 delta = targetPosition - transform.position;
+        delta.y = 0f;
+        return delta.sqrMagnitude <= threshold * threshold;
+    }
+
     private void RotateTowards(Vector3 direction, float deltaTime)
     {
         direction.y = 0f;

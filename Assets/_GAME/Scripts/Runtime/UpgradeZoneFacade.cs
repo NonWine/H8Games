@@ -6,7 +6,6 @@ public class UpgradeZoneFacade : MonoBehaviour
 {
     [SerializeField] private UpgradeKind upgradeKind;
     [SerializeField] private PlayerView heroTarget;
-    [SerializeField] private BarracksFacade barracksTarget;
     [SerializeField] private UpgradeZoneView view;
 
     private CurrencyService currencyService;
@@ -51,21 +50,9 @@ public class UpgradeZoneFacade : MonoBehaviour
     private void TryUpgrade()
     {
         bool purchased = false;
-
-        if (IsHeroUpgrade())
-        {
-            PlayerView target = heroTarget != null ? heroTarget : heroInRange;
-            if (target != null)
-            {
-                purchased = target.UpgradeService.TryUpgrade(upgradeKind, currencyService, upgradePriceService,
-                    out _);
-            }
-        }
-        else if (barracksTarget != null)
-        {
-            purchased = barracksTarget.UpgradeService.TryUpgrade(upgradeKind, currencyService, upgradePriceService,
-                out _);
-        }
+        PlayerView target = heroTarget != null ? heroTarget : heroInRange;
+        if (IsHeroUpgrade() && target != null)
+            purchased = target.UpgradeService.TryUpgrade(upgradeKind, currencyService, upgradePriceService, out _);
 
         if (purchased)
             RefreshView();
@@ -85,7 +72,7 @@ public class UpgradeZoneFacade : MonoBehaviour
             return target != null ? target.UpgradeService.GetLevel(upgradeKind) : 0;
         }
 
-        return barracksTarget != null ? barracksTarget.UpgradeService.GetLevel(upgradeKind) : 0;
+        return 0;
     }
 
     private void RefreshView()
@@ -107,6 +94,6 @@ public class UpgradeZoneFacade : MonoBehaviour
             return target != null ? target.UpgradeService.GetDefinition(upgradeKind) : null;
         }
 
-        return barracksTarget != null ? barracksTarget.UpgradeService.GetDefinition(upgradeKind) : null;
+        return null;
     }
 }

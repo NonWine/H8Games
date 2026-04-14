@@ -40,8 +40,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5651923442246037419}
-  - component: {fileID: 6058438824604905708}
-  - component: {fileID: -7186251802846083256}
+  - component: {fileID: 3798131651675999716}
+  - component: {fileID: 8389275887012615487}
   m_Layer: 0
   m_Name: enemy
   m_TagString: Untagged
@@ -67,7 +67,7 @@ Transform:
   - {fileID: 7716220388323651211}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6058438824604905708
+--- !u!114 &3798131651675999716
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -76,7 +76,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 7244074184933653350}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4d0df4d1b4b3b44c9301dd6d0953de8, type: 3}
+  m_Script: {fileID: 11500000, guid: c8de227e653133542bbce24f5ce0a875, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8389275887012615487
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7244074184933653350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4efc4c238823e2a41b65a0f4753a43d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   teamId: 3
@@ -92,22 +104,6 @@ MonoBehaviour:
   attackPoint: {fileID: 1993310131299303870}
   healthBarView: {fileID: 376292282341328191}
   projectilePrefab: {fileID: 4041960524083155756, guid: 4d339c7c02696d14196569d8dae8f7b8, type: 3}
-  detectionMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
---- !u!114 &-7186251802846083256
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7244074184933653350}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6643e39be35cb484f87702030d55b831, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  autoRegisterOnStart: 1
 --- !u!1001 &3976809662158481837
 PrefabInstance:
   m_ObjectHideFlags: 0

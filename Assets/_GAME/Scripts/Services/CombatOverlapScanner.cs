@@ -1,31 +1,34 @@
 using System;
-using System.Collections.Generic;
-using UnityEngine;
 
-public sealed class CombatOverlapScanner
+public class GamePhaseService
 {
-    private readonly Collider[] buffer;
+    public event Action<GamePhase> Changed;
 
-    public CombatOverlapScanner(int maxColliders = 32)
+    public GamePhaseService(GamePhase initialPhase)
     {
-        buffer = new Collider[Mathf.Max(1, maxColliders)];
+        CurrentPhase = initialPhase;
     }
 
-    public List<T> GetFilteredObjects<T>(Vector3 position, float radius, LayerMask layerMask, Func<T, bool> filter = null)
+    public GamePhase CurrentPhase { get; private set; }
+    public bool IsPreparation => CurrentPhase == GamePhase.Preparation;
+    public bool IsBattle => CurrentPhase == GamePhase.Battle;
+
+    public void EnterPreparation()
     {
-        int count = Physics.OverlapSphereNonAlloc(position, radius, buffer, layerMask);
-        var results = new List<T>(count);
+        SetPhase(GamePhase.Preparation);
+    }
 
-        for (int i = 0; i < count; i++)
-        {
-            Collider collider = buffer[i];
-            if (collider == null || !collider.TryGetComponent(out T component))
-                continue;
+    public void EnterBattle()
+    {
+        SetPhase(GamePhase.Battle);
+    }
 
-            if (filter == null || filter(component))
-                results.Add(component);
-        }
+    private void SetPhase(GamePhase phase)
+    {
+        if (CurrentPhase == phase)
+            return;
 
-        return results;
+        CurrentPhase = phase;
+        Changed?.Invoke(CurrentPhase);
     }
 }
