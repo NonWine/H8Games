@@ -161,9 +161,6 @@ public sealed class SquadRoot : MonoBehaviour
 
     public Vector3 GetSlotWorldPosition(FormationSlot slot)
     {
-        if (slot == null)
-            return transform.position;
-
         return transform.TransformPoint(slot.LocalOffset);
     }
 

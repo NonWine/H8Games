@@ -22,6 +22,7 @@ public class PlayerView : MonoBehaviour, ICombatTarget
 
     public HeroUpgradeService UpgradeService => upgradeAccess.UpgradeService;
     public TeamId TeamId => teamId;
+    public int CurrentWeight { get; set; }
     public bool IsAlive => stateReader.IsAlive;
     public Transform AttackOrigin => attackPoint;
     public Transform CameraAnchor => cameraAnchor;

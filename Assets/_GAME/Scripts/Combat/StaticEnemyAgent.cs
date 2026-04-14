@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [RequireComponent(typeof(EnemyCombatAgent))]
-public sealed class StaticEnemyAgent : MonoBehaviour, ICombatTarget
+public sealed class StaticEnemyAgent : BaseCombatUnitView, ICombatTarget
 {
     [SerializeField] private TeamId teamId = TeamId.Enemy;
     [SerializeField] private UnitStats stats = new();
@@ -18,11 +18,12 @@ public sealed class StaticEnemyAgent : MonoBehaviour, ICombatTarget
     public event Action<StaticEnemyAgent> Died;
 
     public TeamId TeamId => teamId;
-    public bool IsAlive => healthService != null && healthService.IsAlive;
+    public bool IsAlive => healthService.IsAlive;
     public Transform AttackOrigin => attackPoint != null ? attackPoint : transform;
     public UnitStats RuntimeStats => runtimeStats;
     public EnemyGroupFacade Group { get; private set; }
     public StaticEnemyState State { get; private set; } = StaticEnemyState.Idle;
+    public int CurrentWeight { get; set; }
 
     private void Awake()
     {
@@ -58,6 +59,7 @@ public sealed class StaticEnemyAgent : MonoBehaviour, ICombatTarget
     {
         EnsureInitialized();
         healthService.ApplyDamage(damage);
+        SetEmissionHitFlash();
     }
 
     public void SpawnProjectileVisual(Transform target)

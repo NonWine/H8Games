@@ -14,26 +14,22 @@ public sealed class EnemyCombatAgent : MonoBehaviour
             () => owner.RuntimeStats.Damage,
             () => owner.RuntimeStats.AttackCooldown,
             () => owner.AttackOrigin.position);
-        enabled = false;
     }
 
     public void Activate(SquadCombatCoordinator squadCombatCoordinator)
     {
         this.squadCombatCoordinator = squadCombatCoordinator;
         attackService?.ResetCooldown();
-        enabled = true;
     }
 
     public void Deactivate()
     {
-        enabled = false;
         currentTarget = null;
-        squadCombatCoordinator = null;
     }
 
     private void Update()
     {
-        if (owner == null || !owner.IsAlive || squadCombatCoordinator == null)
+        if (!owner.IsAlive || squadCombatCoordinator == null)
             return;
 
         currentTarget = squadCombatCoordinator.GetClosestLivingAlly(owner.transform.position) as ICombatTarget;

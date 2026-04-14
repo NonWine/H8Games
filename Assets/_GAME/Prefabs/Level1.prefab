@@ -274,11 +274,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   autoCollectZonesFromChildren: 1
-  autoCollectBarracksFromChildren: 1
   zones:
   - {fileID: 37171209390253438}
   - {fileID: 8419342097509615832}
-  barracksSpawners: []
 --- !u!1 &4717389920468722332
 GameObject:
   m_ObjectHideFlags: 0

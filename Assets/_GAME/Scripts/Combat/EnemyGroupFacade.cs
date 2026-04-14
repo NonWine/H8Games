@@ -4,7 +4,6 @@ using UnityEngine;
 
 public sealed class EnemyGroupFacade : MonoBehaviour
 {
-    [SerializeField] private bool autoCollectChildren = true;
     [SerializeField] private Transform engagePoint;
     [SerializeField] private bool encounterAvailable = true;
     [SerializeField] private List<StaticEnemyAgent> enemies = new();
@@ -21,7 +20,6 @@ public sealed class EnemyGroupFacade : MonoBehaviour
     private void Awake()
     {
         RefreshEnemies();
-        ResetRuntimeState();
     }
 
     private void OnDestroy()
@@ -107,11 +105,6 @@ public sealed class EnemyGroupFacade : MonoBehaviour
 
     private void RefreshEnemies()
     {
-        if (autoCollectChildren)
-        {
-            enemies.Clear();
-            GetComponentsInChildren(true, enemies);
-        }
 
         for (int i = 0; i < enemies.Count; i++)
         {
@@ -139,3 +132,4 @@ public sealed class EnemyGroupFacade : MonoBehaviour
         Cleared?.Invoke(this);
     }
 }
+

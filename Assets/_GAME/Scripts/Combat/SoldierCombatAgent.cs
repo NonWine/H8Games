@@ -2,7 +2,7 @@ using UnityEngine;
 using Zenject;
 
 [RequireComponent(typeof(SoldierFollower))]
-public sealed class SoldierCombatAgent : MonoBehaviour, ICombatTarget
+public sealed class SoldierCombatAgent : BaseCombatUnitView, ICombatTarget
 {
     [SerializeField] private bool autoRegisterOnStart = true;
     [SerializeField] private TeamId teamId = TeamId.Ally;
@@ -10,7 +10,7 @@ public sealed class SoldierCombatAgent : MonoBehaviour, ICombatTarget
     [SerializeField] private Transform attackPoint;
     [SerializeField] private WorldHealthBarView healthBarView;
     [SerializeField] private SimpleProjectileView projectilePrefab;
-
+    
     private SquadCombatCoordinator squadCombatCoordinator;
     private AttackService attackService;
     private HealthService healthService;
@@ -18,6 +18,7 @@ public sealed class SoldierCombatAgent : MonoBehaviour, ICombatTarget
     private bool initialized;
 
     public TeamId TeamId => teamId;
+    public int CurrentWeight { get; set; }
     public bool IsAlive => healthService != null && healthService.IsAlive;
     public SoldierCombatState State { get; private set; } = SoldierCombatState.Idle;
     public Transform AttackOrigin => attackPoint != null ? attackPoint : transform;
@@ -53,6 +54,7 @@ public sealed class SoldierCombatAgent : MonoBehaviour, ICombatTarget
         }
 
         ICombatTarget target = currentGroup.GetClosestLivingEnemy(transform.position);
+        
         if (target == null || !target.IsAlive)
         {
             State = SoldierCombatState.Idle;
@@ -70,7 +72,7 @@ public sealed class SoldierCombatAgent : MonoBehaviour, ICombatTarget
         transform.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
 
         float sqrRange = runtimeStats.AttackRange * runtimeStats.AttackRange;
-        if (direction.sqrMagnitude > sqrRange)
+        if (direction.sqrMagnitude >= sqrRange * sqrRange)
         {
             State = SoldierCombatState.Idle;
             return;
@@ -99,6 +101,7 @@ public sealed class SoldierCombatAgent : MonoBehaviour, ICombatTarget
     {
         EnsureInitialized();
         healthService.ApplyDamage(damage);
+        SetEmissionHitFlash();
     }
 
     private void EnsureInitialized()
@@ -137,4 +140,8 @@ public sealed class SoldierCombatAgent : MonoBehaviour, ICombatTarget
         SimpleProjectileView projectile = Instantiate(projectilePrefab, AttackOrigin.position, Quaternion.identity);
         projectile.Launch(target, runtimeStats.ProjectileSpeed);
     }
+
+
 }
+
+

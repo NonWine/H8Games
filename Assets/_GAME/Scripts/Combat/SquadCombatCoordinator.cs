@@ -3,8 +3,10 @@ using UnityEngine;
 
 public sealed class SquadCombatCoordinator : MonoBehaviour
 {
-    private readonly List<SoldierCombatAgent> soldiers = new();
-
+    [SerializeField] private float detectorRadius;
+    
+    [SerializeField] private List<SoldierCombatAgent> soldiers = new();
+    
     private bool squadDefeatedRaised;
 
     public event System.Action<EnemyGroupFacade> EncounterStarted;
@@ -60,13 +62,14 @@ public sealed class SquadCombatCoordinator : MonoBehaviour
 
         SoldierCombatAgent closest = null;
         float closestSqrDistance = float.MaxValue;
-
+        
         for (int i = 0; i < soldiers.Count; i++)
         {
             SoldierCombatAgent soldier = soldiers[i];
             Vector3 delta = soldier.transform.position - worldPosition;
             delta.y = 0f;
             float sqrDistance = delta.sqrMagnitude;
+            Debug.Log(sqrDistance);
             if (sqrDistance >= closestSqrDistance)
                 continue;
 

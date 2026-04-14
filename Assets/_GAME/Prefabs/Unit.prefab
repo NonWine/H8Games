@@ -79,7 +79,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6643e39be35cb484f87702030d55b831, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoRegisterOnStart: 1
 --- !u!114 &5262546841830418435
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -92,16 +91,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2faa39169a02cf343b92224b780c0e28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <renderers>k__BackingField:
+  - {fileID: 7715656943484118029}
+  - {fileID: 7715656943801137899}
+  timeToSetColor: 0.06
+  emissionHitColor: {r: 830.7925, g: 387.9644, b: 387.9644, a: 1}
   autoRegisterOnStart: 1
   teamId: 2
   stats:
     MaxHealth: 30
     MoveSpeed: 3.5
-    DetectionRadius: 8
-    AttackRange: 4
-    AttackCooldown: 1
+    DetectionRadius: 10
+    AttackRange: 8
+    AttackCooldown: 0.7
     Damage: 5
-    ProjectileSpeed: 12
+    ProjectileSpeed: 22
     DeathReward: 5
   attackPoint: {fileID: 1993310131299303870}
   healthBarView: {fileID: 376292282341328191}
@@ -230,6 +234,16 @@ PrefabInstance:
 --- !u!4 &7715656942192308701 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6639416689348450416, guid: 22caed54f5619a84fb19d6a666d4ba77, type: 3}
+  m_PrefabInstance: {fileID: 3976809662158481837}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &7715656943484118029 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 6639416688358559136, guid: 22caed54f5619a84fb19d6a666d4ba77, type: 3}
+  m_PrefabInstance: {fileID: 3976809662158481837}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &7715656943801137899 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 6639416688809268038, guid: 22caed54f5619a84fb19d6a666d4ba77, type: 3}
   m_PrefabInstance: {fileID: 3976809662158481837}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6089743798689014512
