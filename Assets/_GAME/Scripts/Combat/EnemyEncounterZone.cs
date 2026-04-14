@@ -24,9 +24,13 @@ public sealed class EnemyEncounterZone : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (enemyGroup == null || squadFlowCoordinator == null)
-            return;
+        NotifyIfSquadRoot(other);
+    }
+    
 
+    private void NotifyIfSquadRoot(Collider other)
+    {
+        
         if (other.GetComponentInParent<SquadRoot>() == null)
             return;
 

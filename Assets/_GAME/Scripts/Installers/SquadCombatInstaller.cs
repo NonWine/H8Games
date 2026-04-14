@@ -6,18 +6,16 @@ public class SquadCombatInstaller : MonoInstaller
 {
     [SerializeField] private SquadCombatCoordinator squadCombatCoordinator;
     [SerializeField] private SquadFlowCoordinator squadFlowCoordinator;
-    [SerializeField] private LevelRuntime[] levels;
     [SerializeField] private int startingLevelIndex;
     [SerializeField] private GamePhase initialPhase = GamePhase.Preparation;
+    [SerializeField] private LevelRuntime[] levels;
+    
+    
 
     public override void InstallBindings()
     {
-        if (squadCombatCoordinator == null)
-            throw new InvalidOperationException("SquadCombatCoordinator is not assigned.");
-
-        if (squadFlowCoordinator == null)
-            throw new InvalidOperationException("SquadFlowCoordinator is not assigned.");
-
+        
+        levels = FindObjectsByType<LevelRuntime>(FindObjectsSortMode.None);
         CampaignService campaignService = new CampaignService(levels, startingLevelIndex);
         LevelManager levelManager = new LevelManager(campaignService);
         GamePhaseService gamePhaseService = new GamePhaseService(initialPhase);

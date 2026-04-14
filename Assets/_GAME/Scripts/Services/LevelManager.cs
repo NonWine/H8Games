@@ -13,11 +13,6 @@ public class LevelManager
     public int CurrentLevelIndex => campaignService.CurrentLevelIndex;
     public IReadOnlyList<LevelRuntime> Levels => campaignService.Levels;
 
-    public bool TrySetCurrentLevelIndex(int index)
-    {
-        return campaignService.TrySetCurrentLevelIndex(index);
-    }
-
     public bool TryAdvanceToNextLevelOrRestart()
     {
         return campaignService.TryAdvanceToNextLevelOrRestart();

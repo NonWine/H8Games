@@ -1,125 +1,82 @@
+using System;
 using UnityEngine;
 
-public sealed class EnemyCombatAgent : MonoBehaviour
+public class EnemyCombatAgent : BaseTargetingCombatAgent
 {
-    private StaticEnemyAgent owner;
     private SquadCombatCoordinator squadCombatCoordinator;
-    private AttackService attackService;
-    private ICombatTarget currentTarget;
-    private float nextRetargetTime;
-    private float targetLockUntil;
-    private const float reservationPenalty = 3f;
-    private const float retargetInterval = 0.35f;
-    private const float targetLockDuration = 0.35f;
+    public EnemyGroupFacade Group { get; private set; }
+    public StaticEnemyState State { get; private set; } = StaticEnemyState.Idle;
+    public event Action<EnemyCombatAgent> Died;
 
-    public void Initialize(StaticEnemyAgent owner)
+    public void ResetRunTimeState()
     {
-        this.owner = owner;
-        attackService = new AttackService(
-            () => owner.RuntimeStats.Damage,
-            () => owner.RuntimeStats.AttackCooldown,
-            () => owner.AttackOrigin.position);
+        targetReservation.ClearReservations();
+        unitHealthHandler.RestoreFull();
+        State = StaticEnemyState.Idle;
+    }
+    
+    public void SetGroup(EnemyGroupFacade group)
+    {
+        Group = group;
     }
 
     public void Activate(SquadCombatCoordinator squadCombatCoordinator)
     {
+        if (!IsAlive)
+            return;
         this.squadCombatCoordinator = squadCombatCoordinator;
-        attackService?.ResetCooldown();
-        nextRetargetTime = 0f;
-        targetLockUntil = 0f;
-    }
-
-    public void Deactivate()
-    {
-        SetCurrentTarget(null);
-        squadCombatCoordinator = null;
-        nextRetargetTime = 0f;
-        targetLockUntil = 0f;
-    }
-
-    private void OnDisable()
-    {
-        Deactivate();
+        attackAgent?.ResetCooldown();
+        ResetTargetingTimers();
+        State = StaticEnemyState.Attack;
     }
 
     private void Update()
     {
-        if (!owner.IsAlive || squadCombatCoordinator == null)
+        if (!IsAlive || squadCombatCoordinator == null)
             return;
 
-        if (!IsCurrentTargetValid())
+        if (!IsCurrentTargetValidBase())
         {
             TryAcquireTarget();
         }
-        else if (Time.time >= nextRetargetTime && Time.time >= targetLockUntil)
+        else if (ShouldRetarget())
         {
             TryAcquireTarget();
         }
-
-        if (!IsCurrentTargetValid())
+        if (!IsCurrentTargetValidBase())
             return;
 
-        Vector3 direction = currentTarget.transform.position - owner.transform.position;
-        direction.y = 0f;
-        if (direction.sqrMagnitude <= 0.0001f)
-            return;
+        RotateTowardsCurrentTarget(transform);
 
-        transform.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
-        
-
-        if (attackService.Tick(Time.deltaTime, currentTarget))
-            owner.SpawnProjectileVisual(currentTarget.transform);
+        if (attackAgent.Tick(Time.deltaTime, currentTarget, AttackOrigin.position))
+            SpawnProjectileVisual(currentTarget.transform);
     }
 
-    private bool TryAcquireTarget()
+    private void TryAcquireTarget()
     {
         if (squadCombatCoordinator == null)
         {
             SetCurrentTarget(null);
-            return false;
+            return;
         }
 
-        ICombatTarget target = squadCombatCoordinator.GetBestLivingAllyTarget(owner.transform.position, reservationPenalty);
+        ICombatTarget target = squadCombatCoordinator.GetBestLivingAllyTarget(transform.position, reservationPenalty);
+
         if (target == null)
         {
+            SetCurrentTarget(null);
             nextRetargetTime = Time.time + retargetInterval;
             targetLockUntil = 0f;
-            return false;
+            return;
         }
 
         SetCurrentTarget(target);
-        nextRetargetTime = Time.time + retargetInterval;
-        targetLockUntil = Time.time + targetLockDuration;
-        return true;
+        MarkRetargetWindow();
     }
 
-    private void SetCurrentTarget(ICombatTarget newTarget)
+    protected override void HandleDeath()
     {
-        if (ReferenceEquals(currentTarget, newTarget))
-            return;
-
-        ReleaseCurrentTarget();
-        currentTarget = newTarget;
-
-        if (currentTarget is Component targetComponent && targetComponent is ITargetReservation reservationTarget)
-            reservationTarget.TryRegisterAttacker(this);
-    }
-
-    private void ReleaseCurrentTarget()
-    {
-        if (currentTarget is Component targetComponent && targetComponent is ITargetReservation reservationTarget)
-            reservationTarget.TryUnregisterAttacker(this);
-    }
-
-    private bool IsCurrentTargetValid()
-    {
-        if (currentTarget == null || !currentTarget.IsAlive)
-            return false;
-
-        if (currentTarget is not Component targetComponent || !targetComponent.gameObject.activeInHierarchy)
-            return false;
-
-
-        return true;
+        Died?.Invoke(this);
+        base.HandleDeath();
     }
 }

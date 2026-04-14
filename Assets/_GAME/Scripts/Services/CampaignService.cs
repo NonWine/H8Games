@@ -62,9 +62,6 @@ public sealed class CampaignService
 
             bool shouldBeActive = i == CurrentLevelIndex;
             level.gameObject.SetActive(shouldBeActive);
-
-            if (shouldBeActive)
-                level.ResetRuntimeState();
         }
     }
 }

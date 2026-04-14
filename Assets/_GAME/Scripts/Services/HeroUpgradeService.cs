@@ -4,14 +4,14 @@ public sealed class HeroUpgradeService
 {
     private readonly HeroStats stats;
     private readonly HeroUpgradeConfig config;
-    private readonly HealthService healthService;
+    private readonly UnitHealthHandler _unitHealthHandler;
     private readonly Dictionary<UpgradeKind, int> levels = new();
 
-    public HeroUpgradeService(HeroStats stats, HeroUpgradeConfig config, HealthService healthService = null)
+    public HeroUpgradeService(HeroStats stats, HeroUpgradeConfig config, UnitHealthHandler unitHealthHandler = null)
     {
         this.stats = stats;
         this.config = config;
-        this.healthService = healthService;
+        this._unitHealthHandler = unitHealthHandler;
     }
 
     public int GetLevel(UpgradeKind kind)
@@ -54,7 +54,7 @@ public sealed class HeroUpgradeService
                 break;
             case UpgradeKind.HeroMaxHealth:
                 stats.Combat.IncreaseMaxHealth(definition.Amount);
-                healthService?.IncreaseMaxHealth(definition.Amount, true);
+                _unitHealthHandler?.IncreaseMaxHealth(definition.Amount, true);
                 break;
             case UpgradeKind.HeroAttackRate:
                 stats.Combat.ReduceAttackCooldown(definition.Amount);

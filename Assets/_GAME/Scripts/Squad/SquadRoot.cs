@@ -20,8 +20,7 @@ public sealed class SquadRoot : MonoBehaviour
     [SerializeField] private MovementMode movementMode = MovementMode.TargetPoint;
     [SerializeField] private Transform testTargetPoint;
     [SerializeField] private Vector3 forwardDirection = Vector3.forward;
-    [Min(0.01f)]
-    [SerializeField] private float targetReachThreshold = 0.1f;
+    [Min(0.01f)] [SerializeField] private float targetReachThreshold = 0.1f;
     [SerializeField] private bool stopOnTargetReached = true;
 
     private readonly List<SoldierFollower> soldiers = new();

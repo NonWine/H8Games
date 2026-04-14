@@ -1,22 +1,22 @@
 using System;
 using UnityEngine;
 
-public sealed class HealthService
+public class UnitHealthHandler
 {
+    public float MaxHealth { get; private set; }
+    public float CurrentHealth { get; private set; }
+    public bool IsAlive { get; private set; }
     public event Action<float, float> HealthChanged;
-    public event Action Damaged;
     public event Action Died;
 
-    public HealthService(float maxHealth)
+    public UnitHealthHandler(float maxHealth)
     {
         MaxHealth = Mathf.Max(1f, maxHealth);
         CurrentHealth = MaxHealth;
         IsAlive = true;
     }
 
-    public float MaxHealth { get; private set; }
-    public float CurrentHealth { get; private set; }
-    public bool IsAlive { get; private set; }
+
 
     public void ApplyDamage(float amount)
     {
@@ -24,7 +24,6 @@ public sealed class HealthService
             return;
 
         CurrentHealth = Mathf.Max(0f, CurrentHealth - amount);
-        Damaged?.Invoke();
         HealthChanged?.Invoke(CurrentHealth, MaxHealth);
 
         if (CurrentHealth <= 0f)

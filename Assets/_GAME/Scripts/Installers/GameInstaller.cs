@@ -7,10 +7,12 @@ public class GameInstaller : MonoInstaller
     [SerializeField] private PlayerView heroPrefab;
     [SerializeField] private Transform heroSpawnPoint;
     [SerializeField] private Joystick joystick;
+  
     public override void InstallBindings()
     {
         Container.BindInstance(joystick).AsSingle();
         InstallHero();
+        Container.Bind<TargetReservation>().AsTransient();
     }
     private void InstallHero()
     {

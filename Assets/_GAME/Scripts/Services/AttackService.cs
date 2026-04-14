@@ -1,34 +1,43 @@
-using System;
 using UnityEngine;
 
-public sealed class AttackService
+public class UnitAttackAgentHandler
 {
-    private readonly Func<float> damageProvider;
-    private readonly Func<float> cooldownProvider;
-    private readonly Func<Vector3> attackOriginProvider;
-    private float cooldownRemaining;
+    private readonly AttackRuntimeModel attackData;
 
-    public AttackService(Func<float> damageProvider, Func<float> cooldownProvider, Func<Vector3> attackOriginProvider)
+    public UnitAttackAgentHandler(AttackRuntimeModel attackData)
     {
-        this.damageProvider = damageProvider;
-        this.cooldownProvider = cooldownProvider;
-        this.attackOriginProvider = attackOriginProvider;
+        this.attackData = attackData;
     }
 
-    public bool Tick(float deltaTime, IDamageable target)
+    public bool Tick(float deltaTime, IDamageable target, Vector3 attackOrigin)
     {
-        cooldownRemaining = Mathf.Max(0f, cooldownRemaining - deltaTime);
+        attackData.CooldownRemaining = Mathf.Max(0f, attackData.CooldownRemaining - deltaTime);
 
-        if (target == null || !target.IsAlive || cooldownRemaining > 0f)
+        if (target == null || !target.IsAlive || attackData.CooldownRemaining > 0f)
+        {
             return false;
+        }
 
-        cooldownRemaining = Mathf.Max(0.05f, cooldownProvider?.Invoke() ?? 0.25f);
-        target.GetDamage(Mathf.Max(0f, damageProvider?.Invoke() ?? 0f), attackOriginProvider?.Invoke() ?? Vector3.zero);
+        attackData.CooldownRemaining = Mathf.Max(0.05f, attackData.Cooldown);
+        target.GetDamage(Mathf.Max(0f, attackData.Damage), attackOrigin);
         return true;
     }
 
     public void ResetCooldown()
     {
-        cooldownRemaining = 0f;
+        attackData.CooldownRemaining = 0f;
+    }
+}
+
+public  class AttackRuntimeModel
+{
+    public float Damage;
+    public float Cooldown;
+    public float CooldownRemaining;
+
+    public AttackRuntimeModel(UnitStats stats)
+    {
+        Damage = stats.Damage;
+        Cooldown = stats.AttackCooldown;
     }
 }

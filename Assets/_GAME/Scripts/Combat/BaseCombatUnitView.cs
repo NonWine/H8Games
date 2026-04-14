@@ -2,7 +2,7 @@
 using DG.Tweening;
 using UnityEngine;
 
-public abstract class BaseCombatUnitView : MonoBehaviour
+public class BaseCombatUnitView : MonoBehaviour
 {
     [field: SerializeField] public SkinnedMeshRenderer[] renderers { get; private set; }
     [SerializeField] private float timeToSetColor = 0.2f;

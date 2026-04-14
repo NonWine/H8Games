@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -11,9 +12,9 @@ public sealed class SquadCombatCoordinator : MonoBehaviour
     private bool squadDefeatedRaised;
     [InjectOptional] private PlayerView heroTarget;
 
-    public event System.Action<EnemyGroupFacade> EncounterStarted;
-    public event System.Action<EnemyGroupFacade> EncounterCleared;
-    public event System.Action SquadDefeated;
+    public event Action<EnemyGroupFacade> CombatStartedBattle;
+    public event Action<EnemyGroupFacade> CombatClearedZone;
+    public event Action SquadDefeated;
     public EnemyGroupFacade CurrentTargetGroup { get; private set; }
     public bool HasActiveEncounter => CurrentTargetGroup != null && CurrentTargetGroup.State == EnemyGroupState.Activated;
     public bool HasLivingAllies
@@ -43,42 +44,12 @@ public sealed class SquadCombatCoordinator : MonoBehaviour
         TryRaiseSquadDefeated();
     }
 
-    public bool TryBeginEncounter(EnemyGroupFacade enemyGroup)
+    public void TryBeginEncounter(EnemyGroupFacade enemyGroup)
     {
-        if (enemyGroup == null || !enemyGroup.IsAvailableForEncounter)
-            return false;
-
-        if (CurrentTargetGroup != null)
-            return CurrentTargetGroup == enemyGroup;
-
         CurrentTargetGroup = enemyGroup;
         CurrentTargetGroup.Cleared += HandleEncounterCleared;
-        EncounterStarted?.Invoke(enemyGroup);
+        CombatStartedBattle?.Invoke(enemyGroup);
         enemyGroup.Activate(this);
-        return true;
-    }
-
-    public ICombatTarget GetClosestLivingAlly(Vector3 worldPosition)
-    {
-        PruneSoldiers();
-
-        SoldierCombatAgent closest = null;
-        float closestSqrDistance = float.MaxValue;
-        
-        for (int i = 0; i < soldiers.Count; i++)
-        {
-            SoldierCombatAgent soldier = soldiers[i];
-            Vector3 delta = soldier.transform.position - worldPosition;
-            delta.y = 0f;
-            float sqrDistance = delta.sqrMagnitude;
-            if (sqrDistance >= closestSqrDistance)
-                continue;
-
-            closest = soldier;
-            closestSqrDistance = sqrDistance;
-        }
-
-        return closest;
     }
 
     public ICombatTarget GetBestLivingAllyTarget(Vector3 worldPosition, float reservationPenalty)
@@ -95,11 +66,7 @@ public sealed class SquadCombatCoordinator : MonoBehaviour
                 continue;
 
             int reservationCount = soldier is ITargetReservation reservationTarget ? reservationTarget.ReservationCount : 0;
-            float score = CombatTargetScoringUtility.CalculateScore(
-                worldPosition,
-                soldier.transform.position,
-                reservationCount,
-                reservationPenalty);
+            float score = CombatTargetScoringUtility.CalculateScore(worldPosition, soldier.transform.position, reservationCount, reservationPenalty);
 
             if (score >= bestScore)
                 continue;
@@ -119,12 +86,10 @@ public sealed class SquadCombatCoordinator : MonoBehaviour
 
     private void HandleEncounterCleared(EnemyGroupFacade clearedGroup)
     {
-        if (CurrentTargetGroup != clearedGroup)
-            return;
-
+        
         clearedGroup.Cleared -= HandleEncounterCleared;
+        CombatClearedZone?.Invoke(clearedGroup);
         CurrentTargetGroup = null;
-        EncounterCleared?.Invoke(clearedGroup);
     }
 
     private void PruneSoldiers()

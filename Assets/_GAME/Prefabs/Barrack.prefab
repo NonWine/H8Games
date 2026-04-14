@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f3c02c5cfdfdc344b98bf00bff41c02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soldierPrefab: {fileID: -7186251802846083256, guid: 84bb1d66ac360e347ba065f97e9e9a98, type: 3}
+  soldierPrefab: {fileID: 6922034175858547783, guid: 21808611dd85acf4db2708200a5d21be, type: 3}
   spawnPoint: {fileID: 7147874237398806145}
   spawnInterval: 2.5
 --- !u!1 &4794903307491169746

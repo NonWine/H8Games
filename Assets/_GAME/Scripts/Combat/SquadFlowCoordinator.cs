@@ -1,9 +1,10 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
 public sealed class SquadFlowCoordinator : MonoBehaviour
 {
-    private readonly System.Collections.Generic.List<EnemyGroupFacade> candidateGroups = new();
+    private readonly List<EnemyGroupFacade> candidateGroups = new();
 
     private SquadRoot squadRoot;
     private SquadCombatCoordinator squadCombatCoordinator;
@@ -14,7 +15,7 @@ public sealed class SquadFlowCoordinator : MonoBehaviour
     private bool waitingForLevelTransition;
 
     public EnemyGroupFacade CurrentTargetGroup => currentTargetGroup;
-    public LevelRuntime CurrentLevel => levelManager?.CurrentLevel;
+    public LevelRuntime CurrentLevel => levelManager.CurrentLevel;
 
     [Inject]
     public void Construct(
@@ -38,8 +39,8 @@ public sealed class SquadFlowCoordinator : MonoBehaviour
     private void OnEnable()
     {
         squadRoot.MovementTargetReached += HandleMovementTargetReached;
-        squadCombatCoordinator.EncounterStarted += HandleEncounterStarted;
-        squadCombatCoordinator.EncounterCleared += HandleEncounterCleared;
+        squadCombatCoordinator.CombatStartedBattle += HandleCombatStartedBattle;
+        squadCombatCoordinator.CombatClearedZone += HandleCombatClearedZone;
         squadCombatCoordinator.SquadDefeated += HandleSquadDefeated;
 
         if (gamePhaseService != null)
@@ -49,8 +50,8 @@ public sealed class SquadFlowCoordinator : MonoBehaviour
     private void OnDisable()
     {
         squadRoot.MovementTargetReached -= HandleMovementTargetReached;
-        squadCombatCoordinator.EncounterStarted -= HandleEncounterStarted;
-        squadCombatCoordinator.EncounterCleared -= HandleEncounterCleared;
+        squadCombatCoordinator.CombatStartedBattle -= HandleCombatStartedBattle;
+        squadCombatCoordinator.CombatClearedZone -= HandleCombatClearedZone;
         squadCombatCoordinator.SquadDefeated -= HandleSquadDefeated;
 
         if (gamePhaseService != null)
@@ -95,9 +96,6 @@ public sealed class SquadFlowCoordinator : MonoBehaviour
 
     public void NotifyEncounterZoneEntered(EnemyGroupFacade enemyGroup)
     {
-        if (enemyGroup == null || squadRoot.State != SquadRootState.MovingToZone)
-            return;
-
         if (currentTargetGroup != enemyGroup)
             return;
 
@@ -135,7 +133,7 @@ public sealed class SquadFlowCoordinator : MonoBehaviour
         for (int i = 0; i < candidateGroups.Count; i++)
         {
             EnemyGroupFacade group = candidateGroups[i];
-            if (group == null || !group.IsAvailableForEncounter)
+            if (group.State == EnemyGroupState.Cleared)
                 continue;
 
             Vector3 delta = group.EngagePointPosition - squadPosition;
@@ -163,20 +161,14 @@ public sealed class SquadFlowCoordinator : MonoBehaviour
             waitingForRegroupFormation = true;
     }
 
-    private void HandleEncounterStarted(EnemyGroupFacade enemyGroup)
+    private void HandleCombatStartedBattle(EnemyGroupFacade enemyGroup)
     {
-        if (enemyGroup == null)
-            return;
-
         currentTargetGroup = enemyGroup;
         squadRoot.StopForEncounter();
     }
 
-    private void HandleEncounterCleared(EnemyGroupFacade enemyGroup)
+    private void HandleCombatClearedZone(EnemyGroupFacade enemyGroup)
     {
-        if (enemyGroup != currentTargetGroup)
-            return;
-
         currentTargetGroup = null;
         SearchAndMoveToNextZone();
     }
@@ -188,15 +180,6 @@ public sealed class SquadFlowCoordinator : MonoBehaviour
 
     private void TryStartEncounter(EnemyGroupFacade enemyGroup)
     {
-        if (enemyGroup == null)
-            return;
-
-        if (!enemyGroup.IsAvailableForEncounter)
-        {
-            SearchAndMoveToNextZone();
-            return;
-        }
-
         squadCombatCoordinator.TryBeginEncounter(enemyGroup);
     }
 
