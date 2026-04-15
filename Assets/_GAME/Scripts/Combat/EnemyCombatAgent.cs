@@ -5,18 +5,31 @@ using Zenject;
 public class EnemyCombatAgent : BaseTargetingCombatAgent
 {
     [Inject] private IAllyTargetProvider allyTargetProvider;
-    public EnemyGroupFacade Group { get; private set; }
+    private Vector3 spawnPosition;
+    private Quaternion spawnRotation;
+    public EnemyGroupViewController Group { get; private set; }
     public StaticEnemyState State { get; private set; } = StaticEnemyState.Idle;
     public event Action<EnemyCombatAgent> Died;
 
+    protected override void Awake()
+    {
+        base.Awake();
+        spawnPosition = transform.position;
+        spawnRotation = transform.rotation;
+    }
+
     public void ResetRunTimeState()
     {
+        gameObject.SetActive(true);
         targetReservation.ClearReservations();
+        SetCurrentTarget(null);
         unitHealthHandler.RestoreFull();
+        transform.position = spawnPosition;
+        transform.rotation = spawnRotation;
         State = StaticEnemyState.Idle;
     }
     
-    public void SetGroup(EnemyGroupFacade group)
+    public void SetGroup(EnemyGroupViewController group)
     {
         Group = group;
     }

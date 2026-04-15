@@ -1,23 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using Zenject;
 
 public class SquadRootStateMachine
 {
     private IState currentState;
-    private readonly Dictionary<Type, IState> states = new Dictionary<Type, IState>();
-    private readonly SignalBus signalBus;
+    private readonly Dictionary<Type, IState> states = new();
 
-    public SquadRootStateMachine(SignalBus signalBus, List<IState> allStates)
+    public SquadRootStateMachine(List<IState> allStates)
     {
-        this.signalBus = signalBus;
-        foreach (var state in allStates)
+        foreach (IState state in allStates)
         {
             states[state.GetType()] = state;
         }
     }
-    
+
     public void ChangeState<T>() where T : IState
     {
         ChangeState(typeof(T));
@@ -25,8 +21,7 @@ public class SquadRootStateMachine
 
     private void ChangeState(Type stateType)
     {
-
-        if (!states.TryGetValue(stateType, out var newState))
+        if (!states.TryGetValue(stateType, out IState newState))
         {
             UnityEngine.Debug.LogError($"State {stateType} not registered!");
             return;
@@ -46,7 +41,7 @@ public class SquadRootStateMachine
     {
         currentState?.Exit();
     }
-    
+
     public void Initialize()
     {
         ChangeState<SquadRootIdleState>();

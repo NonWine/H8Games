@@ -55,6 +55,12 @@ public class SquadMoveProvider : ITickable, IMoveProvider
         RotateTowards(direction, Time.deltaTime);
     }
 
+    public void Stop()
+    {
+        reachedPath = true;
+        onReached = null;
+    }
+
     private void RotateTowards(Vector3 direction, float deltaTime)
     {
         direction.y = 0f;

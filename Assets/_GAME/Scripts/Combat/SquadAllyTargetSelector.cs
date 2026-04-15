@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class SquadAllyTargetSelector
+public class SquadAllyTargetSelector : IAllyTargetProvider
 {
     private readonly SquadSoldierRegistry soldierRegistry;
     private readonly PlayerView heroTarget;

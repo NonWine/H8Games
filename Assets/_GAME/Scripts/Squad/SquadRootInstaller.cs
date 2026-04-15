@@ -3,32 +3,31 @@ using Zenject;
 
 public class SquadRootInstaller : MonoInstaller
 {
-    [SerializeField] private SquadRoot squadRootAnchor;
+    [SerializeField] private SquadRootView squadRootViewAnchor;
     [SerializeField] private SquadFollowSettings squadFollowSettings;
 
     public override void InstallBindings()
     {
+        Container.BindInstance(squadRootViewAnchor).AsSingle();
         Container.BindInstance(squadFollowSettings).AsSingle();
         Container.Bind<FormationLayoutService>().AsSingle();
-        
+        Container.Bind<SquadFormationRegistry>().AsSingle();
 
         Container.Bind<SquadFormationController>()
             .AsSingle()
             .WithArguments(
-                squadRootAnchor.transform,
-                squadRootAnchor.InitialCapacity);
+                squadRootViewAnchor,
+                squadRootViewAnchor.transform,
+                squadRootViewAnchor.InitialCapacity);
 
+
+        Container.BindInterfacesAndSelfTo<SquadRootIdleState>().AsSingle();
+        Container.BindInterfacesAndSelfTo<SquadMoveToEnemyState>().AsSingle();
+        Container.BindInterfacesAndSelfTo<SquadReturnGroupState>().AsSingle();
         Container.Bind<SquadRootStateMachine>().AsSingle();
-        Container.Bind<SquadRootIdleState>().AsSingle();
 
-        Container.Bind<SquadMoveProvider>()
-            .AsSingle()
-            .WithArguments(
-                squadRootAnchor.transform,
-                squadFollowSettings,
-                squadRootAnchor.TargetReachThreshold);
-
+        Container.BindInterfacesAndSelfTo<SquadMoveProvider>().AsSingle().WithArguments(squadRootViewAnchor.transform, squadFollowSettings, squadRootViewAnchor.TargetReachThreshold);
         Container.BindInterfacesAndSelfTo<SquadMovementFacade>().AsSingle();
-        Container.Bind<SquadFormationFacade>().AsSingle();
+        Container.BindInterfacesAndSelfTo<SquadFormationFacade>().AsSingle();
     }
 }

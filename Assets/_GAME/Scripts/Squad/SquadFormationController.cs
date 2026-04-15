@@ -1,19 +1,19 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SquadFormationController
 {
-    private readonly SquadRoot owner;
+    private readonly SquadRootView owner;
     private readonly Transform squadRootTransform;
     private readonly FormationLayoutService formationLayoutService;
+    private readonly SquadFormationRegistry registry;
     private readonly SquadFollowSettings settings;
-    private readonly List<SoldierFollower> soldiers = new();
     private readonly List<FormationSlot> slots = new();
     private int capacity;
 
     public int Capacity => capacity;
-    public int SoldierCount => soldiers.Count;
-    public bool HasFreeSlot => soldiers.Count < capacity;
+    public int SoldierCount => registry.Count;
+    public bool HasFreeSlot => registry.Count < capacity;
     public IReadOnlyList<FormationSlot> Slots => slots;
 
     public bool IsFormationSettled
@@ -21,6 +21,7 @@ public class SquadFormationController
         get
         {
             float threshold = settings != null ? settings.SlotReachThreshold * 1.5f : 0.2f;
+            IReadOnlyList<SoldierFollower> soldiers = registry.Soldiers;
 
             for (int i = 0; i < soldiers.Count; i++)
             {
@@ -37,18 +38,48 @@ public class SquadFormationController
     }
 
     public SquadFormationController(
-        SquadRoot owner,
+        SquadRootView owner,
         Transform squadRootTransform,
         FormationLayoutService formationLayoutService,
+        SquadFormationRegistry registry,
         SquadFollowSettings settings,
         int initialCapacity)
     {
         this.owner = owner;
         this.squadRootTransform = squadRootTransform;
         this.formationLayoutService = formationLayoutService;
+        this.registry = registry;
         this.settings = settings;
         capacity = Mathf.Max(0, initialCapacity);
 
+        RebuildFormation();
+    }
+
+    public bool RegisterSoldier(SoldierFollower soldier)
+    {
+        if (soldier == null)
+            return false;
+
+        registry.PruneInvalid();
+
+        if (registry.Contains(soldier) || !HasFreeSlot)
+            return false;
+
+        if (!registry.Register(soldier))
+            return false;
+
+        soldier.AssignSquad(owner);
+        RebuildFormation();
+        return true;
+    }
+
+    public void UnregisterSoldier(SoldierFollower soldier)
+    {
+        if (soldier == null)
+            return;
+
+        registry.Unregister(soldier);
+        soldier.ClearSquad(owner);
         RebuildFormation();
     }
 
@@ -63,7 +94,7 @@ public class SquadFormationController
 
     public void RebuildFormation()
     {
-        PruneSoldiers();
+        registry.PruneInvalid();
         slots.Clear();
 
         List<Vector3> offsets = formationLayoutService.CalculateLocalOffsets(capacity);
@@ -74,7 +105,7 @@ public class SquadFormationController
 
         for (int i = 0; i < slots.Count; i++)
         {
-            SoldierFollower soldier = i < soldiers.Count ? soldiers[i] : null;
+            SoldierFollower soldier = i < registry.Soldiers.Count ? registry.Soldiers[i] : null;
             FormationSlot slot = slots[i];
             slot.AssignedSoldier = soldier;
 
@@ -97,16 +128,5 @@ public class SquadFormationController
             return squadRootTransform.position;
 
         return GetSlotWorldPosition(slots[slotIndex]);
-    }
-
-    private void PruneSoldiers()
-    {
-        for (int i = soldiers.Count - 1; i >= 0; i--)
-        {
-            if (soldiers[i] != null)
-                continue;
-
-            soldiers.RemoveAt(i);
-        }
     }
 }

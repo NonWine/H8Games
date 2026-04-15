@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public sealed class EnemyGroupFacade : MonoBehaviour
+public sealed class EnemyGroupViewController : MonoBehaviour
 {
     [SerializeField] private Transform engagePoint;
     [SerializeField] private List<EnemyCombatAgent> enemies = new();
 
-    public event Action<EnemyGroupFacade> Cleared;
+    public event Action<EnemyGroupViewController> Cleared;
 
     public EnemyGroupState State { get; private set; } = EnemyGroupState.Idle;
     public bool HasAliveMembers => HasLivingEnemies();
@@ -103,7 +103,6 @@ public sealed class EnemyGroupFacade : MonoBehaviour
 
     private void RefreshEnemies()
     {
-
         for (int i = 0; i < enemies.Count; i++)
         {
             EnemyCombatAgent enemy = enemies[i];
@@ -111,6 +110,7 @@ public sealed class EnemyGroupFacade : MonoBehaviour
                 continue;
 
             enemy.SetGroup(this);
+            enemy.Died -= HandleEnemyDied;
             enemy.Died += HandleEnemyDied;
         }
     }

@@ -1,23 +1,23 @@
-﻿using System;
-using UnityEngine;
-using Zenject;
+using System;
 
 public class SquadMovementFacade
 {
     private readonly SquadRootStateMachine stateMachine;
-    
-    public SquadMovementFacade(SquadRootStateMachine stateMachine)
+    private readonly SquadMoveProvider squadMoveProvider;
+
+    public SquadMovementFacade(SquadRootStateMachine stateMachine, SquadMoveProvider squadMoveProvider)
     {
         this.stateMachine = stateMachine;
+        this.squadMoveProvider = squadMoveProvider;
         stateMachine.Initialize();
     }
 
-    public void MoveToEnemy( Action onReached = null)
+    public void MoveToEnemy()
     {
         stateMachine.ChangeState<SquadMoveToEnemyState>();
     }
 
-    public void ReturnHome(Action onReached = null)
+    public void ReturnHome()
     {
         stateMachine.ChangeState<SquadReturnGroupState>();
     }
@@ -29,6 +29,6 @@ public class SquadMovementFacade
 
     public void Stop()
     {
-        stateMachine.ChangeState<SquadRootIdleState>();
+        squadMoveProvider.Stop();
     }
 }

@@ -4,30 +4,30 @@ using Zenject;
 
 public class EnemyGroupDetector
 {
-    private readonly SquadRoot squadRoot;
+    private readonly SquadRootView _squadRootView;
 
     [Inject]
-    public EnemyGroupDetector(SquadRoot squadRoot)
+    public EnemyGroupDetector(SquadRootView squadRootView)
     {
-        this.squadRoot = squadRoot;
+        this._squadRootView = squadRootView;
     }
 
-    public EnemyGroupFacade FindNearestValidGroup(LevelRuntime levelRuntime)
+    public EnemyGroupViewController FindNearestValidGroup(LevelRuntime levelRuntime)
     {
-        if (levelRuntime == null || squadRoot == null)
+        if (levelRuntime == null || _squadRootView == null)
             return null;
 
-        List<EnemyGroupFacade> groupFacades = new List<EnemyGroupFacade>();
+        List<EnemyGroupViewController> groupFacades = new List<EnemyGroupViewController>();
         levelRuntime.RebuildGroups();
         groupFacades.AddRange(levelRuntime.Groups);
 
-        EnemyGroupFacade nearestGroup = null;
+        EnemyGroupViewController nearestGroup = null;
         float nearestSqrDistance = float.MaxValue;
-        Vector3 squadPosition = squadRoot.transform.position;
+        Vector3 squadPosition = _squadRootView.transform.position;
 
         for (int i = 0; i < groupFacades.Count; i++)
         {
-            EnemyGroupFacade group = groupFacades[i];
+            EnemyGroupViewController group = groupFacades[i];
             if (group.State == EnemyGroupState.Cleared)
                 continue;
 

@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class SquadFormationFacade : ISoldierFollowerRegistratorProvider
+public class SquadFormationFacade : ISoldierFollowerRegistratorProvider, ISquadSlotPositionProvider
 {
     private readonly SquadFormationController formationController;
-    private readonly SquadFormationRegistry registry;
 
     public SquadFormationFacade(SquadFormationController formationController)
     {
@@ -19,12 +18,12 @@ public class SquadFormationFacade : ISoldierFollowerRegistratorProvider
 
     public bool RegisterSoldier(SoldierFollower soldier)
     {
-        return registry.Register(soldier);
+        return formationController.RegisterSoldier(soldier);
     }
 
     public void UnregisterSoldier(SoldierFollower soldier)
     {
-        registry.Register(soldier);
+        formationController.UnregisterSoldier(soldier);
     }
 
     public void RebuildFormation()

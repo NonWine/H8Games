@@ -1,25 +1,24 @@
-﻿using UnityEngine;
-using Zenject;
-
-public class SquadMoveToEnemyState: SquadRootStateBase
+public class SquadMoveToEnemyState : SquadRootStateBase
 {
-    private readonly SignalBus signalBus;
-    private readonly SquadMoveProvider _squadMoveProvider;
-    private readonly IEnemyGroupProvider enemyGroupProvider;
-    private readonly Transform homePosition;
+    private readonly IMoveProvider squadMoveProvider;
+    private readonly IDestinationProvider enemyGroupProvider;
 
+    public SquadMoveToEnemyState(IMoveProvider squadMoveProvider, IDestinationProvider enemyGroupProvider)
+    {
+        this.squadMoveProvider = squadMoveProvider;
+        this.enemyGroupProvider = enemyGroupProvider;
+    }
 
     public override void Enter()
     {
-        _squadMoveProvider.SetTarget(enemyGroupProvider.CurrentTargetGroup.transform.position,CompleteRegrouping);
+        if(enemyGroupProvider.HasDestination) squadMoveProvider.SetTarget(enemyGroupProvider.Destination, CompleteMove);
     }
 
     public override void Exit()
     {
-        
     }
 
-    private void CompleteRegrouping()
+    private void CompleteMove()
     {
         signalBus.Fire(new SquadReachedEnemySignal());
     }

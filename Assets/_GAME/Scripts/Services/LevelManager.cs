@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Zenject;
 
 public class LevelManager : IInitializable, IDisposable
 {
     private const string CurrentLevelIndexPrefsKey = "campaign.current_level_index";
-    private readonly SignalBus signalBus;
 
+    private readonly SignalBus signalBus;
     private readonly List<LevelRuntime> levels;
-    private SquadRoot squadRoot;
 
     public LevelManager(SignalBus signalBus, IEnumerable<LevelRuntime> levels, int currentLevelIndex)
     {
@@ -22,7 +21,6 @@ public class LevelManager : IInitializable, IDisposable
             ? -1
             : Mathf.Clamp(savedLevelIndex, 0, this.levels.Count - 1);
 
-        ApplyLevelActivation();
     }
 
     public IReadOnlyList<LevelRuntime> Levels => levels;
@@ -31,9 +29,18 @@ public class LevelManager : IInitializable, IDisposable
 
     public void TrySetCurrentLevelIndex(int index)
     {
+        if (index < 0 || index >= levels.Count)
+            return;
+
         CurrentLevelIndex = index;
         PlayerPrefs.SetInt(CurrentLevelIndexPrefsKey, CurrentLevelIndex);
         PlayerPrefs.Save();
+        ApplyLevelActivation();
+    }
+
+    public void Initialize()
+    {
+        signalBus.Subscribe<LoadNextLevelSignal>(TryAdvanceToNextLevelOrRestart);
         ApplyLevelActivation();
     }
 
@@ -42,11 +49,6 @@ public class LevelManager : IInitializable, IDisposable
         signalBus.Unsubscribe<LoadNextLevelSignal>(TryAdvanceToNextLevelOrRestart);
     }
 
-    public void Initialize()
-    {
-        signalBus.Subscribe<LoadNextLevelSignal>(TryAdvanceToNextLevelOrRestart);
-    }
-    
     public void TryAdvanceToNextLevelOrRestart()
     {
         if (levels.Count == 0)
@@ -62,7 +64,7 @@ public class LevelManager : IInitializable, IDisposable
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
         CurrentLevelIndex = 0;
-        ApplyLevelActivation();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     private void ApplyLevelActivation()

@@ -10,7 +10,7 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour, ICombatTarget
     [SerializeField, Min(0f)] protected float reservationPenalty = 3f;
     [SerializeField, Min(0.05f)] protected float retargetInterval = 0.35f;
     [SerializeField, Min(0.05f)] protected float targetLockDuration = 0.35f;
-    [Inject] protected TargetReservation targetReservation;
+    protected TargetReservation targetReservation;
     protected UnitAttackAgentHandler attackAgent;
     protected UnitHealthHandler unitHealthHandler;
     protected ICombatTarget currentTarget;
@@ -21,12 +21,13 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour, ICombatTarget
 
     public Transform AttackOrigin => attackPoint;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         baseCombatUnitView = GetComponent<BaseCombatUnitView>();
         attackRuntimeModel = new AttackRuntimeModel(stats);
         attackAgent = new UnitAttackAgentHandler(attackRuntimeModel);
         unitHealthHandler = new UnitHealthHandler(stats.MaxHealth);
+        targetReservation = new TargetReservation();
         unitHealthHandler.Died += HandleDeath;
     }
 
@@ -86,7 +87,7 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour, ICombatTarget
         }
     }
 
-    protected bool IsCurrentTargetValidBase(EnemyGroupFacade currentGroup = null)
+    protected bool IsCurrentTargetValidBase(EnemyGroupViewController currentGroup = null)
     {
         if (currentTarget == null || !currentTarget.IsAlive)
             return false;

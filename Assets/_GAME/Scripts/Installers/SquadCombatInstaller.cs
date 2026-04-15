@@ -14,13 +14,11 @@ public class SquadCombatInstaller : MonoInstaller
         Container.BindInterfacesAndSelfTo<LevelManager>().AsSingle().WithArguments(levels, startingLevelIndex);
 
         Container.Bind<SquadSoldierRegistry>().AsSingle();
-        Container.Bind<SquadEncounterController>().AsSingle();
-        Container.Bind<SquadDefeatWatcher>().AsSingle();
         Container.Bind<EnemyGroupDetector>().AsSingle();
-        Container.Bind<SquadAllyTargetSelector>().AsSingle();
+        Container.BindInterfacesAndSelfTo<SquadAllyTargetSelector>().AsSingle();
+        Container.Bind<EnemyDestinationContex>().AsSingle();
+        Container.Bind<IDestinationProvider>().To<EnemyDestinationContex>().FromResolve();
         Container.BindInterfacesAndSelfTo<CombatStateController>().AsSingle();
-        Container.BindInterfacesAndSelfTo<SquadCombatCoordinator>().AsSingle();
-        Container.BindInterfacesAndSelfTo<SquadReturnGroupState>().AsSingle();
-        Container.BindInterfacesAndSelfTo<SquadCombatPresenter>().AsSingle();
+        Container.BindInterfacesAndSelfTo<SquadCombatRegisterProvider>().AsSingle();
     }
 }

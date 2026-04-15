@@ -4,28 +4,28 @@ using Zenject;
 [RequireComponent(typeof(SoldierFollower))]
 public class SoldierCombatAgent : BaseTargetingCombatAgent
 {
-    private ICurrentEnemyGroupProvider currentEnemyGroupProvider;
-    private ISoldierCombatRegistryProvider _soldierCombatRegistryProvider;
+    private IEnemyGroupProvider currentEnemyGroupProvider;
+    private ISoldierCombatRegistryProvider soldierCombatRegistryProvider;
 
     public SoldierCombatState State { get; private set; } = SoldierCombatState.Idle;
 
     [Inject]
-    public void Construct(ICurrentEnemyGroupProvider currentEnemyGroupProvider, ISoldierCombatRegistryProvider soldierCombatRegistryProvider)
+    public void Construct(IEnemyGroupProvider currentEnemyGroupProvider, ISoldierCombatRegistryProvider soldierCombatRegistryProvider)
     {
         this.currentEnemyGroupProvider = currentEnemyGroupProvider;
-        this._soldierCombatRegistryProvider = soldierCombatRegistryProvider;
+        this.soldierCombatRegistryProvider = soldierCombatRegistryProvider;
     }
 
     protected override void OnEnable()
     {
         base.OnEnable();
-        _soldierCombatRegistryProvider?.RegisterSoldier(this);
+        soldierCombatRegistryProvider?.RegisterSoldier(this);
     }
 
     protected override void OnDisable()
     {
         base.OnDisable();
-        _soldierCombatRegistryProvider?.UnregisterSoldier(this);
+        soldierCombatRegistryProvider?.UnregisterSoldier(this);
         SetCurrentTarget(null);
     }
 
@@ -34,7 +34,7 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
         if (!IsAlive)
             return;
 
-        EnemyGroupFacade currentGroup = currentEnemyGroupProvider.CurrentTargetGroup;
+        EnemyGroupViewController currentGroup = currentEnemyGroupProvider.CurrentTargetGroup;
         if (currentGroup == null || currentGroup.State != EnemyGroupState.Activated)
         {
             SetCurrentTarget(null);
@@ -65,7 +65,7 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
             SpawnProjectileVisual(currentTarget.transform);
     }
 
-    private void TryAcquireTarget(EnemyGroupFacade currentGroup)
+    private void TryAcquireTarget(EnemyGroupViewController currentGroup)
     {
         if (currentGroup == null)
         {
@@ -88,7 +88,7 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
 
     protected override void HandleDeath()
     {
-        _soldierCombatRegistryProvider?.UnregisterSoldier(this);
+        soldierCombatRegistryProvider?.UnregisterSoldier(this);
         base.HandleDeath();
     }
 }

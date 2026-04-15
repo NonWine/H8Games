@@ -1,5 +1,5 @@
 ﻿public interface IEnemyGroupProvider
 {
-    public EnemyGroupFacade CurrentTargetGroup { get; set; }
-
+    public EnemyGroupViewController CurrentTargetGroup { get; set; }
+    public bool HasActiveEncounter { get; }
 }

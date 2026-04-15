@@ -14,7 +14,9 @@ public class GameInstaller : MonoInstaller
         Container.DeclareSignal<ClearedLastEnemyGroup>();
         Container.DeclareSignal<StartSquadRegroupSignal>();
         Container.DeclareSignal<SquadRegroupCompletedSignal>();
+        Container.DeclareSignal<SquadReachedEnemySignal>();
         Container.DeclareSignal<LoadNextLevelSignal>();
+        Container.DeclareSignal<SquadDefeatedSignal>();
 
         Container.BindInstance(joystick).AsSingle();
         Container.Bind<TargetReservation>().AsTransient();

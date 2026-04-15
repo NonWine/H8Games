@@ -2,6 +2,6 @@
 {
 }
 
-public class SquadReachedEnemySignal
+public class SquadDefeatedSignal
 {
 }

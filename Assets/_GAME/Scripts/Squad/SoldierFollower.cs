@@ -3,26 +3,39 @@ using Zenject;
 
 public class SoldierFollower : MonoBehaviour
 {
+    [SerializeField] private bool autoRegisterOnStart = true;
 
     private SquadFollowSettings settings;
     private ISquadSlotPositionProvider squadSlotPositionProvider;
     private ISoldierFollowerRegistratorProvider registrator;
-    private SquadRoot squadRoot;
+    private SquadRootView _squadRootView;
     private FormationSlot assignedSlot;
 
+    public SoldierFormationState State { get; private set; } = SoldierFormationState.WaitingInFormation;
     public FormationSlot AssignedSlot => assignedSlot;
 
     [Inject]
-    public void Construct(SquadFollowSettings settings, SquadRoot squadRoot)
+    public void Construct(
+        SquadFollowSettings settings,
+        ISquadSlotPositionProvider squadSlotPositionProvider,
+        ISoldierFollowerRegistratorProvider registrator,
+        [InjectOptional] SquadRootView squadRootView)
     {
         this.settings = settings;
-        this.squadRoot = squadRoot;
+        this.squadSlotPositionProvider = squadSlotPositionProvider;
+        this.registrator = registrator;
+        this._squadRootView = squadRootView;
     }
-    
+
+    private void Start()
+    {
+        if (autoRegisterOnStart)
+            registrator?.RegisterSoldier(this);
+    }
 
     private void Update()
     {
-        if (assignedSlot == null)
+        if (settings == null || squadSlotPositionProvider == null || assignedSlot == null)
             return;
 
         Vector3 desiredPosition = squadSlotPositionProvider.GetSlotWorldPosition(assignedSlot);
@@ -35,10 +48,13 @@ public class SoldierFollower : MonoBehaviour
         if (distance <= settings.SlotReachThreshold)
         {
             transform.position = new Vector3(desiredPosition.x, transform.position.y, desiredPosition.z);
-            RotateTowards(squadRoot.transform.forward, Time.deltaTime);
+            State = SoldierFormationState.WaitingInFormation;
+            Vector3 forward = _squadRootView != null ? _squadRootView.transform.forward : Vector3.forward;
+            RotateTowards(forward, Time.deltaTime);
             return;
         }
 
+        State = SoldierFormationState.MovingToSlot;
 
         float slowdownRadius = Mathf.Max(settings.SlotReachThreshold * 4f, settings.SlotReachThreshold + 0.01f);
         float speedFactor = distance < slowdownRadius
@@ -53,14 +69,17 @@ public class SoldierFollower : MonoBehaviour
 
     private void OnDisable()
     {
-        squadRoot = null;
+        if (registrator != null)
+            registrator.UnregisterSoldier(this);
+
+        _squadRootView = null;
         assignedSlot = null;
-        registrator.UnregisterSoldier(this);
+        State = SoldierFormationState.WaitingInFormation;
     }
 
-    public void AssignSquad(SquadRoot squadRoot)
+    public void AssignSquad(SquadRootView squadRootView)
     {
-        this.squadRoot = squadRoot;
+        this._squadRootView = squadRootView;
     }
 
     public void AssignSlot(FormationSlot slot)
@@ -68,18 +87,19 @@ public class SoldierFollower : MonoBehaviour
         assignedSlot = slot;
     }
 
-    public void ClearSquad(SquadRoot owner)
+    public void ClearSquad(SquadRootView owner)
     {
-        if (squadRoot != owner)
+        if (_squadRootView != owner)
             return;
 
         assignedSlot = null;
-        squadRoot = null;
+        _squadRootView = null;
+        State = SoldierFormationState.WaitingInFormation;
     }
 
     public bool IsInAssignedSlot(float threshold)
     {
-        if (assignedSlot == null)
+        if (assignedSlot == null || squadSlotPositionProvider == null)
             return false;
 
         Vector3 targetPosition = squadSlotPositionProvider.GetSlotWorldPosition(assignedSlot);

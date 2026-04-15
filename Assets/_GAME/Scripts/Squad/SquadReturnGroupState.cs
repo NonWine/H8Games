@@ -1,21 +1,19 @@
-﻿using System;
-using Zenject;
-
-public class SquadReturnGroupState: SquadRootStateBase
+public class SquadReturnGroupState : SquadRootStateBase
 {
-    private readonly SignalBus signalBus;
-    private readonly SquadMoveProvider _squadMoveProvider;
-    private SquadHomeController  homePosition;
+    private readonly IMoveProvider squadMoveProvider;
 
+    public SquadReturnGroupState(IMoveProvider squadMoveProvider)
+    {
+        this.squadMoveProvider = squadMoveProvider;
+    }
 
     public override void Enter()
     {
-        _squadMoveProvider.SetTarget(homePosition.HomePosition,CompleteRegrouping);
+        squadMoveProvider.SetTarget(RootView.HomePosition, CompleteRegrouping);
     }
 
     public override void Exit()
     {
-        
     }
 
     private void CompleteRegrouping()

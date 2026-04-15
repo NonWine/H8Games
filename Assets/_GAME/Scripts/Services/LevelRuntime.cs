@@ -1,20 +1,18 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class LevelRuntime : MonoBehaviour
 {
-    [SerializeField] private List<EnemyEncounterZone> zones = new();
+    [SerializeField] private List<EnemyEncounterZoneView> zones = new();
 
-    private readonly List<EnemyGroupFacade> uniqueGroups = new();
+    private readonly List<EnemyGroupViewController> uniqueGroups = new();
 
-    public IReadOnlyList<EnemyEncounterZone> Zones => zones;
-    public IReadOnlyList<EnemyGroupFacade> Groups => uniqueGroups;
+    public IReadOnlyList<EnemyEncounterZoneView> Zones => zones;
+    public IReadOnlyList<EnemyGroupViewController> Groups => uniqueGroups;
 
     private void Start()
     {
-        RebuildGroups();
-        uniqueGroups.ForEach(group => group.ResetRuntimeState());
+        ResetRuntimeState();
     }
 
     private void OnValidate()
@@ -29,12 +27,25 @@ public class LevelRuntime : MonoBehaviour
 
         for (int i = 0; i < zones.Count; i++)
         {
-            EnemyGroupFacade group = zones[i].EnemyGroup;
+            EnemyGroupViewController group = zones[i] != null ? zones[i].EnemyGroup : null;
             if (group == null || uniqueGroups.Contains(group))
                 continue;
 
             uniqueGroups.Add(group);
         }
     }
-    
+
+    public void ResetRuntimeState()
+    {
+        RebuildGroups();
+
+        for (int i = 0; i < uniqueGroups.Count; i++)
+        {
+            EnemyGroupViewController group = uniqueGroups[i];
+            if (group == null)
+                continue;
+
+            group.ResetRuntimeState();
+        }
+    }
 }
