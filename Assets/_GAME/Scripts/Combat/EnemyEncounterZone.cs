@@ -6,13 +6,13 @@ public sealed class EnemyEncounterZone : MonoBehaviour
 {
     [SerializeField] private EnemyGroupFacade enemyGroup;
 
-    private SquadFlowCoordinator squadFlowCoordinator;
+    private SquadCombatPresenter _squadCombatPresenter;
     public EnemyGroupFacade EnemyGroup => enemyGroup;
 
     [Inject]
-    public void Construct(SquadFlowCoordinator squadFlowCoordinator)
+    public void Construct(SquadCombatPresenter squadCombatPresenter)
     {
-        this.squadFlowCoordinator = squadFlowCoordinator;
+        this._squadCombatPresenter = squadCombatPresenter;
     }
 
     private void Reset()
@@ -34,6 +34,6 @@ public sealed class EnemyEncounterZone : MonoBehaviour
         if (other.GetComponentInParent<SquadRoot>() == null)
             return;
 
-        squadFlowCoordinator.NotifyEncounterZoneEntered(enemyGroup);
+        _squadCombatPresenter.NotifyEncounterZoneEntered(enemyGroup);
     }
 }

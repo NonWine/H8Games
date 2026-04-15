@@ -10,9 +10,15 @@ public class GameInstaller : MonoInstaller
   
     public override void InstallBindings()
     {
+        SignalBusInstaller.Install(Container);
+        Container.DeclareSignal<ClearedLastEnemyGroup>();
+        Container.DeclareSignal<StartSquadRegroupSignal>();
+        Container.DeclareSignal<SquadRegroupCompletedSignal>();
+        Container.DeclareSignal<LoadNextLevelSignal>();
+
         Container.BindInstance(joystick).AsSingle();
-        InstallHero();
         Container.Bind<TargetReservation>().AsTransient();
+        InstallHero();
     }
     private void InstallHero()
     {

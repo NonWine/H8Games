@@ -4,22 +4,37 @@ using Zenject;
 [RequireComponent(typeof(SoldierFollower))]
 public class SoldierCombatAgent : BaseTargetingCombatAgent
 {
-    private SquadCombatCoordinator squadCombatCoordinator;
+    private ICurrentEnemyGroupProvider currentEnemyGroupProvider;
+    private ISoldierCombatRegistryProvider _soldierCombatRegistryProvider;
+
     public SoldierCombatState State { get; private set; } = SoldierCombatState.Idle;
-    
+
     [Inject]
-    public void Construct(SquadCombatCoordinator squadCombatCoordinator)
+    public void Construct(ICurrentEnemyGroupProvider currentEnemyGroupProvider, ISoldierCombatRegistryProvider soldierCombatRegistryProvider)
     {
-        this.squadCombatCoordinator = squadCombatCoordinator;
-        squadCombatCoordinator.RegisterSoldier(this);
+        this.currentEnemyGroupProvider = currentEnemyGroupProvider;
+        this._soldierCombatRegistryProvider = soldierCombatRegistryProvider;
     }
-    
+
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        _soldierCombatRegistryProvider?.RegisterSoldier(this);
+    }
+
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+        _soldierCombatRegistryProvider?.UnregisterSoldier(this);
+        SetCurrentTarget(null);
+    }
+
     private void Update()
     {
         if (!IsAlive)
             return;
 
-        EnemyGroupFacade currentGroup = squadCombatCoordinator.CurrentTargetGroup;
+        EnemyGroupFacade currentGroup = currentEnemyGroupProvider.CurrentTargetGroup;
         if (currentGroup == null || currentGroup.State != EnemyGroupState.Activated)
         {
             SetCurrentTarget(null);
@@ -31,7 +46,7 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
         {
             TryAcquireTarget(currentGroup);
         }
-        else if (Time.time >= nextRetargetTime && Time.time >= targetLockUntil)
+        else if (ShouldRetarget())
         {
             TryAcquireTarget(currentGroup);
         }
@@ -43,40 +58,37 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
             return;
         }
 
-        Vector3 direction = currentTarget.transform.position - transform.position;
-        direction.y = 0f;
-
-        transform.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
-
+        RotateTowardsCurrentTarget(transform);
 
         State = SoldierCombatState.Attack;
         if (attackAgent.Tick(Time.deltaTime, currentTarget, AttackOrigin.position))
             SpawnProjectileVisual(currentTarget.transform);
     }
-    
 
     private void TryAcquireTarget(EnemyGroupFacade currentGroup)
     {
         if (currentGroup == null)
         {
             SetCurrentTarget(null);
+            return;
         }
 
         ICombatTarget target = currentGroup.GetBestLivingEnemyTarget(transform.position, reservationPenalty);
         if (target == null)
         {
+            SetCurrentTarget(null);
             nextRetargetTime = Time.time + retargetInterval;
             targetLockUntil = 0f;
+            return;
         }
 
         SetCurrentTarget(target);
-        nextRetargetTime = Time.time + retargetInterval;
-        targetLockUntil = Time.time + targetLockDuration;
+        MarkRetargetWindow();
     }
 
     protected override void HandleDeath()
     {
-        squadCombatCoordinator.UnregisterSoldier(this);
+        _soldierCombatRegistryProvider?.UnregisterSoldier(this);
         base.HandleDeath();
     }
 }

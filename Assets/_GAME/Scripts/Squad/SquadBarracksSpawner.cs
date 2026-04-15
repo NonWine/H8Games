@@ -1,33 +1,28 @@
 using UnityEngine;
 using Zenject;
 
-public sealed class SquadBarracksSpawner : MonoBehaviour
+public class SquadBarracksSpawner : MonoBehaviour
 {
+    [Inject] private CombatStateController combatStateController;
     [SerializeField] private SoldierFollower soldierPrefab;
     [SerializeField] private Transform spawnPoint;
     [Min(0.15f)]
     [SerializeField] private float spawnInterval = 2.5f;
 
     private DiContainer container;
-    private SquadRoot squadRoot;
+    private SquadFormationFacade squadFormationFacade;
     private SpawnService<SoldierFollower> spawnService;
-    private GamePhaseService gamePhaseService;
 
     [Inject]
-    public void Construct(
-        DiContainer container,
-        SquadRoot squadRoot,
-        [InjectOptional] GamePhaseService gamePhaseService)
+    public void Construct(DiContainer container, SquadFormationFacade squadFormationFacade)
     {
         this.container = container;
-        this.squadRoot = squadRoot;
-        this.gamePhaseService = gamePhaseService;
+        this.squadFormationFacade = squadFormationFacade;
     }
 
     private void Awake()
     {
-        spawnService = new SpawnService<SoldierFollower>(
-            SpawnSoldier,
+        spawnService = new SpawnService<SoldierFollower>(SpawnSoldier,
             soldier => soldier != null && soldier.gameObject.activeInHierarchy,
             () => spawnInterval);
     }
@@ -42,7 +37,7 @@ public sealed class SquadBarracksSpawner : MonoBehaviour
 
     private SoldierFollower SpawnSoldier()
     {
-        if (soldierPrefab == null || squadRoot == null || !squadRoot.HasFreeSlot || !CanSpawnInCurrentPhase())
+        if (!squadFormationFacade.HasFreeSlot || !CanSpawnInCurrentPhase())
             return null;
 
         Transform origin = spawnPoint != null ? spawnPoint : transform;
@@ -52,7 +47,7 @@ public sealed class SquadBarracksSpawner : MonoBehaviour
             origin.rotation,
             null);
 
-        if (squadRoot.RegisterSoldier(soldier))
+        if (squadFormationFacade.RegisterSoldier(soldier))
             return soldier;
 
         Destroy(soldier.gameObject);
@@ -61,7 +56,7 @@ public sealed class SquadBarracksSpawner : MonoBehaviour
 
     private bool CanSpawnInCurrentPhase()
     {
-        if (gamePhaseService != null && !gamePhaseService.IsPreparation)
+        if (combatStateController.State != CombatFlowState.IdleInPreparation)
             return false;
 
         return true;

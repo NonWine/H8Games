@@ -1,9 +1,10 @@
 using System;
 using UnityEngine;
+using Zenject;
 
 public class EnemyCombatAgent : BaseTargetingCombatAgent
 {
-    private SquadCombatCoordinator squadCombatCoordinator;
+    [Inject] private IAllyTargetProvider allyTargetProvider;
     public EnemyGroupFacade Group { get; private set; }
     public StaticEnemyState State { get; private set; } = StaticEnemyState.Idle;
     public event Action<EnemyCombatAgent> Died;
@@ -20,11 +21,10 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
         Group = group;
     }
 
-    public void Activate(SquadCombatCoordinator squadCombatCoordinator)
+    public void Activate()
     {
         if (!IsAlive)
             return;
-        this.squadCombatCoordinator = squadCombatCoordinator;
         attackAgent?.ResetCooldown();
         ResetTargetingTimers();
         State = StaticEnemyState.Attack;
@@ -32,7 +32,9 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
 
     private void Update()
     {
-        if (!IsAlive || squadCombatCoordinator == null)
+        if (!IsAlive)
+            return;
+        if(State != StaticEnemyState.Attack)
             return;
 
         if (!IsCurrentTargetValidBase())
@@ -47,20 +49,14 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
             return;
 
         RotateTowardsCurrentTarget(transform);
-
         if (attackAgent.Tick(Time.deltaTime, currentTarget, AttackOrigin.position))
             SpawnProjectileVisual(currentTarget.transform);
     }
 
     private void TryAcquireTarget()
     {
-        if (squadCombatCoordinator == null)
-        {
-            SetCurrentTarget(null);
-            return;
-        }
-
-        ICombatTarget target = squadCombatCoordinator.GetBestLivingAllyTarget(transform.position, reservationPenalty);
+        
+        ICombatTarget target = allyTargetProvider.GetBestLivingAllyTarget(transform.position, reservationPenalty);
 
         if (target == null)
         {

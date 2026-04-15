@@ -1,121 +1,56 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-public sealed class SquadCombatCoordinator : MonoBehaviour
+public class SquadCombatCoordinator : IAllyTargetProvider , ISoldierCombatRegistryProvider, ICurrentEnemyGroupProvider
 {
-    [SerializeField] private float detectorRadius;
-    
-    [SerializeField] private List<SoldierCombatAgent> soldiers = new();
-    
-    private bool squadDefeatedRaised;
-    [InjectOptional] private PlayerView heroTarget;
+    private readonly SquadSoldierRegistry soldierRegistry;
+    private readonly SquadAllyTargetSelector allyTargetSelector;
+    private readonly SquadEncounterController encounterController;
+    private readonly SquadDefeatWatcher defeatWatcher;
 
-    public event Action<EnemyGroupFacade> CombatStartedBattle;
-    public event Action<EnemyGroupFacade> CombatClearedZone;
-    public event Action SquadDefeated;
-    public EnemyGroupFacade CurrentTargetGroup { get; private set; }
-    public bool HasActiveEncounter => CurrentTargetGroup != null && CurrentTargetGroup.State == EnemyGroupState.Activated;
-    public bool HasLivingAllies
+    [Inject]
+    public SquadCombatCoordinator(
+        SquadSoldierRegistry soldierRegistry,
+        SquadAllyTargetSelector allyTargetSelector,
+        SquadEncounterController encounterController,
+        SquadDefeatWatcher defeatWatcher)
     {
-        get
-        {
-            PruneSoldiers();
-            return soldiers.Count > 0;
-        }
+        this.soldierRegistry = soldierRegistry;
+        this.allyTargetSelector = allyTargetSelector;
+        this.encounterController = encounterController;
+        this.defeatWatcher = defeatWatcher;
     }
+
+    public EnemyGroupFacade CurrentTargetGroup => encounterController.CurrentTargetGroup;
+    public bool HasActiveEncounter => encounterController.HasActiveEncounter;
+    public bool HasLivingAllies => soldierRegistry.HasLivingAllies;
 
     public void RegisterSoldier(SoldierCombatAgent soldier)
     {
-        if (soldier == null || soldiers.Contains(soldier))
-            return;
-
-        soldiers.Add(soldier);
-        squadDefeatedRaised = false;
+        soldierRegistry.Register(soldier);
+        defeatWatcher.ResetForNewEncounter();
     }
 
     public void UnregisterSoldier(SoldierCombatAgent soldier)
     {
-        if (soldier == null)
-            return;
-
-        soldiers.Remove(soldier);
-        TryRaiseSquadDefeated();
+        soldierRegistry.Unregister(soldier);
+        defeatWatcher.TryRaiseDefeat(HasActiveEncounter, HasLivingAllies);
     }
 
-    public void TryBeginEncounter(EnemyGroupFacade enemyGroup)
+    public void StartBattle(EnemyGroupFacade enemyGroup)
     {
-        CurrentTargetGroup = enemyGroup;
-        CurrentTargetGroup.Cleared += HandleEncounterCleared;
-        CombatStartedBattle?.Invoke(enemyGroup);
-        enemyGroup.Activate(this);
+        encounterController.TryBeginEncounter(enemyGroup);
+        defeatWatcher.ResetForNewEncounter();
+        enemyGroup.Activate();
+    }
+ 
+    private void StartRegroupSoldiers()
+    {
+        
     }
 
     public ICombatTarget GetBestLivingAllyTarget(Vector3 worldPosition, float reservationPenalty)
     {
-        PruneSoldiers();
-
-        SoldierCombatAgent bestTarget = null;
-        float bestScore = float.MaxValue;
-
-        for (int i = 0; i < soldiers.Count; i++)
-        {
-            SoldierCombatAgent soldier = soldiers[i];
-            if (soldier == null || !soldier.IsAlive)
-                continue;
-
-            int reservationCount = soldier is ITargetReservation reservationTarget ? reservationTarget.ReservationCount : 0;
-            float score = CombatTargetScoringUtility.CalculateScore(worldPosition, soldier.transform.position, reservationCount, reservationPenalty);
-
-            if (score >= bestScore)
-                continue;
-
-            bestTarget = soldier;
-            bestScore = score;
-        }
-
-        if (bestTarget != null)
-            return bestTarget;
-
-        if (heroTarget != null && heroTarget.IsAlive)
-            return heroTarget;
-
-        return null;
-    }
-
-    private void HandleEncounterCleared(EnemyGroupFacade clearedGroup)
-    {
-        
-        clearedGroup.Cleared -= HandleEncounterCleared;
-        CombatClearedZone?.Invoke(clearedGroup);
-        CurrentTargetGroup = null;
-    }
-
-    private void PruneSoldiers()
-    {
-        for (int i = soldiers.Count - 1; i >= 0; i--)
-        {
-            SoldierCombatAgent soldier = soldiers[i];
-            if (soldier != null && soldier.IsAlive)
-                continue;
-
-            soldiers.RemoveAt(i);
-        }
-    }
-
-    private void TryRaiseSquadDefeated()
-    {
-        if (squadDefeatedRaised)
-            return;
-
-        if (CurrentTargetGroup == null)
-            return;
-
-        if (HasLivingAllies)
-            return;
-
-        squadDefeatedRaised = true;
-        SquadDefeated?.Invoke();
+        return allyTargetSelector.GetBestLivingAllyTarget(worldPosition, reservationPenalty);
     }
 }

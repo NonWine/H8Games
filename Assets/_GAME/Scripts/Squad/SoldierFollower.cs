@@ -1,14 +1,15 @@
 using UnityEngine;
 using Zenject;
 
-public sealed class SoldierFollower : MonoBehaviour
+public class SoldierFollower : MonoBehaviour
 {
 
     private SquadFollowSettings settings;
+    private ISquadSlotPositionProvider squadSlotPositionProvider;
+    private ISoldierFollowerRegistratorProvider registrator;
     private SquadRoot squadRoot;
     private FormationSlot assignedSlot;
 
-    public SoldierFormationState State { get; private set; } = SoldierFormationState.WaitingInFormation;
     public FormationSlot AssignedSlot => assignedSlot;
 
     [Inject]
@@ -24,7 +25,7 @@ public sealed class SoldierFollower : MonoBehaviour
         if (assignedSlot == null)
             return;
 
-        Vector3 desiredPosition = squadRoot.GetSlotWorldPosition(assignedSlot);
+        Vector3 desiredPosition = squadSlotPositionProvider.GetSlotWorldPosition(assignedSlot);
         desiredPosition.y = transform.position.y;
 
         Vector3 delta = desiredPosition - transform.position;
@@ -34,12 +35,10 @@ public sealed class SoldierFollower : MonoBehaviour
         if (distance <= settings.SlotReachThreshold)
         {
             transform.position = new Vector3(desiredPosition.x, transform.position.y, desiredPosition.z);
-            State = squadRoot.IsMoving ? SoldierFormationState.FollowingFormation : SoldierFormationState.WaitingInFormation;
             RotateTowards(squadRoot.transform.forward, Time.deltaTime);
             return;
         }
 
-        State = squadRoot.IsMoving ? SoldierFormationState.FollowingFormation : SoldierFormationState.MovingToSlot;
 
         float slowdownRadius = Mathf.Max(settings.SlotReachThreshold * 4f, settings.SlotReachThreshold + 0.01f);
         float speedFactor = distance < slowdownRadius
@@ -54,13 +53,9 @@ public sealed class SoldierFollower : MonoBehaviour
 
     private void OnDisable()
     {
-        if (squadRoot == null)
-            return;
-
-        SquadRoot owner = squadRoot;
         squadRoot = null;
         assignedSlot = null;
-        owner.UnregisterSoldier(this);
+        registrator.UnregisterSoldier(this);
     }
 
     public void AssignSquad(SquadRoot squadRoot)
@@ -80,15 +75,14 @@ public sealed class SoldierFollower : MonoBehaviour
 
         assignedSlot = null;
         squadRoot = null;
-        State = SoldierFormationState.WaitingInFormation;
     }
 
     public bool IsInAssignedSlot(float threshold)
     {
-        if (squadRoot == null || assignedSlot == null)
+        if (assignedSlot == null)
             return false;
 
-        Vector3 targetPosition = squadRoot.GetSlotWorldPosition(assignedSlot);
+        Vector3 targetPosition = squadSlotPositionProvider.GetSlotWorldPosition(assignedSlot);
         Vector3 delta = targetPosition - transform.position;
         delta.y = 0f;
         return delta.sqrMagnitude <= threshold * threshold;

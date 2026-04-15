@@ -20,7 +20,7 @@ public sealed class EnemyGroupFacade : MonoBehaviour
         enemies = transform.GetComponentsInChildren<EnemyCombatAgent>().ToList();
     }
 
-    public void Activate(SquadCombatCoordinator coordinator)
+    public void Activate()
     {
         State = EnemyGroupState.Activated;
         for (int i = 0; i < enemies.Count; i++)
@@ -29,7 +29,7 @@ public sealed class EnemyGroupFacade : MonoBehaviour
             if (enemy == null || !enemy.IsAlive)
                 continue;
 
-            enemy.Activate(coordinator);
+            enemy.Activate();
         }
     }
 

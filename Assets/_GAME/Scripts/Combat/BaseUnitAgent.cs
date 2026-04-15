@@ -115,13 +115,18 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour, ICombatTarget
         return true;
     }
 
+    protected virtual void OnEnable()
+    {
+        
+    }
+
     protected virtual void OnDisable()
     {
         SetCurrentTarget(null);
         targetReservation.ClearReservations();
     }
 
-    private void OnDestroy()
+    protected virtual void OnDestroy()
     {
         if (unitHealthHandler == null)
             return;
