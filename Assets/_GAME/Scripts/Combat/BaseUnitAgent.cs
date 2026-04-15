@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Zenject;
 [RequireComponent(typeof(BaseCombatUnitView))]
@@ -7,6 +8,7 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour, ICombatTarget
     [SerializeField] private SimpleProjectileView projectilePrefab;
     [SerializeField] private UnitStats stats = new();
     [SerializeField] private Transform attackPoint;
+    [SerializeField] private Animator animator;
     [SerializeField, Min(0f)] protected float reservationPenalty = 3f;
     [SerializeField, Min(0.05f)] protected float retargetInterval = 0.35f;
     [SerializeField, Min(0.05f)] protected float targetLockDuration = 0.35f;
@@ -20,6 +22,9 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour, ICombatTarget
     protected AttackRuntimeModel attackRuntimeModel;
 
     public Transform AttackOrigin => attackPoint;
+    public Animator Animator => animator;
+    public UnitState State { get; protected set; } = UnitState.Idle;
+
 
     protected virtual void Awake()
     {
@@ -29,6 +34,11 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour, ICombatTarget
         unitHealthHandler = new UnitHealthHandler(stats.MaxHealth);
         targetReservation = new TargetReservation();
         unitHealthHandler.Died += HandleDeath;
+    }
+
+    protected virtual void Update()
+    {
+        HandleAnimator();
     }
 
     protected bool ShouldRetarget()
@@ -141,10 +151,32 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour, ICombatTarget
         baseCombatUnitView.SetEmissionHitFlash();
     }
 
-    protected virtual void HandleDeath()
+    protected virtual async void HandleDeath()
     {
-       gameObject.SetActive(false);
+        State = UnitState.Dead;
+        await UniTask.Delay(5000);
+        gameObject.SetActive(false);
     }
 
+    private void HandleAnimator()
+    {
+        switch (State)
+        {
+            case UnitState.Idle:
+                animator.SetInteger("State", 0);
+                break;
+            case UnitState.Move:
+                animator.SetInteger("State", 1);
+                break;
+            case UnitState.Attack:
+                animator.SetInteger("State", 2);
+                break;
+            case UnitState.Dead:
+                animator.SetInteger("State", 3);
+            break;
+        }
+        
+    }
+    
     public bool IsAlive => unitHealthHandler.IsAlive;
 }

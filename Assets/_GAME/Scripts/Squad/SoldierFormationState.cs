@@ -2,5 +2,5 @@ public enum SoldierFormationState
 {
     MovingToSlot = 0,
     WaitingInFormation = 1,
-    FollowingFormation = 2
+    MovingToEnemy = 3
 }

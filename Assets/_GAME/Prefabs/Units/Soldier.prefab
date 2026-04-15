@@ -76,6 +76,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7097182484956019553, guid: 01ced4803ad69094da1641053a107106, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 83105d438a15b7e47a0dae7ca185af71, type: 2}
     - target: {fileID: 7097182484996431480, guid: 01ced4803ad69094da1641053a107106, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -159,6 +163,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 3024323240704110559}
   m_SourcePrefab: {fileID: 100100000, guid: 01ced4803ad69094da1641053a107106, type: 3}
+--- !u!95 &99772145511724133 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 7097182484956019553, guid: 01ced4803ad69094da1641053a107106, type: 3}
+  m_PrefabInstance: {fileID: 7141644556165517060}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1132071011719142381 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7830030720844190953, guid: 01ced4803ad69094da1641053a107106, type: 3}
@@ -176,6 +185,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6643e39be35cb484f87702030d55b831, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  autoRegisterOnStart: 1
 --- !u!114 &3024323240704110559
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -188,8 +198,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2faa39169a02cf343b92224b780c0e28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoRegisterOnStart: 1
-  teamId: 2
+  projectilePrefab: {fileID: 4041960524083155756, guid: 4d339c7c02696d14196569d8dae8f7b8, type: 3}
   stats:
     MaxHealth: 30
     MoveSpeed: 3.5
@@ -199,22 +208,11 @@ MonoBehaviour:
     ProjectileSpeed: 22
     DeathReward: 5
   attackPoint: {fileID: 7732088899058342737}
-  healthBarView: {fileID: 4862002066350545295}
-  projectilePrefab: {fileID: 4041960524083155756, guid: 4d339c7c02696d14196569d8dae8f7b8, type: 3}
+  animator: {fileID: 99772145511724133}
   reservationPenalty: 3
   retargetInterval: 0.35
   targetLockDuration: 0.35
---- !u!114 &4862002066350545295 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2334407205892331147, guid: 01ced4803ad69094da1641053a107106, type: 3}
-  m_PrefabInstance: {fileID: 7141644556165517060}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 881a76c4d7482124893f43ffd9346594, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  soldierFollower: {fileID: 6922034175858547783}
 --- !u!4 &7732088899058342737 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 599491131084117077, guid: 01ced4803ad69094da1641053a107106, type: 3}

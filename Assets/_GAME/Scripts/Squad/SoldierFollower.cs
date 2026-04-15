@@ -3,7 +3,6 @@ using Zenject;
 
 public class SoldierFollower : MonoBehaviour
 {
-    [SerializeField] private bool autoRegisterOnStart = true;
 
     private SquadFollowSettings settings;
     private ISquadSlotPositionProvider squadSlotPositionProvider;
@@ -26,16 +25,11 @@ public class SoldierFollower : MonoBehaviour
         this.registrator = registrator;
         this._squadRootView = squadRootView;
     }
-
-    private void Start()
-    {
-        if (autoRegisterOnStart)
-            registrator?.RegisterSoldier(this);
-    }
+    
 
     private void Update()
     {
-        if (settings == null || squadSlotPositionProvider == null || assignedSlot == null)
+        if (assignedSlot == null)
             return;
 
         Vector3 desiredPosition = squadSlotPositionProvider.GetSlotWorldPosition(assignedSlot);
@@ -69,12 +63,9 @@ public class SoldierFollower : MonoBehaviour
 
     private void OnDisable()
     {
-        if (registrator != null)
-            registrator.UnregisterSoldier(this);
-
+        registrator.UnregisterSoldier(this);
         _squadRootView = null;
         assignedSlot = null;
-        State = SoldierFormationState.WaitingInFormation;
     }
 
     public void AssignSquad(SquadRootView squadRootView)

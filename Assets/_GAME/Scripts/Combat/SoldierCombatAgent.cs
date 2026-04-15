@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Zenject;
 
@@ -6,14 +7,17 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
 {
     private IEnemyGroupProvider currentEnemyGroupProvider;
     private ISoldierCombatRegistryProvider soldierCombatRegistryProvider;
-
-    public SoldierCombatState State { get; private set; } = SoldierCombatState.Idle;
+    [SerializeField] private SoldierFollower soldierFollower;
+    private ISquadMovementStateReader stateReader;
 
     [Inject]
-    public void Construct(IEnemyGroupProvider currentEnemyGroupProvider, ISoldierCombatRegistryProvider soldierCombatRegistryProvider)
+    public void Construct(IEnemyGroupProvider currentEnemyGroupProvider,
+        ISoldierCombatRegistryProvider soldierCombatRegistryProvider,
+        ISquadMovementStateReader stateReader )
     {
         this.currentEnemyGroupProvider = currentEnemyGroupProvider;
         this.soldierCombatRegistryProvider = soldierCombatRegistryProvider;
+        this.stateReader = stateReader;
     }
 
     protected override void OnEnable()
@@ -29,16 +33,17 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
         SetCurrentTarget(null);
     }
 
-    private void Update()
+    protected override void Update()
     {
+        base.Update();
         if (!IsAlive)
             return;
-
+        
         EnemyGroupViewController currentGroup = currentEnemyGroupProvider.CurrentTargetGroup;
         if (currentGroup == null || currentGroup.State != EnemyGroupState.Activated)
         {
             SetCurrentTarget(null);
-            State = SoldierCombatState.Idle;
+            State = UnitState.Idle;
             return;
         }
 
@@ -54,15 +59,31 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
         if (!IsCurrentTargetValidBase(currentGroup))
         {
             SetCurrentTarget(null);
-            State = SoldierCombatState.Idle;
+            State = UnitState.Idle;
             return;
         }
 
         RotateTowardsCurrentTarget(transform);
 
-        State = SoldierCombatState.Attack;
+        State = UnitState.Attack;
         if (attackAgent.Tick(Time.deltaTime, currentTarget, AttackOrigin.position))
             SpawnProjectileVisual(currentTarget.transform);
+    }
+
+    private void LateUpdate()
+    {
+                
+        if(stateReader.IsMoving) 
+            State = UnitState.Move;
+        
+        if(currentEnemyGroupProvider.CurrentTargetGroup != null) return;
+        
+        if(soldierFollower.State == SoldierFormationState.WaitingInFormation)
+            State = UnitState.Idle;
+        else if (soldierFollower.State == SoldierFormationState.MovingToSlot)
+            State = UnitState.Move;
+
+
     }
 
     private void TryAcquireTarget(EnemyGroupViewController currentGroup)

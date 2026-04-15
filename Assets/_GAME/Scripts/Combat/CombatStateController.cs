@@ -79,9 +79,12 @@ public class CombatStateController : IInitializable, IDisposable, IEnemyGroupPro
     
     private void SetDefeated()
     {
+        CurrentTargetGroup.ResetRuntimeState();
         CurrentTargetGroup = null;
         State = CombatFlowState.Defeated;
         squadMovementFacade.Stop();
+        State = CombatFlowState.IdleInPreparation;
+
     }
 
     private void StartRegroup()

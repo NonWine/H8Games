@@ -1918,7 +1918,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <InitialCapacity>k__BackingField: 6
-  <TargetReachThreshold>k__BackingField: 0.1
+  <TargetReachThreshold>k__BackingField: 5.09
 --- !u!135 &778534939
 SphereCollider:
   m_ObjectHideFlags: 0

@@ -8,7 +8,6 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
     private Vector3 spawnPosition;
     private Quaternion spawnRotation;
     public EnemyGroupViewController Group { get; private set; }
-    public StaticEnemyState State { get; private set; } = StaticEnemyState.Idle;
     public event Action<EnemyCombatAgent> Died;
 
     protected override void Awake()
@@ -26,7 +25,7 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
         unitHealthHandler.RestoreFull();
         transform.position = spawnPosition;
         transform.rotation = spawnRotation;
-        State = StaticEnemyState.Idle;
+        State = UnitState.Idle;
     }
     
     public void SetGroup(EnemyGroupViewController group)
@@ -40,14 +39,16 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
             return;
         attackAgent?.ResetCooldown();
         ResetTargetingTimers();
-        State = StaticEnemyState.Attack;
+        State = UnitState.Attack;
     }
 
-    private void Update()
+    protected override void Update()
     {
+        base.Update();
+        
         if (!IsAlive)
             return;
-        if(State != StaticEnemyState.Attack)
+        if(State != UnitState.Attack)
             return;
 
         if (!IsCurrentTargetValidBase())

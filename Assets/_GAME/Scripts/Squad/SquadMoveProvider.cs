@@ -2,7 +2,7 @@
 using UnityEngine;
 using Zenject;
 
-public class SquadMoveProvider : ITickable, IMoveProvider
+public class SquadMoveProvider : ITickable, IMoveProvider , ISquadMovementStateReader
 {
     private readonly Transform rootTransform;
     private readonly SquadFollowSettings settings;
@@ -31,7 +31,7 @@ public class SquadMoveProvider : ITickable, IMoveProvider
     public void Tick()
     {
         if(reachedPath) return;
-        
+        IsMoving = true;
         Vector3 currentPosition = rootTransform.position;
         targetPoint.y = currentPosition.y;
 
@@ -41,6 +41,7 @@ public class SquadMoveProvider : ITickable, IMoveProvider
         if (toTarget.sqrMagnitude <= targetReachThreshold * targetReachThreshold)
         {
             reachedPath = true;
+            IsMoving = false;
             onReached?.Invoke();
             return;
         }
@@ -71,4 +72,11 @@ public class SquadMoveProvider : ITickable, IMoveProvider
         float lerpFactor = 1f - Mathf.Exp(-settings.RootFollowSmoothness * deltaTime);
         rootTransform.rotation = Quaternion.Slerp(rootTransform.rotation, targetRotation, lerpFactor);
     }
+
+    public bool IsMoving { get; private set; }
+}
+
+public interface ISquadMovementStateReader
+{
+    bool IsMoving { get; }
 }
