@@ -46,9 +46,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f3c02c5cfdfdc344b98bf00bff41c02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soldierPrefab: {fileID: 6922034175858547783, guid: 21808611dd85acf4db2708200a5d21be, type: 3}
   spawnPoint: {fileID: 7147874237398806145}
-  spawnInterval: 2.5
+  barracksStats:
+    SpawnInterval: 2.5
+    levels:
+    - UnitCombatDefinition: {fileID: 11400000, guid: 25019b42a3b89a043bf0b3273e5909b3, type: 2}
+    startLevel: 0
 --- !u!1 &4794903307491169746
 GameObject:
   m_ObjectHideFlags: 0

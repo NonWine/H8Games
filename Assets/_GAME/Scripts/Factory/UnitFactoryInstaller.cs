@@ -12,9 +12,7 @@ public class UnitFactoryInstaller : MonoInstaller
         Container.BindInstance(unitCombatDefinitions)
             .WhenInjectedInto<CombatUnitFactory>();
 
-        Container.Bind<IFactory<string, BaseTargetingCombatAgent>>()
-            .To<CombatUnitFactory>()
-            .AsSingle();
+        Container.BindInterfacesAndSelfTo<CombatUnitFactory>().AsSingle().NonLazy();
             
     }
 }

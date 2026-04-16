@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
@@ -10,6 +11,25 @@ public class GameInstaller : MonoInstaller
   
     public override void InstallBindings()
     {
+        BindSignals();
+
+        BindUnitsModules();
+
+        Container.BindInstance(joystick).AsSingle();
+        Container.Bind<TargetReservation>().AsTransient();
+        InstallHero();
+    }
+
+    private void BindUnitsModules()
+    {
+        Container.Bind<IUnitModulesFactory>().To<CombatUnitModulesFactory>().AsSingle().NonLazy();
+        Container.Bind<IUnitModulesFactory>().To<TankUnitModulesFactory>().AsSingle().NonLazy();
+
+        Container.Bind<ModulesFactoryCollection>().AsSingle().NonLazy();
+    }
+
+    private void BindSignals()
+    {
         SignalBusInstaller.Install(Container);
         Container.DeclareSignal<ClearedLastEnemyGroup>();
         Container.DeclareSignal<StartSquadRegroupSignal>();
@@ -17,11 +37,8 @@ public class GameInstaller : MonoInstaller
         Container.DeclareSignal<SquadReachedEnemySignal>();
         Container.DeclareSignal<LoadNextLevelSignal>();
         Container.DeclareSignal<SquadDefeatedSignal>();
-
-        Container.BindInstance(joystick).AsSingle();
-        Container.Bind<TargetReservation>().AsTransient();
-        InstallHero();
     }
+
     private void InstallHero()
     {
         var spawnedHero = Container.InstantiatePrefabForComponent<PlayerView>(heroPrefab, heroSpawnPoint.position, heroSpawnPoint.rotation, null);

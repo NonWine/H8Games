@@ -3,12 +3,10 @@
 public class SquadAllyTargetSelector : IAllyTargetProvider
 {
     private readonly SquadFormationRegistry soldierRegistry;
-    private readonly PlayerView heroTarget;
 
-    public SquadAllyTargetSelector(SquadFormationRegistry soldierRegistry, PlayerView heroTarget)
+    public SquadAllyTargetSelector(SquadFormationRegistry soldierRegistry)
     {
         this.soldierRegistry = soldierRegistry;
-        this.heroTarget = heroTarget;
     }
 
     public ICombatTarget GetBestLivingAllyTarget(Vector3 worldPosition, float reservationPenalty)
@@ -44,9 +42,6 @@ public class SquadAllyTargetSelector : IAllyTargetProvider
 
         if (bestTarget != null)
             return bestTarget;
-
-        if (heroTarget != null && heroTarget.IsAlive)
-            return heroTarget;
 
         return null;
     }

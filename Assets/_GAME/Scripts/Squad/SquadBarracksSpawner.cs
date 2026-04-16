@@ -4,19 +4,17 @@ using Zenject;
 public class SquadBarracksSpawner : MonoBehaviour
 {
     [Inject] private CombatStateController combatStateController;
-    [SerializeField] private SoldierFollower soldierPrefab;
+    private CombatUnitFactory unitFactory;
     [SerializeField] private Transform spawnPoint;
-    [Min(0.15f)]
-    [SerializeField] private float spawnInterval = 2.5f;
+    [SerializeField] private BarracksStats barracksStats;
 
-    private DiContainer container;
     private SquadFormationFacade squadFormationFacade;
     private SpawnService<SoldierCombatAgent> spawnService;
 
     [Inject]
-    public void Construct(DiContainer container, SquadFormationFacade squadFormationFacade)
+    public void Construct(CombatUnitFactory unitFactory, SquadFormationFacade squadFormationFacade)
     {
-        this.container = container;
+        this.unitFactory = unitFactory;
         this.squadFormationFacade = squadFormationFacade;
     }
 
@@ -24,7 +22,7 @@ public class SquadBarracksSpawner : MonoBehaviour
     {
         spawnService = new SpawnService<SoldierCombatAgent>(SpawnSoldier,
             soldier => soldier != null && soldier.gameObject.activeInHierarchy,
-            () => spawnInterval);
+            () => barracksStats.SpawnInterval);
     }
 
     private void Update()
@@ -41,18 +39,28 @@ public class SquadBarracksSpawner : MonoBehaviour
             return null;
 
         Transform origin = spawnPoint != null ? spawnPoint : transform;
-        SoldierCombatAgent soldier = container.InstantiatePrefabForComponent<SoldierCombatAgent>(
-            soldierPrefab,
-            origin.position,
-            origin.rotation,
-            null);
+        var soldier = (SoldierCombatAgent) unitFactory.Create(barracksStats.Unit.UnitID);
+        soldier.transform.position = origin.position;
+        soldier.transform.rotation = origin.rotation;
 
         if (squadFormationFacade.RegisterSoldier(soldier))
+        {
+            soldier.OnDiedEvent += UnRegisterSoldier;
             return soldier;
+        }
 
         Destroy(soldier.gameObject);
         return null;
     }
+
+    private void UnRegisterSoldier(SoldierCombatAgent soldier)
+    {
+        soldier.OnDiedEvent -= UnRegisterSoldier;
+        squadFormationFacade?.UnregisterSoldier(soldier);
+
+    }
+
+    public void UpgradeLevel() => barracksStats.Update();
 
     private bool CanSpawnInCurrentPhase()
     {
@@ -62,3 +70,5 @@ public class SquadBarracksSpawner : MonoBehaviour
         return true;
     }
 }
+
+

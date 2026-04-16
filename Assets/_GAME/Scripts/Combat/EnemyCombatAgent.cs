@@ -6,23 +6,35 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
 {
     [Inject] private IAllyTargetProvider allyTargetProvider;
 
+
     public event Action<EnemyCombatAgent> Died;
     
+    
+
+    private void OnDisable()
+    {
+        modules.TargetTracker.SetCurrentTarget(null, this);
+        modules.Reservation.ClearReservations();
+    }
 
     public void ResetRunTimeState()
     {
         State = UnitState.Idle;
-        targetReservation.ClearReservations();
-        SetCurrentTarget(null);
+        modules.Reservation.ClearReservations();
+        modules.TargetTracker.SetCurrentTarget(null, this);
+        modules.TargetTracker.ResetTargetingTimers();
+        modules.Attack.ResetCooldown();
     }
 
     public void Activate()
     {
         if (!IsAlive)
             return;
-        attackAgent?.ResetCooldown();
-        ResetTargetingTimers();
+
+        modules.Attack.ResetCooldown();
+        modules.TargetTracker.ResetTargetingTimers();
         State = UnitState.Attack;
+
     }
 
     protected override void Update()
@@ -31,47 +43,58 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
         
         if (!IsAlive)
             return;
-        if(State != UnitState.Attack)
+
+        if (State != UnitState.Attack)
             return;
 
-        if (ShouldRetarget())
+        var tracker = modules.TargetTracker;
+
+        if (!tracker.IsCurrentTargetValid())
         {
             TryAcquireTarget();
         }
-        else if (currentTarget == null)
+        else if (tracker.ShouldRetarget())
         {
             TryAcquireTarget();
         }
 
-        if(currentTarget == null) return;
+        if (tracker.CurrentTarget == null)
+            return;
 
-        RotateTowardsCurrentTarget(transform);
-        if (attackAgent.Tick(Time.deltaTime, currentTarget, AttackOrigin.position))
+        tracker.RotateTowardsCurrentTarget(transform);
+
+        if (modules.Attack.Tick(Time.deltaTime, tracker.CurrentTarget, CombatView.AttackPoint.position))
         {
-            SpawnProjectileVisual(currentTarget.transform);
+            modules.ProjectileSpawner.Spawn(
+                CombatView.AttackPoint,
+                tracker.CurrentTarget.transform,
+                stats.ProjectileSpeed);
         }
     }
 
     private void TryAcquireTarget()
     {
-        
-        ICombatTarget target = allyTargetProvider.GetBestLivingAllyTarget(transform.position, reservationPenalty);
+        ICombatTarget target = allyTargetProvider.GetBestLivingAllyTarget(
+            transform.position,
+            stats.ReservationPenalty);
+
+        var tracker = modules.TargetTracker;
 
         if (target == null)
         {
-            SetCurrentTarget(null);
-            nextRetargetTime = Time.time + retargetInterval;
-            targetLockUntil = 0f;
+            tracker.SetCurrentTarget(null, this);
+            tracker.ResetTargetingTimers();
             return;
         }
 
-        SetCurrentTarget(target);
-        MarkRetargetWindow();
+        tracker.SetCurrentTarget(target, this);
+        tracker.MarkRetargetWindow();
     }
 
-    protected override void HandleDeath()
+    protected override void OnDied()
     {
         Died?.Invoke(this);
-        base.HandleDeath();
+        base.OnDied();
     }
 }
+

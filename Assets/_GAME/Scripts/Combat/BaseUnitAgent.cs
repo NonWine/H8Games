@@ -2,186 +2,61 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Zenject;
+
 [RequireComponent(typeof(BaseCombatUnitView))]
-public abstract class BaseTargetingCombatAgent : MonoBehaviour, ICombatTarget
+public abstract class BaseTargetingCombatAgent : MonoBehaviour , ICombatTarget
 {
-    [SerializeField] private SimpleProjectileView projectilePrefab;
-    [SerializeField] private UnitStats stats = new();
-    [SerializeField] private Transform attackPoint;
-    [SerializeField] private Animator animator;
-    [SerializeField, Min(0f)] protected float reservationPenalty = 3f;
-    [SerializeField, Min(0.05f)] protected float retargetInterval = 0.35f;
-    [SerializeField, Min(0.05f)] protected float targetLockDuration = 0.35f;
-    protected TargetReservation targetReservation;
-    protected UnitAttackAgentHandler attackAgent;
-    protected UnitHealthHandler unitHealthHandler;
-    protected ICombatTarget currentTarget;
-    protected BaseCombatUnitView baseCombatUnitView;
-    protected float targetLockUntil;
-    protected float nextRetargetTime;
-    protected AttackRuntimeModel attackRuntimeModel;
+    [field: SerializeField] public BaseCombatUnitView CombatView { get; private set; }
+    [SerializeField] private UnitModuleType unitModuleType;
+    [SerializeField] protected UnitStats stats = new();
+    
+    protected CombatUnitModules modules;
+    public UnitState State { get; set; } = UnitState.Idle;
+    public bool IsAlive => modules.Health.IsAlive;
+    public string UnitId { get; private set; }
 
-    public Transform AttackOrigin => attackPoint;
-    public Animator Animator => animator;
-    public UnitState State { get; protected set; } = UnitState.Idle;
-
-
-    protected virtual void Awake()
+    [Inject]
+    public void Construct(ModulesFactoryCollection modulesFactory)
     {
-        transform.position += (Vector3.up * 0.5f);
-        baseCombatUnitView = GetComponent<BaseCombatUnitView>();
-        attackRuntimeModel = new AttackRuntimeModel(stats);
-        attackAgent = new UnitAttackAgentHandler(attackRuntimeModel);
-        unitHealthHandler = new UnitHealthHandler(stats.MaxHealth);
-        targetReservation = new TargetReservation();
-        unitHealthHandler.Died += HandleDeath;
+
+       var unitModuleFactory = modulesFactory.Create(unitModuleType);
+       modules = unitModuleFactory.Create(new CombatUnitModulesArgs(CombatView, stats));
+       modules.Health.Died += OnDied;
     }
 
     protected virtual void Update()
     {
-        HandleAnimator();
+        modules.Animation.Apply(State);
     }
 
-    protected bool ShouldRetarget()
+    private void OnDisable()
     {
-        return Time.time >= nextRetargetTime && Time.time >= targetLockUntil;
-    }
-    
-    protected void MarkRetargetWindow()
-    {
-        nextRetargetTime = Time.time + retargetInterval;
-        targetLockUntil = Time.time + targetLockDuration;
+        modules.TargetTracker.ReleaseCurrentTarget(this);
+        modules.Reservation.ClearReservations();
     }
 
-    protected void SpawnProjectileVisual(Transform target)
+    private void OnDestroy()
     {
-        if(target == null) return;
-        
-        SimpleProjectileView projectile = Instantiate(projectilePrefab, AttackOrigin.position, Quaternion.identity);
-        projectile.Launch(target, stats.ProjectileSpeed);
-    }
-
-    protected void ResetTargetingTimers()
-    {
-        nextRetargetTime = 0f;
-        targetLockUntil = 0f;
-    }
-
-    protected void SetCurrentTarget(ICombatTarget newTarget)
-    {
-        if (ReferenceEquals(currentTarget, newTarget))
-            return;
-
-        ReleaseCurrentTarget();
-        currentTarget = newTarget;
-
-        if (currentTarget is Component targetComponent &&
-            targetComponent is ITargetReservation reservationTarget)
-        {
-            reservationTarget.TryRegisterAttacker(this);
-        }
-
-        if (currentTarget == null)
-        {
-            nextRetargetTime = Time.time + retargetInterval;
-            targetLockUntil = 0f;
-        }
-    }
-
-    private void ReleaseCurrentTarget()
-    {
-        if (currentTarget is Component targetComponent &&
-            targetComponent is ITargetReservation reservationTarget)
-        {
-            reservationTarget.TryUnregisterAttacker(this);
-        }
-    }
-
-    protected bool IsCurrentTargetValidBase(EnemyGroupViewController currentGroup = null)
-    {
-        if (currentTarget == null || !currentTarget.IsAlive)
-            return false;
-
-        if (currentTarget is not Component targetComponent || !targetComponent.gameObject.activeInHierarchy)
-            return false;
-
-        if (currentGroup != null && !currentGroup.ContainsEnemy(currentTarget))
-            return false;
-
-        return true;
-    }
-
-    protected void RotateTowardsCurrentTarget(Transform selfTransform)
-    {
-        
-        Vector3 direction = currentTarget.transform.position - selfTransform.position;
-        direction.y = 0f;
-
-        if (direction.sqrMagnitude <= 0.0001f)
-            return;
-        
-        selfTransform.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
-    }
-
-    protected virtual void OnEnable()
-    {
-        
-    }
-
-    protected virtual void OnDisable()
-    {
-        SetCurrentTarget(null);
-        targetReservation.ClearReservations();
-    }
-
-    protected virtual void OnDestroy()
-    {
-        if (unitHealthHandler == null)
-            return;
-
-        unitHealthHandler.Died -= HandleDeath;
+        if (modules != null)
+            modules.Health.Died -= OnDied;
     }
 
     public void GetDamage(float damage, Vector3 sourceWorldPosition)
     {
-        unitHealthHandler.ApplyDamage(damage);
-        baseCombatUnitView.SetEmissionHitFlash();
+        modules.Health.ApplyDamage(damage);
+        CombatView?.SetEmissionHitFlash();
     }
 
-    protected virtual async void HandleDeath()
+    public void SetIdentity(string unitId)
+    {
+        UnitId = unitId;
+    }
+
+    protected virtual async void OnDied()
     {
         State = UnitState.Dead;
-        await UniTask.Delay(5000);
-        gameObject.SetActive(false);
-    }
-
-    private void HandleAnimator()
-    {
-        switch (State)
-        {
-            case UnitState.Idle:
-                animator.SetInteger("State", 0);
-                break;
-            case UnitState.Move:
-                animator.SetInteger("State", 1);
-                break;
-            case UnitState.Attack:
-                animator.SetInteger("State", 2);
-                break;
-            case UnitState.Dead:
-                animator.SetInteger("State", 3);
-            break;
-        }
-        
+        await modules.Death.HandleDeathAsync();
     }
     
-    public bool IsAlive => unitHealthHandler.IsAlive;
-    
-    public void SetIdentity(string carId)
-    {
-        UnitId = carId;
-    }
-
-    public string UnitId { get; private set; }
 
 }

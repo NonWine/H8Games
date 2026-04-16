@@ -100,11 +100,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 4546979500894070685}
   m_SourcePrefab: {fileID: 100100000, guid: 01ced4803ad69094da1641053a107106, type: 3}
---- !u!95 &2493678797789296814 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 7097182484956019553, guid: 01ced4803ad69094da1641053a107106, type: 3}
+--- !u!114 &1936170675986343824 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6501995550814741599, guid: 01ced4803ad69094da1641053a107106, type: 3}
   m_PrefabInstance: {fileID: 4676164101541069775}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3192147293698152230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fd7cde901344ef89fdb5da8ef717efa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3192147293698152230 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7830030720844190953, guid: 01ced4803ad69094da1641053a107106, type: 3}
@@ -122,7 +128,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8de227e653133542bbce24f5ce0a875, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  projectilePrefab: {fileID: 4041960524083155756, guid: 4d339c7c02696d14196569d8dae8f7b8, type: 3}
+  unitModuleType: 0
+  <CombatView>k__BackingField: {fileID: 1936170675986343824}
   stats:
     MaxHealth: 30
     MoveSpeed: 3.5
@@ -131,13 +138,6 @@ MonoBehaviour:
     Damage: 5
     ProjectileSpeed: 40
     DeathReward: 5
-  attackPoint: {fileID: 5239023890273802138}
-  animator: {fileID: 2493678797789296814}
-  reservationPenalty: 3
-  retargetInterval: 0.38
-  targetLockDuration: 0.35
---- !u!4 &5239023890273802138 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 599491131084117077, guid: 01ced4803ad69094da1641053a107106, type: 3}
-  m_PrefabInstance: {fileID: 4676164101541069775}
-  m_PrefabAsset: {fileID: 0}
+    ReservationPenalty: 3
+    RetargetInterval: 0.35
+    TargetLockDuration: 0.35

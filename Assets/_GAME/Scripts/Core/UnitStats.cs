@@ -11,6 +11,9 @@ public class UnitStats
     [Min(0f)] public float Damage = 5f;
     [Min(0f)] public float ProjectileSpeed = 12f;
     [Min(0f)] public int DeathReward = 5;
+    [SerializeField, Min(0f)] public float ReservationPenalty = 3f;
+    [SerializeField, Min(0.05f)] public float RetargetInterval = 0.35f;
+    [SerializeField, Min(0.05f)] public float TargetLockDuration = 0.35f;
 
     public UnitStats()
     {

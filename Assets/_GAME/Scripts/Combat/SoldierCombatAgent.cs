@@ -5,26 +5,25 @@ using Zenject;
 [RequireComponent(typeof(SoldierFollower))]
 public class SoldierCombatAgent : BaseTargetingCombatAgent
 {
-    [field:SerializeField] public SoldierFollower SoldierFollower { get; private set; }
+    [field: SerializeField] public SoldierFollower SoldierFollower { get; private set; }
+
     private IEnemyGroupProvider currentEnemyGroupProvider;
-    private ISoldierCombatRegistryProvider soldierCombatRegistryProvider;
     private ISquadMovementStateReader stateReader;
 
+    public event Action<SoldierCombatAgent> OnDiedEvent; 
+    
     [Inject]
-    public void Construct(IEnemyGroupProvider currentEnemyGroupProvider,
-        ISoldierCombatRegistryProvider soldierCombatRegistryProvider,
-        ISquadMovementStateReader stateReader )
+    public void Construct(IEnemyGroupProvider currentEnemyGroupProvider, ISquadMovementStateReader stateReader)
     {
         this.currentEnemyGroupProvider = currentEnemyGroupProvider;
-        this.soldierCombatRegistryProvider = soldierCombatRegistryProvider;
         this.stateReader = stateReader;
     }
+    
 
-    protected override void OnDisable()
+    private void OnDisable()
     {
-        base.OnDisable();
-        soldierCombatRegistryProvider?.UnregisterSoldier(this);
-        SetCurrentTarget(null);
+        modules.TargetTracker.SetCurrentTarget(null, this);
+        modules.Reservation.ClearReservations();
     }
 
     protected override void Update()
@@ -32,78 +31,99 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
         base.Update();
         if (!IsAlive)
             return;
-        
+
         EnemyGroupViewController currentGroup = currentEnemyGroupProvider.CurrentTargetGroup;
+        var tracker = modules.TargetTracker;
+
         if (currentGroup == null || currentGroup.State != EnemyGroupState.Activated)
         {
-            SetCurrentTarget(null);
+            tracker.SetCurrentTarget(null, this);
             State = UnitState.Idle;
             return;
         }
 
-        if (!IsCurrentTargetValidBase(currentGroup))
+        if (!tracker.IsCurrentTargetValid(currentGroup))
         {
             TryAcquireTarget(currentGroup);
         }
-        else if (ShouldRetarget())
+        else if (tracker.ShouldRetarget())
         {
             TryAcquireTarget(currentGroup);
         }
 
-        if (!IsCurrentTargetValidBase(currentGroup))
+        if (!tracker.IsCurrentTargetValid(currentGroup))
         {
-            SetCurrentTarget(null);
+            tracker.SetCurrentTarget(null, this);
             State = UnitState.Idle;
             return;
         }
 
-        RotateTowardsCurrentTarget(transform);
+        tracker.RotateTowardsCurrentTarget(transform);
 
         State = UnitState.Attack;
-        if (attackAgent.Tick(Time.deltaTime, currentTarget, AttackOrigin.position))
-            SpawnProjectileVisual(currentTarget.transform);
+
+        if (modules.Attack.Tick(Time.deltaTime, tracker.CurrentTarget, CombatView.AttackPoint.position))
+        {
+            modules.ProjectileSpawner.Spawn(
+                CombatView.AttackPoint,
+                tracker.CurrentTarget.transform,
+                stats.ProjectileSpeed);
+        }
     }
 
     private void LateUpdate()
     {
-                
-        if(stateReader.IsMoving) 
+        if (!IsAlive)
+            return;
+
+        // Якщо зараз активний encounter, стан атаки/idle вже виставився в Update
+        if (currentEnemyGroupProvider.CurrentTargetGroup != null)
+            return;
+
+        if (stateReader.IsMoving)
+        {
             State = UnitState.Move;
-        
-        if(currentEnemyGroupProvider.CurrentTargetGroup != null) return;
-        
-        if(SoldierFollower.State == SoldierFormationState.WaitingInFormation)
+            return;
+        }
+
+        if (SoldierFollower.State == SoldierFormationState.WaitingInFormation)
+        {
             State = UnitState.Idle;
+        }
         else if (SoldierFollower.State == SoldierFormationState.MovingToSlot)
+        {
             State = UnitState.Move;
-
-
+        }
     }
 
     private void TryAcquireTarget(EnemyGroupViewController currentGroup)
     {
+        var tracker = modules.TargetTracker;
+
         if (currentGroup == null)
         {
-            SetCurrentTarget(null);
+            tracker.SetCurrentTarget(null, this);
             return;
         }
 
-        ICombatTarget target = currentGroup.GetBestLivingEnemyTarget(transform.position, reservationPenalty);
+        ICombatTarget target = currentGroup.GetBestLivingEnemyTarget(
+            transform.position,
+            stats.ReservationPenalty);
+
         if (target == null)
         {
-            SetCurrentTarget(null);
-            nextRetargetTime = Time.time + retargetInterval;
-            targetLockUntil = 0f;
+            tracker.SetCurrentTarget(null, this);
+            tracker.ResetTargetingTimers();
             return;
         }
 
-        SetCurrentTarget(target);
-        MarkRetargetWindow();
+        tracker.SetCurrentTarget(target, this);
+        tracker.MarkRetargetWindow();
     }
 
-    protected override void HandleDeath()
+    protected override void OnDied()
     {
-        soldierCombatRegistryProvider?.UnregisterSoldier(this);
-        base.HandleDeath();
+        OnDiedEvent?.Invoke(this);
+        base.OnDied();
     }
 }

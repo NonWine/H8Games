@@ -265,6 +265,9 @@ MonoBehaviour:
   - {fileID: 7097182485667304783}
   timeToSetColor: 0.2
   emissionHitColor: {r: 830.7925, g: 387.9644, b: 387.9644, a: 1}
+  <ProjectilePrefab>k__BackingField: {fileID: 4041960524083155756, guid: 4d339c7c02696d14196569d8dae8f7b8, type: 3}
+  <AttackPoint>k__BackingField: {fileID: 599491131084117077}
+  <Animator>k__BackingField: {fileID: 7097182484956019553}
 --- !u!1 &8013928732478748062
 GameObject:
   m_ObjectHideFlags: 0
@@ -404,6 +407,11 @@ SkinnedMeshRenderer:
 --- !u!137 &7097182484949041380 stripped
 SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: 3435984986490766960, guid: 5d51f1d2ebdbfae41afd09f70da3867a, type: 3}
+  m_PrefabInstance: {fileID: 5607355360984204948}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &7097182484956019553 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 3435984986488307189, guid: 5d51f1d2ebdbfae41afd09f70da3867a, type: 3}
   m_PrefabInstance: {fileID: 5607355360984204948}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &7097182484956019582 stripped
