@@ -52,7 +52,8 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
 
     private void HandleCombatClearedZone(EnemyGroupViewController enemyGroup)
     {
-        CurrentTargetGroup.Cleared -= HandleCombatClearedZone;
+        if(CurrentTargetGroup != null) CurrentTargetGroup.Cleared -= HandleCombatClearedZone;
+      
         CurrentTargetGroup = null;
         CurrentTargetGroup = enemyGroupDetector.FindNearestValidGroup(levelManager.CurrentLevel);
         if (CurrentTargetGroup == null)

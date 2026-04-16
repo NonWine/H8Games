@@ -55,9 +55,9 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour , ICombatTarget
         UnitId = unitId;
     }
 
-    protected virtual async void OnDied()
+    protected virtual void OnDied()
     {
         State = UnitState.Dead;
-        await modules.Death.HandleDeathAsync();
+        modules.Death.HandleDeathAsync();
     }
 }

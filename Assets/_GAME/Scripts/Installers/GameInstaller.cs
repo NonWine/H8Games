@@ -6,6 +6,7 @@ using Zenject;
 public class GameInstaller : MonoInstaller
 {
     [SerializeField] private PlayerView heroPrefab;
+    [SerializeField] private Transform ground;
     [SerializeField] private Transform heroSpawnPoint;
     [SerializeField] private Joystick joystick;
     [SerializeField] private int startingLevelIndex;
@@ -43,6 +44,7 @@ public class GameInstaller : MonoInstaller
 
     private void InstallHero()
     {
+        Container.BindInstance(ground).WithId("Ground");
         var spawnedHero = Container.InstantiatePrefabForComponent<PlayerView>(heroPrefab, heroSpawnPoint.position, heroSpawnPoint.rotation, null);
         Container.Bind<PlayerView>().FromInstance(spawnedHero).AsSingle();
     }

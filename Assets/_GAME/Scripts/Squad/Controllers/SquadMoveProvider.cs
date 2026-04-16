@@ -56,7 +56,7 @@ public class SquadMoveProvider : ITickable, IMoveProvider , ISquadMovementStateR
             targetPoint,
             settings.RootMoveSpeed * Time.deltaTime);
 
-        RotateTowards(direction, Time.deltaTime, reachThreshold.Equals(0f));
+        RotateTowards(direction, Time.deltaTime, reachThreshold.Equals(0f) && toTarget.sqrMagnitude <= 3f);
     }
 
     public void Stop()

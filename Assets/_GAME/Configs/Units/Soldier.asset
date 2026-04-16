@@ -16,8 +16,8 @@ MonoBehaviour:
     MaxHealth: 30
     MoveSpeed: 3.5
     DetectionRadius: 8
-    AttackCooldown: 1
-    Damage: 5
+    AttackCooldown: 0.72
+    Damage: 14.97
     ProjectileSpeed: 12
     DeathReward: 5
     ReservationPenalty: 3

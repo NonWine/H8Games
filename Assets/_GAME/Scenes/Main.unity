@@ -165,6 +165,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   heroPrefab: {fileID: 1851388633980006867, guid: 562a4e806a2c2c5488dcac164c2a3a47, type: 3}
+  ground: {fileID: 1985664399}
   heroSpawnPoint: {fileID: 855558176}
   joystick: {fileID: 1704376239}
   startingLevelIndex: 0

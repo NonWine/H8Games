@@ -18,6 +18,6 @@ public class UnitDeathHandler
     {
         beforeDisable?.Invoke();
         await UniTask.Delay(disableDelayMs);
-        ownerObject.transform.DOMoveY(-3f, 5f).OnComplete(() => ownerObject.gameObject.SetActive(false));
+        if(ownerObject != null) ownerObject.transform.DOMoveY(-3f, 5f).OnComplete(() => ownerObject.gameObject.SetActive(false));
     }
 }
