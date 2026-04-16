@@ -167,6 +167,10 @@ MonoBehaviour:
   heroPrefab: {fileID: 1851388633980006867, guid: 562a4e806a2c2c5488dcac164c2a3a47, type: 3}
   heroSpawnPoint: {fileID: 855558176}
   joystick: {fileID: 1704376239}
+  startingLevelIndex: 0
+  levels:
+  - {fileID: 1449753277}
+  - {fileID: 643678011}
 --- !u!1001 &138327337
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -783,7 +787,6 @@ Transform:
   m_Children:
   - {fileID: 13215757}
   - {fileID: 2015854978}
-  - {fileID: 860824414}
   - {fileID: 1522166076}
   - {fileID: 1111127020}
   m_Father: {fileID: 364178206}
@@ -822,7 +825,6 @@ MonoBehaviour:
   - {fileID: 13215758}
   - {fileID: 1111127021}
   - {fileID: 2015854979}
-  - {fileID: 860824415}
   - {fileID: 1522166077}
   _installerPrefabs: []
   _autoRun: 1
@@ -2234,55 +2236,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 13215757}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &860824413
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 860824414}
-  - component: {fileID: 860824415}
-  m_Layer: 0
-  m_Name: SquadCombatInstaller
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &860824414
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 860824413}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 363293803}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &860824415
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 860824413}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a908a5067be01c54eb3f3e94cefa06ac, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  startingLevelIndex: 0
-  initialPhase: 0
-  levels:
-  - {fileID: 1449753277}
-  - {fileID: 643678011}
 --- !u!1 &894526702 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8170153792821263259, guid: 0d230cc8be529a542a08cb878ab14b18, type: 3}
@@ -3637,7 +3590,7 @@ GameObject:
   - component: {fileID: 1522166076}
   - component: {fileID: 1522166077}
   m_Layer: 0
-  m_Name: SquadRootInstaller
+  m_Name: SquadInstaller
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

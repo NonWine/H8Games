@@ -4,33 +4,31 @@ using Zenject;
 public class PlayerController : ITickable
 {
     private readonly PlayerView heroView;
-    private readonly HeroCombatRuntime runtime;
     private readonly IHeroInputReader inputReader;
     private readonly IHeroMover heroMover;
-
+    private readonly HeroStats runtime;
     public PlayerController(
         PlayerView heroView,
-        HeroCombatRuntime runtime,
         IHeroInputReader inputReader,
-        IHeroMover heroMover)
+        IHeroMover heroMover,
+        HeroStats runtime)
     {
-        this.heroView = heroView;
         this.runtime = runtime;
+        this.heroView = heroView;
         this.inputReader = inputReader;
         this.heroMover = heroMover;
     }
     
     public void Tick()
     {
-        if (!runtime.IsAlive)
-            return;
+  
 
         Vector3 movementDirection = inputReader.ReadMovement();
         heroView.Animator.SetFloat("Speed", movementDirection.magnitude);
 
         if (movementDirection.sqrMagnitude > 0f)
         {
-            heroMover.Move(movementDirection, runtime.RuntimeStats.Combat.MoveSpeed, Time.deltaTime);
+            heroMover.Move(movementDirection, runtime.Combat.MoveSpeed, Time.deltaTime);
             heroMover.FaceDirection(movementDirection);
         }
     }

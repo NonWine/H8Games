@@ -8,10 +8,13 @@ public class GameInstaller : MonoInstaller
     [SerializeField] private PlayerView heroPrefab;
     [SerializeField] private Transform heroSpawnPoint;
     [SerializeField] private Joystick joystick;
-  
+    [SerializeField] private int startingLevelIndex;
+    [SerializeField] private LevelRuntime[]  levels;
+    
     public override void InstallBindings()
     {
         BindSignals();
+        Container.BindInterfacesAndSelfTo<LevelManager>().AsSingle().WithArguments(levels, startingLevelIndex);
 
         BindUnitsModules();
 
@@ -31,7 +34,6 @@ public class GameInstaller : MonoInstaller
     private void BindSignals()
     {
         SignalBusInstaller.Install(Container);
-        Container.DeclareSignal<ClearedLastEnemyGroup>();
         Container.DeclareSignal<StartSquadRegroupSignal>();
         Container.DeclareSignal<SquadRegroupCompletedSignal>();
         Container.DeclareSignal<SquadReachedEnemySignal>();
