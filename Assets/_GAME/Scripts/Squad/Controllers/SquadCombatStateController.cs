@@ -42,7 +42,7 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
         this.enemyGroupDetector = enemyGroupDetector;
     }
 
-    public void HandleCombatStartedBattle()
+    private void HandleCombatStartedBattle()
     {
         CurrentTargetGroup.Cleared += HandleCombatClearedZone;
         squadMovementFacade.Stop();
@@ -50,7 +50,7 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
         State = CombatFlowState.FightingZone;
     }
 
-    public void HandleCombatClearedZone(EnemyGroupViewController enemyGroup)
+    private void HandleCombatClearedZone(EnemyGroupViewController enemyGroup)
     {
         CurrentTargetGroup.Cleared -= HandleCombatClearedZone;
         CurrentTargetGroup = null;
@@ -82,6 +82,7 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
     
     private async void SetDefeated()
     {
+
         squadFormationFacade.ClearSoldiers();
         State = CombatFlowState.Defeated;
         Debug.Log("Wait for Reset Soldiers");

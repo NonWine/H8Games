@@ -66,7 +66,7 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
             modules.ProjectileSpawner.Spawn(
                 CombatView.AttackPoint,
                 tracker.CurrentTarget.transform,
-                stats.ProjectileSpeed);
+                unitStats.ProjectileSpeed);
         }
     }
 
@@ -113,7 +113,7 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
 
         ICombatTarget target = currentGroup.GetBestLivingEnemyTarget(
             transform.position,
-            stats.ReservationPenalty);
+            unitStats.ReservationPenalty);
 
         if (target == null)
         {

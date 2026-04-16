@@ -192,19 +192,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2faa39169a02cf343b92224b780c0e28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitModuleType: 0
   <CombatView>k__BackingField: {fileID: 4118415844405586779}
-  stats:
-    MaxHealth: 30
-    MoveSpeed: 3.5
-    DetectionRadius: 10
-    AttackCooldown: 0.7
-    Damage: 5
-    ProjectileSpeed: 40
-    DeathReward: 5
-    ReservationPenalty: 3
-    RetargetInterval: 0.35
-    TargetLockDuration: 0.35
+  <State>k__BackingField: 0
+  unitModuleType: 0
+  unitConfig: {fileID: 11400000, guid: eee80853735f166489a1c0b6fde95d49, type: 2}
   <SoldierFollower>k__BackingField: {fileID: 6922034175858547783}
 --- !u!114 &4118415844405586779 stripped
 MonoBehaviour:

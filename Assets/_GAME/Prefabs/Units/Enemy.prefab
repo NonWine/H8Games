@@ -128,16 +128,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8de227e653133542bbce24f5ce0a875, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitModuleType: 0
   <CombatView>k__BackingField: {fileID: 1936170675986343824}
-  stats:
-    MaxHealth: 30
-    MoveSpeed: 3.5
-    DetectionRadius: 8
-    AttackCooldown: 1
-    Damage: 5
-    ProjectileSpeed: 40
-    DeathReward: 5
-    ReservationPenalty: 3
-    RetargetInterval: 0.35
-    TargetLockDuration: 0.35
+  <State>k__BackingField: 0
+  unitModuleType: 0
+  unitConfig: {fileID: 11400000, guid: 7bf0cd0bd95f1f148b96665adf8c88f3, type: 2}

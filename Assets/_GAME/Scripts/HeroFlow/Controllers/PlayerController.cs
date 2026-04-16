@@ -7,6 +7,7 @@ public class PlayerController : ITickable
     private readonly IHeroInputReader inputReader;
     private readonly IHeroMover heroMover;
     private readonly HeroStats runtime;
+    
     public PlayerController(
         PlayerView heroView,
         IHeroInputReader inputReader,
@@ -21,8 +22,6 @@ public class PlayerController : ITickable
     
     public void Tick()
     {
-  
-
         Vector3 movementDirection = inputReader.ReadMovement();
         heroView.Animator.SetFloat("Speed", movementDirection.magnitude);
 

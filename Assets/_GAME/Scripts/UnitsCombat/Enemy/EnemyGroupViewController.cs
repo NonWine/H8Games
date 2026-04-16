@@ -88,17 +88,9 @@ public sealed class EnemyGroupViewController : MonoBehaviour
 
     public void ResetRuntimeState()
     {
+        
         State = EnemyGroupState.Idle;
         RefreshEnemies();
-
-        for (int i = 0; i < enemies.Count; i++)
-        {
-            EnemyCombatAgent enemy = enemies[i];
-            if (enemy == null)
-                continue;
-
-            enemy.ResetRunTimeState();
-        }
     }
 
     private void RefreshEnemies()
@@ -111,6 +103,8 @@ public sealed class EnemyGroupViewController : MonoBehaviour
 
             enemy.Died -= HandleEnemyDied;
             enemy.Died += HandleEnemyDied;
+            enemy.ResetRunTimeState();
+
         }
     }
 

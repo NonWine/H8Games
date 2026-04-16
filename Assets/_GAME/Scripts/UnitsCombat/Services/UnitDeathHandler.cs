@@ -1,5 +1,6 @@
 ﻿using System;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using UnityEngine;
 
 public class UnitDeathHandler
@@ -17,8 +18,6 @@ public class UnitDeathHandler
     {
         beforeDisable?.Invoke();
         await UniTask.Delay(disableDelayMs);
-
-        if (ownerObject != null)
-            ownerObject.SetActive(false);
+        ownerObject.transform.DOMoveY(-3f, 5f).OnComplete(() => ownerObject.gameObject.SetActive(false));
     }
 }

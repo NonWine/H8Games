@@ -68,7 +68,7 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
             modules.ProjectileSpawner.Spawn(
                 CombatView.AttackPoint,
                 tracker.CurrentTarget.transform,
-                stats.ProjectileSpeed);
+                unitStats.ProjectileSpeed);
         }
     }
 
@@ -76,7 +76,7 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
     {
         ICombatTarget target = allyTargetProvider.GetBestLivingAllyTarget(
             transform.position,
-            stats.ReservationPenalty);
+            unitStats.ReservationPenalty);
 
         var tracker = modules.TargetTracker;
 

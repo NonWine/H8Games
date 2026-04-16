@@ -42,7 +42,7 @@ public class LevelRuntime : MonoBehaviour
         for (int i = 0; i < uniqueGroups.Count; i++)
         {
             EnemyGroupViewController group = uniqueGroups[i];
-            if (group == null)
+            if (group == null || group.State == EnemyGroupState.Cleared)
                 continue;
 
             group.ResetRuntimeState();

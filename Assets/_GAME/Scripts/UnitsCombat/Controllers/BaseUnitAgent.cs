@@ -10,7 +10,8 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour , ICombatTarget
     [field:SerializeField]  public UnitState State { get; protected set; } = UnitState.Idle;
     
     [SerializeField] private UnitModuleType unitModuleType;
-    [SerializeField] protected UnitStats stats = new();
+    [SerializeField] private UnitConfig unitConfig;
+    protected UnitStats unitStats;
     protected CombatUnitModules modules;
     
     public bool IsAlive => modules.Health.IsAlive;
@@ -19,10 +20,10 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour , ICombatTarget
 
     [Inject]
     public void Construct(ModulesFactoryCollection modulesFactory)
-    {
-
+    { 
+       unitStats = unitConfig.CreateRuntimeStats();
        var unitModuleFactory = modulesFactory.Create(unitModuleType);
-       modules = unitModuleFactory.Create(new CombatUnitModulesArgs(CombatView, stats));
+       modules = unitModuleFactory.Create(new CombatUnitModulesArgs(CombatView, unitStats));
        modules.Health.Died += OnDied;
     }
 

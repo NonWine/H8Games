@@ -11,6 +11,7 @@ public class UnitStats
     [Min(0f)] public float Damage = 5f;
     [Min(0f)] public float ProjectileSpeed = 12f;
     [Min(0f)] public int DeathReward = 5;
+
     [SerializeField, Min(0f)] public float ReservationPenalty = 3f;
     [SerializeField, Min(0.05f)] public float RetargetInterval = 0.35f;
     [SerializeField, Min(0.05f)] public float TargetLockDuration = 0.35f;
@@ -31,30 +32,13 @@ public class UnitStats
         Damage = source.Damage;
         ProjectileSpeed = source.ProjectileSpeed;
         DeathReward = source.DeathReward;
+        ReservationPenalty = source.ReservationPenalty;
+        RetargetInterval = source.RetargetInterval;
+        TargetLockDuration = source.TargetLockDuration;
     }
 
-    public void IncreaseMaxHealth(float amount)
+    public UnitStats Clone()
     {
-        MaxHealth = Mathf.Max(1f, MaxHealth + amount);
-    }
-
-    public void IncreaseDamage(float amount)
-    {
-        Damage = Mathf.Max(0f, Damage + amount);
-    }
-
-    public void ReduceAttackCooldown(float amount)
-    {
-        AttackCooldown = Mathf.Max(0.05f, AttackCooldown - amount);
-    }
-
-    public void MultiplyDamage(float multiplier)
-    {
-        Damage = Mathf.Max(0f, Damage * Mathf.Max(0f, multiplier));
-    }
-
-    public void MultiplyMaxHealth(float multiplier)
-    {
-        MaxHealth = Mathf.Max(1f, MaxHealth * Mathf.Max(0f, multiplier));
+        return new UnitStats(this);
     }
 }
