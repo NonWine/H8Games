@@ -8,10 +8,12 @@ public class StartButtleView : MonoBehaviour
     [Inject] private SquadCombatStateController _squadCombatStateController;
     [SerializeField] private Button startButton;
 
-    private void Awake()
+    private void OnEnable()
     {
         startButton.onClick.AddListener(StartFlow);
     }
+
+
 
     private void OnDisable()
     {

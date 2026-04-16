@@ -51,10 +51,7 @@ public class SquadMoveProvider : ITickable, IMoveProvider , ISquadMovementStateR
 
         Vector3 direction = toTarget.normalized;
 
-        rootTransform.transform.position = Vector3.MoveTowards(
-            currentPosition,
-            targetPoint,
-            settings.RootMoveSpeed * Time.deltaTime);
+        rootTransform.transform.position = Vector3.MoveTowards(currentPosition, targetPoint, settings.RootMoveSpeed * Time.deltaTime);
 
         RotateTowards(direction, Time.deltaTime, reachThreshold.Equals(0f) && toTarget.sqrMagnitude <= 3f);
     }
