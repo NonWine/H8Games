@@ -24,7 +24,7 @@ public class SoldierFollower : MonoBehaviour
     }
     
 
-    private void Update()
+    public void UpdateFormation()
     {
         if (assignedSlot == null)
             return;

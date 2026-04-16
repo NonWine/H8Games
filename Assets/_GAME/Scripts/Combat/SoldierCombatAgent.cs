@@ -31,7 +31,6 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
         base.Update();
         if (!IsAlive)
             return;
-
         EnemyGroupViewController currentGroup = currentEnemyGroupProvider.CurrentTargetGroup;
         var tracker = modules.TargetTracker;
 
@@ -71,29 +70,35 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
         }
     }
 
+    private void UpdateFormation()
+    {
+        if(State == UnitState.Attack || State == UnitState.Dead) return;
+    
+        SoldierFollower.UpdateFormation();
+        if (!stateReader.IsMoving)
+        {
+            if (SoldierFollower.State == SoldierFormationState.WaitingInFormation)
+            {
+                State = UnitState.Idle;
+            }
+            else if (SoldierFollower.State == SoldierFormationState.MovingToSlot)
+            {
+                State = UnitState.Move;
+            }
+            
+        }
+        else
+        {
+            State = UnitState.Move;
+        }
+    }
+
     private void LateUpdate()
     {
         if (!IsAlive)
             return;
-
-        // Якщо зараз активний encounter, стан атаки/idle вже виставився в Update
-        if (currentEnemyGroupProvider.CurrentTargetGroup != null)
-            return;
-
-        if (stateReader.IsMoving)
-        {
-            State = UnitState.Move;
-            return;
-        }
-
-        if (SoldierFollower.State == SoldierFormationState.WaitingInFormation)
-        {
-            State = UnitState.Idle;
-        }
-        else if (SoldierFollower.State == SoldierFormationState.MovingToSlot)
-        {
-            State = UnitState.Move;
-        }
+        
+        UpdateFormation();
     }
 
     private void TryAcquireTarget(EnemyGroupViewController currentGroup)

@@ -7,12 +7,14 @@ using Zenject;
 public abstract class BaseTargetingCombatAgent : MonoBehaviour , ICombatTarget
 {
     [field: SerializeField] public BaseCombatUnitView CombatView { get; private set; }
+    [field:SerializeField]  public UnitState State { get; protected set; } = UnitState.Idle;
+    
     [SerializeField] private UnitModuleType unitModuleType;
     [SerializeField] protected UnitStats stats = new();
-    
     protected CombatUnitModules modules;
-    public UnitState State { get; set; } = UnitState.Idle;
+    
     public bool IsAlive => modules.Health.IsAlive;
+    
     public string UnitId { get; private set; }
 
     [Inject]
@@ -57,6 +59,4 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour , ICombatTarget
         State = UnitState.Dead;
         await modules.Death.HandleDeathAsync();
     }
-    
-
 }
