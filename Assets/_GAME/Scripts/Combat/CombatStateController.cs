@@ -83,11 +83,10 @@ public class CombatStateController : IInitializable, IDisposable, IEnemyGroupPro
     private async void SetDefeated()
     {
         squadFormationFacade.ClearSoldiers();
+        State = CombatFlowState.Defeated;
         Debug.Log("Wait for Reset Soldiers");
         await UniTask.Delay(2000);
-        
         levelManager.CurrentLevel.ResetRuntimeState();
-        State = CombatFlowState.Defeated;
         State = CombatFlowState.IdleInPreparation;
     }
 

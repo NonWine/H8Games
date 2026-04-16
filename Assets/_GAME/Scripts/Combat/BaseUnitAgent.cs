@@ -176,4 +176,12 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour, ICombatTarget
     }
     
     public bool IsAlive => unitHealthHandler.IsAlive;
+    
+    public void SetIdentity(string carId)
+    {
+        UnitId = carId;
+    }
+
+    public string UnitId { get; private set; }
+
 }
