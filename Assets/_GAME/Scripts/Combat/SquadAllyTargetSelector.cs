@@ -2,10 +2,10 @@
 
 public class SquadAllyTargetSelector : IAllyTargetProvider
 {
-    private readonly SquadSoldierRegistry soldierRegistry;
+    private readonly SquadFormationRegistry soldierRegistry;
     private readonly PlayerView heroTarget;
 
-    public SquadAllyTargetSelector(SquadSoldierRegistry soldierRegistry, PlayerView heroTarget)
+    public SquadAllyTargetSelector(SquadFormationRegistry soldierRegistry, PlayerView heroTarget)
     {
         this.soldierRegistry = soldierRegistry;
         this.heroTarget = heroTarget;

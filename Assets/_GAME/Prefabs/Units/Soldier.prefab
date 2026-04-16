@@ -185,7 +185,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6643e39be35cb484f87702030d55b831, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoRegisterOnStart: 1
 --- !u!114 &3024323240704110559
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -205,14 +204,14 @@ MonoBehaviour:
     DetectionRadius: 10
     AttackCooldown: 0.7
     Damage: 5
-    ProjectileSpeed: 22
+    ProjectileSpeed: 40
     DeathReward: 5
   attackPoint: {fileID: 7732088899058342737}
   animator: {fileID: 99772145511724133}
   reservationPenalty: 3
   retargetInterval: 0.35
   targetLockDuration: 0.35
-  soldierFollower: {fileID: 6922034175858547783}
+  <SoldierFollower>k__BackingField: {fileID: 6922034175858547783}
 --- !u!4 &7732088899058342737 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 599491131084117077, guid: 01ced4803ad69094da1641053a107106, type: 3}

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SquadFormationFacade : ISoldierFollowerRegistratorProvider, ISquadSlotPositionProvider
+public class SquadFormationFacade : ISoldierCombatRegistryProvider, ISquadSlotPositionProvider
 {
     private readonly SquadFormationController formationController;
 
@@ -9,19 +9,15 @@ public class SquadFormationFacade : ISoldierFollowerRegistratorProvider, ISquadS
     {
         this.formationController = formationController;
     }
-
-    public int Capacity => formationController.Capacity;
-    public int SoldierCount => formationController.SoldierCount;
+    
     public bool HasFreeSlot => formationController.HasFreeSlot;
-    public IReadOnlyList<FormationSlot> Slots => formationController.Slots;
-    public bool IsFormationSettled => formationController.IsFormationSettled;
 
-    public bool RegisterSoldier(SoldierFollower soldier)
+    public bool RegisterSoldier(SoldierCombatAgent soldier)
     {
         return formationController.RegisterSoldier(soldier);
     }
 
-    public void UnregisterSoldier(SoldierFollower soldier)
+    public void UnregisterSoldier(SoldierCombatAgent soldier)
     {
         formationController.UnregisterSoldier(soldier);
     }
@@ -40,4 +36,6 @@ public class SquadFormationFacade : ISoldierFollowerRegistratorProvider, ISquadS
     {
         return formationController.GetSlotWorldPosition(slotIndex);
     }
+
+    public void ClearSoldiers() => formationController.ClearFormation();
 }

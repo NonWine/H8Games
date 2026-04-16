@@ -24,6 +24,8 @@ public class UnitRegistry<T> where T : class
 
     public bool Register(T item)
     {
+        PruneInvalid();
+
         if (item == null || items.Contains(item))
             return false;
 
@@ -48,5 +50,10 @@ public class UnitRegistry<T> where T : class
 
             items.RemoveAt(i);
         }
+    }
+
+    public void Clear()
+    {
+        items.Clear();
     }
 }

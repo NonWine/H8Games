@@ -6,7 +6,6 @@ public class SoldierFollower : MonoBehaviour
 
     private SquadFollowSettings settings;
     private ISquadSlotPositionProvider squadSlotPositionProvider;
-    private ISoldierFollowerRegistratorProvider registrator;
     private SquadRootView _squadRootView;
     private FormationSlot assignedSlot;
 
@@ -17,12 +16,10 @@ public class SoldierFollower : MonoBehaviour
     public void Construct(
         SquadFollowSettings settings,
         ISquadSlotPositionProvider squadSlotPositionProvider,
-        ISoldierFollowerRegistratorProvider registrator,
-        [InjectOptional] SquadRootView squadRootView)
+        SquadRootView squadRootView)
     {
         this.settings = settings;
         this.squadSlotPositionProvider = squadSlotPositionProvider;
-        this.registrator = registrator;
         this._squadRootView = squadRootView;
     }
     
@@ -63,7 +60,6 @@ public class SoldierFollower : MonoBehaviour
 
     private void OnDisable()
     {
-        registrator.UnregisterSoldier(this);
         _squadRootView = null;
         assignedSlot = null;
     }
@@ -90,7 +86,7 @@ public class SoldierFollower : MonoBehaviour
 
     public bool IsInAssignedSlot(float threshold)
     {
-        if (assignedSlot == null || squadSlotPositionProvider == null)
+        if (assignedSlot == null)
             return false;
 
         Vector3 targetPosition = squadSlotPositionProvider.GetSlotWorldPosition(assignedSlot);

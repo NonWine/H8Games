@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 
-public class SquadFormationRegistry : BaseUnitRegistry<SoldierFollower>
+public class SquadFormationRegistry : BaseUnitRegistry<SoldierCombatAgent>
 {
-    public SquadFormationRegistry() : base(soldier => soldier != null) { }
+    public SquadFormationRegistry() : base(soldier => soldier != null && soldier.IsAlive) { }
 
-    public IReadOnlyList<SoldierFollower> Soldiers => Items;
-    
+    public IReadOnlyList<SoldierCombatAgent> Soldiers => Items;
+
+    public bool HasLivingAllies => Count > 0;
 }

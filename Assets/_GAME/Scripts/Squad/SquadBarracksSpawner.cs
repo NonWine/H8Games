@@ -11,7 +11,7 @@ public class SquadBarracksSpawner : MonoBehaviour
 
     private DiContainer container;
     private SquadFormationFacade squadFormationFacade;
-    private SpawnService<SoldierFollower> spawnService;
+    private SpawnService<SoldierCombatAgent> spawnService;
 
     [Inject]
     public void Construct(DiContainer container, SquadFormationFacade squadFormationFacade)
@@ -22,7 +22,7 @@ public class SquadBarracksSpawner : MonoBehaviour
 
     private void Awake()
     {
-        spawnService = new SpawnService<SoldierFollower>(SpawnSoldier,
+        spawnService = new SpawnService<SoldierCombatAgent>(SpawnSoldier,
             soldier => soldier != null && soldier.gameObject.activeInHierarchy,
             () => spawnInterval);
     }
@@ -35,13 +35,13 @@ public class SquadBarracksSpawner : MonoBehaviour
         spawnService.Tick(Time.deltaTime, out _);
     }
 
-    private SoldierFollower SpawnSoldier()
+    private SoldierCombatAgent SpawnSoldier()
     {
         if (!squadFormationFacade.HasFreeSlot || !CanSpawnInCurrentPhase())
             return null;
 
         Transform origin = spawnPoint != null ? spawnPoint : transform;
-        SoldierFollower soldier = container.InstantiatePrefabForComponent<SoldierFollower>(
+        SoldierCombatAgent soldier = container.InstantiatePrefabForComponent<SoldierCombatAgent>(
             soldierPrefab,
             origin.position,
             origin.rotation,

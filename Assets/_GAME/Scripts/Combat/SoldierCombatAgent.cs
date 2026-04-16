@@ -5,9 +5,9 @@ using Zenject;
 [RequireComponent(typeof(SoldierFollower))]
 public class SoldierCombatAgent : BaseTargetingCombatAgent
 {
+    [field:SerializeField] public SoldierFollower SoldierFollower { get; private set; }
     private IEnemyGroupProvider currentEnemyGroupProvider;
     private ISoldierCombatRegistryProvider soldierCombatRegistryProvider;
-    [SerializeField] private SoldierFollower soldierFollower;
     private ISquadMovementStateReader stateReader;
 
     [Inject]
@@ -18,12 +18,6 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
         this.currentEnemyGroupProvider = currentEnemyGroupProvider;
         this.soldierCombatRegistryProvider = soldierCombatRegistryProvider;
         this.stateReader = stateReader;
-    }
-
-    protected override void OnEnable()
-    {
-        base.OnEnable();
-        soldierCombatRegistryProvider?.RegisterSoldier(this);
     }
 
     protected override void OnDisable()
@@ -78,9 +72,9 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
         
         if(currentEnemyGroupProvider.CurrentTargetGroup != null) return;
         
-        if(soldierFollower.State == SoldierFormationState.WaitingInFormation)
+        if(SoldierFollower.State == SoldierFormationState.WaitingInFormation)
             State = UnitState.Idle;
-        else if (soldierFollower.State == SoldierFormationState.MovingToSlot)
+        else if (SoldierFollower.State == SoldierFormationState.MovingToSlot)
             State = UnitState.Move;
 
 

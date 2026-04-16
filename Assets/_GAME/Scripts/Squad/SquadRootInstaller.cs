@@ -13,12 +13,8 @@ public class SquadRootInstaller : MonoInstaller
         Container.Bind<FormationLayoutService>().AsSingle();
         Container.Bind<SquadFormationRegistry>().AsSingle();
 
-        Container.Bind<SquadFormationController>()
-            .AsSingle()
-            .WithArguments(
-                squadRootViewAnchor,
-                squadRootViewAnchor.transform,
-                squadRootViewAnchor.InitialCapacity);
+        Container.Bind<SquadFormationController>().AsSingle();
+      
 
 
         Container.BindInterfacesAndSelfTo<SquadRootIdleState>().AsSingle();
@@ -26,7 +22,7 @@ public class SquadRootInstaller : MonoInstaller
         Container.BindInterfacesAndSelfTo<SquadReturnGroupState>().AsSingle();
         Container.Bind<SquadRootStateMachine>().AsSingle();
 
-        Container.BindInterfacesAndSelfTo<SquadMoveProvider>().AsSingle().WithArguments(squadRootViewAnchor.transform, squadFollowSettings, squadRootViewAnchor.TargetReachThreshold);
+        Container.BindInterfacesAndSelfTo<SquadMoveProvider>().AsSingle();
         Container.BindInterfacesAndSelfTo<SquadMovementFacade>().AsSingle();
         Container.BindInterfacesAndSelfTo<SquadFormationFacade>().AsSingle();
     }

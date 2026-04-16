@@ -1,4 +1,6 @@
 using System;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
 using Zenject;
 
 public enum CombatFlowState
@@ -31,6 +33,7 @@ public class CombatStateController : IInitializable, IDisposable, IEnemyGroupPro
         EnemyDestinationContex enemyDestinationContex,
         SquadFormationFacade squadFormationFacade)
     {
+        this.squadFormationFacade = squadFormationFacade;
         this.squadMovementFacade = squadMovementFacade;
         this.enemyDestinationContex = enemyDestinationContex;
         this.squadMovementFacade = squadMovementFacade;
@@ -77,14 +80,15 @@ public class CombatStateController : IInitializable, IDisposable, IEnemyGroupPro
         squadMovementFacade.MoveToEnemy();
     }
     
-    private void SetDefeated()
+    private async void SetDefeated()
     {
-        CurrentTargetGroup.ResetRuntimeState();
-        CurrentTargetGroup = null;
+        squadFormationFacade.ClearSoldiers();
+        Debug.Log("Wait for Reset Soldiers");
+        await UniTask.Delay(2000);
+        
+        levelManager.CurrentLevel.ResetRuntimeState();
         State = CombatFlowState.Defeated;
-        squadMovementFacade.Stop();
         State = CombatFlowState.IdleInPreparation;
-
     }
 
     private void StartRegroup()
@@ -97,9 +101,9 @@ public class CombatStateController : IInitializable, IDisposable, IEnemyGroupPro
     private void HandleSquadRegroupCompleted()
     {
         squadMovementFacade.EnterPreparationIdle();
-        State = CombatFlowState.IdleInPreparation;
         squadFormationFacade.RebuildFormation();
         signalBus.Fire(new LoadNextLevelSignal());
+        State = CombatFlowState.IdleInPreparation;
     }
 
     public void Initialize()

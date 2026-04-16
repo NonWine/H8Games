@@ -33,4 +33,6 @@ public abstract class BaseUnitRegistry<T> where T : class
     {
         return registry.Items.Contains(item);
     }
+    
+    public void Clear() =>  registry.Clear();
 }

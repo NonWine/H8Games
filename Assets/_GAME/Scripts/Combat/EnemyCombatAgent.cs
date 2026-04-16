@@ -5,32 +5,15 @@ using Zenject;
 public class EnemyCombatAgent : BaseTargetingCombatAgent
 {
     [Inject] private IAllyTargetProvider allyTargetProvider;
-    private Vector3 spawnPosition;
-    private Quaternion spawnRotation;
-    public EnemyGroupViewController Group { get; private set; }
-    public event Action<EnemyCombatAgent> Died;
 
-    protected override void Awake()
-    {
-        base.Awake();
-        spawnPosition = transform.position;
-        spawnRotation = transform.rotation;
-    }
+    public event Action<EnemyCombatAgent> Died;
+    
 
     public void ResetRunTimeState()
     {
-        gameObject.SetActive(true);
+        State = UnitState.Idle;
         targetReservation.ClearReservations();
         SetCurrentTarget(null);
-        unitHealthHandler.RestoreFull();
-        transform.position = spawnPosition;
-        transform.rotation = spawnRotation;
-        State = UnitState.Idle;
-    }
-    
-    public void SetGroup(EnemyGroupViewController group)
-    {
-        Group = group;
     }
 
     public void Activate()
@@ -51,20 +34,22 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
         if(State != UnitState.Attack)
             return;
 
-        if (!IsCurrentTargetValidBase())
+        if (ShouldRetarget())
         {
             TryAcquireTarget();
         }
-        else if (ShouldRetarget())
+        else if (currentTarget == null)
         {
             TryAcquireTarget();
         }
-        if (!IsCurrentTargetValidBase())
-            return;
+
+        if(currentTarget == null) return;
 
         RotateTowardsCurrentTarget(transform);
         if (attackAgent.Tick(Time.deltaTime, currentTarget, AttackOrigin.position))
+        {
             SpawnProjectileVisual(currentTarget.transform);
+        }
     }
 
     private void TryAcquireTarget()

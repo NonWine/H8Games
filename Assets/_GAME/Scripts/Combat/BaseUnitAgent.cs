@@ -28,6 +28,7 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour, ICombatTarget
 
     protected virtual void Awake()
     {
+        transform.position += (Vector3.up * 0.5f);
         baseCombatUnitView = GetComponent<BaseCombatUnitView>();
         attackRuntimeModel = new AttackRuntimeModel(stats);
         attackAgent = new UnitAttackAgentHandler(attackRuntimeModel);
@@ -54,9 +55,8 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour, ICombatTarget
 
     protected void SpawnProjectileVisual(Transform target)
     {
-        if (projectilePrefab == null || target == null)
-            return;
-
+        if(target == null) return;
+        
         SimpleProjectileView projectile = Instantiate(projectilePrefab, AttackOrigin.position, Quaternion.identity);
         projectile.Launch(target, stats.ProjectileSpeed);
     }
@@ -111,19 +111,16 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour, ICombatTarget
         return true;
     }
 
-    protected bool RotateTowardsCurrentTarget(Transform selfTransform)
+    protected void RotateTowardsCurrentTarget(Transform selfTransform)
     {
-        if (currentTarget == null)
-            return false;
-
+        
         Vector3 direction = currentTarget.transform.position - selfTransform.position;
         direction.y = 0f;
 
         if (direction.sqrMagnitude <= 0.0001f)
-            return false;
-
+            return;
+        
         selfTransform.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
-        return true;
     }
 
     protected virtual void OnEnable()

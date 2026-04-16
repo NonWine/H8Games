@@ -129,7 +129,7 @@ MonoBehaviour:
     DetectionRadius: 8
     AttackCooldown: 1
     Damage: 5
-    ProjectileSpeed: 12
+    ProjectileSpeed: 40
     DeathReward: 5
   attackPoint: {fileID: 5239023890273802138}
   animator: {fileID: 2493678797789296814}

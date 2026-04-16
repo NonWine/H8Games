@@ -4,20 +4,18 @@ using Zenject;
 
 public class SquadMoveProvider : ITickable, IMoveProvider , ISquadMovementStateReader
 {
-    private readonly Transform rootTransform;
+    private readonly SquadRootView rootTransform;
     private readonly SquadFollowSettings settings;
-    private readonly float targetReachThreshold;
 
     private Vector3 targetPoint;
     private Action onReached;
     private bool reachedPath;
 
 
-    public SquadMoveProvider(Transform rootTransform, SquadFollowSettings settings, float targetReachThreshold) : base()
+    public SquadMoveProvider(SquadRootView rootTransform, SquadFollowSettings settings) 
     {
         this.rootTransform = rootTransform;
         this.settings = settings;
-        this.targetReachThreshold = targetReachThreshold;
         reachedPath = true;
     }
 
@@ -32,13 +30,18 @@ public class SquadMoveProvider : ITickable, IMoveProvider , ISquadMovementStateR
     {
         if(reachedPath) return;
         IsMoving = true;
-        Vector3 currentPosition = rootTransform.position;
+        Vector3 currentPosition = rootTransform.transform.position;
         targetPoint.y = currentPosition.y;
 
         Vector3 toTarget = targetPoint - currentPosition;
         toTarget.y = 0f;
-
-        if (toTarget.sqrMagnitude <= targetReachThreshold * targetReachThreshold)
+        var reachThreshold = rootTransform.TargetReachThreshold * rootTransform.TargetReachThreshold;
+        if (targetPoint == rootTransform.HomePosition)
+        {
+            reachThreshold = 0f;
+        }
+        
+        if (toTarget.sqrMagnitude <= reachThreshold)
         {
             reachedPath = true;
             IsMoving = false;
@@ -48,12 +51,12 @@ public class SquadMoveProvider : ITickable, IMoveProvider , ISquadMovementStateR
 
         Vector3 direction = toTarget.normalized;
 
-        rootTransform.position = Vector3.MoveTowards(
+        rootTransform.transform.position = Vector3.MoveTowards(
             currentPosition,
             targetPoint,
             settings.RootMoveSpeed * Time.deltaTime);
 
-        RotateTowards(direction, Time.deltaTime);
+        RotateTowards(direction, Time.deltaTime, reachThreshold.Equals(0f));
     }
 
     public void Stop()
@@ -62,15 +65,28 @@ public class SquadMoveProvider : ITickable, IMoveProvider , ISquadMovementStateR
         onReached = null;
     }
 
-    private void RotateTowards(Vector3 direction, float deltaTime)
+    private void RotateTowards(Vector3 direction, float deltaTime, bool useIdentity = false)
     {
-        direction.y = 0f;
-        if (direction.sqrMagnitude <= 0.0001f)
-            return;
+        Quaternion targetRotation;
 
-        Quaternion targetRotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+        if (useIdentity)
+        {
+            targetRotation = Quaternion.identity;
+        }
+        else
+        {
+            direction.y = 0f;
+            if (direction.sqrMagnitude <= 0.0001f)
+                return;
+
+            targetRotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+        }
+
         float lerpFactor = 1f - Mathf.Exp(-settings.RootFollowSmoothness * deltaTime);
-        rootTransform.rotation = Quaternion.Slerp(rootTransform.rotation, targetRotation, lerpFactor);
+        rootTransform.transform.rotation = Quaternion.Slerp(
+            rootTransform.transform.rotation,
+            targetRotation,
+            lerpFactor);
     }
 
     public bool IsMoving { get; private set; }

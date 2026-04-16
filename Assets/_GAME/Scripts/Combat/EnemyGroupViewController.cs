@@ -109,7 +109,6 @@ public sealed class EnemyGroupViewController : MonoBehaviour
             if (enemy == null)
                 continue;
 
-            enemy.SetGroup(this);
             enemy.Died -= HandleEnemyDied;
             enemy.Died += HandleEnemyDied;
         }
