@@ -2,26 +2,22 @@ using UnityEngine;
 
 public class UnitAttackAgentHandler
 {
-    private const float InitialDelayFactor = 0.35f;
+    private const float MinAttackAnimationSpeedMultiplier = 0.92f;
+    private const float MaxAttackAnimationSpeedMultiplier = 1.08f;
     private readonly AttackRuntimeModel attackData;
+
+    public float AttackAnimationSpeedMultiplier { get; private set; } = 1f;
 
     public UnitAttackAgentHandler(AttackRuntimeModel attackData)
     {
         this.attackData = attackData;
-        ResetCooldownWithRandomDelay();
+        RandomizeAttackAnimationSpeed();
     }
 
-    public bool Tick(float deltaTime)
+    public float GetAttackAnimationSpeed(float animationCycleDuration)
     {
-        attackData.CooldownRemaining = Mathf.Max(0f, attackData.CooldownRemaining - deltaTime);
-
-        if (attackData.CooldownRemaining > 0f)
-        {
-            return false;
-        }
-
-        attackData.CooldownRemaining = Mathf.Max(0.05f, attackData.Cooldown);
-        return true;
+        float baseSpeed = animationCycleDuration / Mathf.Max(0.05f, attackData.Cooldown);
+        return Mathf.Max(0.01f, baseSpeed * AttackAnimationSpeedMultiplier);
     }
 
     public void ApplyDamage(IDamageable target, Vector3 attackOrigin)
@@ -34,13 +30,10 @@ public class UnitAttackAgentHandler
         target.GetDamage(Mathf.Max(0f, attackData.Damage), attackOrigin);
     }
 
-    public void ResetCooldown()
+    public void RandomizeAttackAnimationSpeed()
     {
-        attackData.CooldownRemaining = 0f;
-    }
-
-    public void ResetCooldownWithRandomDelay()
-    {
-        attackData.CooldownRemaining = Random.Range(0f, Mathf.Max(0.05f, attackData.Cooldown * InitialDelayFactor));
+        AttackAnimationSpeedMultiplier = Random.Range(
+            MinAttackAnimationSpeedMultiplier,
+            MaxAttackAnimationSpeedMultiplier);
     }
 }

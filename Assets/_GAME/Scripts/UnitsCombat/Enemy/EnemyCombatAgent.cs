@@ -20,11 +20,19 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
 
     public void ResetRunTimeState()
     {
-        State = UnitState.Idle;
         modules.Reservation.ClearReservations();
         modules.TargetTracker.SetCurrentTarget(null, this);
         modules.TargetTracker.ResetTargetingTimers();
-        modules.Attack.ResetCooldownWithRandomDelay();
+
+        if (!IsAlive)
+        {
+            State = UnitState.Dead;
+            return;
+        }
+
+        State = UnitState.Idle;
+        modules.Attack.RandomizeAttackAnimationSpeed();
+        ApplyAttackAnimationSpeed();
     }
 
     public void Activate()
@@ -32,7 +40,8 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
         if (!IsAlive)
             return;
 
-        modules.Attack.ResetCooldownWithRandomDelay();
+        modules.Attack.RandomizeAttackAnimationSpeed();
+        ApplyAttackAnimationSpeed();
         modules.TargetTracker.ResetTargetingTimers();
         State = UnitState.Attack;
 
@@ -63,21 +72,6 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
             return;
 
         tracker.RotateTowardsCurrentTarget(transform);
-
-        if (modules.Attack.Tick(Time.deltaTime))
-        {
-            ICombatTarget currentTarget = tracker.CurrentTarget;
-            Vector3 attackOrigin = CombatView.AttackPoint.position;
-
-            if (!modules.ProjectileSpawner.Spawn(
-                    CombatView.AttackPoint,
-                    currentTarget.transform,
-                    unitStats.ProjectileSpeed,
-                    () => modules.Attack.ApplyDamage(currentTarget, attackOrigin)))
-            {
-                modules.Attack.ApplyDamage(currentTarget, attackOrigin);
-            }
-        }
     }
 
     private void TryAcquireTarget()

@@ -60,6 +60,10 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: -1.1
       objectReference: {fileID: 0}
+    - target: {fileID: 7097182484956019553, guid: 01ced4803ad69094da1641053a107106, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 2d615ca04b5fd3c4197248bf239c1809, type: 2}
     - target: {fileID: 7830030720844190953, guid: 01ced4803ad69094da1641053a107106, type: 3}
       propertyPath: m_Name
       value: Player
@@ -123,12 +127,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d33e8cd910e69094da36e46970748d47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  teamId: 2
   attackPoint: {fileID: 8805818230395325000}
   cameraAnchor: {fileID: 3707676204388540313}
-  detectionMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
   healthBarView: {fileID: 5908764474789611670}
   projectilePrefab: {fileID: 4041960524083155756, guid: 4d339c7c02696d14196569d8dae8f7b8, type: 3}
   characterController: {fileID: 6116504933033149543}

@@ -3,14 +3,21 @@
 public class CombatAnimationPresenter
 {
     private readonly Animator animator;
+    private float attackAnimationSpeed = 1f;
 
     public CombatAnimationPresenter(Animator animator)
     {
         this.animator = animator;
     }
 
+    public void SetAttackAnimationSpeed(float speed)
+    {
+        attackAnimationSpeed = Mathf.Max(0.01f, speed);
+    }
+
     public void Apply(UnitState state)
     {
+        animator.speed = state == UnitState.Attack ? attackAnimationSpeed : 1f;
 
         switch (state)
         {

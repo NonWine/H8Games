@@ -268,6 +268,8 @@ MonoBehaviour:
   <ProjectilePrefab>k__BackingField: {fileID: 4041960524083155756, guid: 4d339c7c02696d14196569d8dae8f7b8, type: 3}
   <AttackPoint>k__BackingField: {fileID: 599491131084117077}
   <Animator>k__BackingField: {fileID: 7097182484956019553}
+  <AttackAnimationEvents>k__BackingField: {fileID: 5351347331032673968}
+  <AttackAnimationCycleDuration>k__BackingField: 1.25
 --- !u!1 &8013928732478748062
 GameObject:
   m_ObjectHideFlags: 0
@@ -354,7 +356,7 @@ PrefabInstance:
     - target: {fileID: 3435984986488307189, guid: 5d51f1d2ebdbfae41afd09f70da3867a, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 2d615ca04b5fd3c4197248bf239c1809, type: 2}
+      objectReference: {fileID: 9100000, guid: 83105d438a15b7e47a0dae7ca185af71, type: 2}
     - target: {fileID: 3435984986488307189, guid: 5d51f1d2ebdbfae41afd09f70da3867a, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
@@ -362,7 +364,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3435984986488307188, guid: 5d51f1d2ebdbfae41afd09f70da3867a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5351347331032673968}
   m_SourcePrefab: {fileID: 100100000, guid: 5d51f1d2ebdbfae41afd09f70da3867a, type: 3}
 --- !u!137 &7097182484632356938 stripped
 SkinnedMeshRenderer:
@@ -409,6 +414,23 @@ SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: 3435984986490766960, guid: 5d51f1d2ebdbfae41afd09f70da3867a, type: 3}
   m_PrefabInstance: {fileID: 5607355360984204948}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &7097182484956019552 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3435984986488307188, guid: 5d51f1d2ebdbfae41afd09f70da3867a, type: 3}
+  m_PrefabInstance: {fileID: 5607355360984204948}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5351347331032673968
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7097182484956019552}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42b93fbfe14ed314baec681d2af53f61, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!95 &7097182484956019553 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 3435984986488307189, guid: 5d51f1d2ebdbfae41afd09f70da3867a, type: 3}

@@ -60,21 +60,6 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
         tracker.RotateTowardsCurrentTarget(transform);
 
         State = UnitState.Attack;
-
-        if (modules.Attack.Tick(Time.deltaTime))
-        {
-            ICombatTarget currentTarget = tracker.CurrentTarget;
-            Vector3 attackOrigin = CombatView.AttackPoint.position;
-
-            if (!modules.ProjectileSpawner.Spawn(
-                    CombatView.AttackPoint,
-                    currentTarget.transform,
-                    unitStats.ProjectileSpeed,
-                    () => modules.Attack.ApplyDamage(currentTarget, attackOrigin)))
-            {
-                modules.Attack.ApplyDamage(currentTarget, attackOrigin);
-            }
-        }
     }
 
     private void UpdateFormation()

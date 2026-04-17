@@ -44,6 +44,9 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
 
     private void HandleCombatStartedBattle()
     {
+        if (State != CombatFlowState.MovingToZone || CurrentTargetGroup == null)
+            return;
+
         CurrentTargetGroup.Cleared += HandleCombatClearedZone;
         squadMovementFacade.Stop();
         CurrentTargetGroup.Activate();
@@ -83,7 +86,7 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
     
     private async void SetDefeated()
     {
-
+        ClearCurrentEncounter();
         squadFormationFacade.ClearSoldiers();
         State = CombatFlowState.Defeated;
         Debug.Log("Wait for Reset Soldiers");
@@ -91,6 +94,16 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
         levelManager.CurrentLevel.ResetRuntimeState();
         State = CombatFlowState.IdleInPreparation;
         signalBus.Fire<GameIdleStateSignal>();
+    }
+
+    private void ClearCurrentEncounter()
+    {
+        if (CurrentTargetGroup == null)
+            return;
+
+        CurrentTargetGroup.Cleared -= HandleCombatClearedZone;
+        CurrentTargetGroup.ResetRuntimeState();
+        CurrentTargetGroup = null;
     }
 
     private void StartRegroup()

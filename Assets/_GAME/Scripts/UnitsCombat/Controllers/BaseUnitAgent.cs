@@ -25,6 +25,8 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour , ICombatTarget
        var unitModuleFactory = modulesFactory.Create(unitModuleType);
        modules = unitModuleFactory.Create(new CombatUnitModulesArgs(CombatView, unitStats));
        modules.Health.Died += OnDied;
+       ApplyAttackAnimationSpeed();
+       CombatView.AttackAnimationEvents.AttackTriggered += HandleAttackAnimationTriggered;
     }
 
     protected virtual void Update()
@@ -42,6 +44,9 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour , ICombatTarget
     {
         if (modules != null)
             modules.Health.Died -= OnDied;
+
+        if (CombatView != null && CombatView.AttackAnimationEvents != null)
+            CombatView.AttackAnimationEvents.AttackTriggered -= HandleAttackAnimationTriggered;
     }
 
     public void GetDamage(float damage, Vector3 sourceWorldPosition)
@@ -59,5 +64,29 @@ public abstract class BaseTargetingCombatAgent : MonoBehaviour , ICombatTarget
     {
         State = UnitState.Dead;
         modules.Death.HandleDeathAsync();
+    }
+
+    protected void ApplyAttackAnimationSpeed()
+    {
+        modules.Animation.SetAttackAnimationSpeed(
+            modules.Attack.GetAttackAnimationSpeed(CombatView.AttackAnimationCycleDuration));
+    }
+
+    private void HandleAttackAnimationTriggered()
+    {
+        if (!IsAlive || State != UnitState.Attack || !modules.TargetTracker.IsCurrentTargetValid())
+            return;
+
+        ICombatTarget currentTarget = modules.TargetTracker.CurrentTarget;
+        Vector3 attackOrigin = CombatView.AttackPoint.position;
+
+        if (!modules.ProjectileSpawner.Spawn(
+                CombatView.AttackPoint,
+                currentTarget.transform,
+                unitStats.ProjectileSpeed,
+                () => modules.Attack.ApplyDamage(currentTarget, attackOrigin)))
+        {
+            modules.Attack.ApplyDamage(currentTarget, attackOrigin);
+        }
     }
 }
