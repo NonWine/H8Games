@@ -24,7 +24,7 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
         modules.Reservation.ClearReservations();
         modules.TargetTracker.SetCurrentTarget(null, this);
         modules.TargetTracker.ResetTargetingTimers();
-        modules.Attack.ResetCooldown();
+        modules.Attack.ResetCooldownWithRandomDelay();
     }
 
     public void Activate()
@@ -32,7 +32,7 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
         if (!IsAlive)
             return;
 
-        modules.Attack.ResetCooldown();
+        modules.Attack.ResetCooldownWithRandomDelay();
         modules.TargetTracker.ResetTargetingTimers();
         State = UnitState.Attack;
 

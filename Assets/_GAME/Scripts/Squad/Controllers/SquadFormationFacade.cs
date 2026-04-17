@@ -5,6 +5,8 @@ public class SquadFormationFacade : ISoldierCombatRegistryProvider, ISquadSlotPo
 {
     private readonly SquadFormationController formationController;
 
+    public bool HasAlly => formationController.HasAlly;
+    
     public SquadFormationFacade(SquadFormationController formationController)
     {
         this.formationController = formationController;

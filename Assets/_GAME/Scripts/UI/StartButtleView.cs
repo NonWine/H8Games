@@ -7,7 +7,8 @@ public class StartButtleView : MonoBehaviour
 {
     [Inject] private SquadCombatStateController _squadCombatStateController;
     [SerializeField] private Button startButton;
-
+    public Button StartButton => startButton;
+    
     private void OnEnable()
     {
         startButton.onClick.AddListener(StartFlow);

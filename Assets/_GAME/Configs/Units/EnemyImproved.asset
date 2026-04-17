@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ba20ae376e8446a1ae4ed8bedad61c2a, type: 3}
-  m_Name: Enemy
+  m_Name: EnemyImproved
   m_EditorClassIdentifier: 
   unitStats:
-    MaxHealth: 30
+    MaxHealth: 55
     MoveSpeed: 3.5
     DetectionRadius: 8
     AttackCooldown: 1
-    Damage: 5
+    Damage: 8
     ProjectileSpeed: 44
-    DeathReward: 3
+    DeathReward: 5
     ReservationPenalty: 3
     RetargetInterval: 0.35
     TargetLockDuration: 0.35

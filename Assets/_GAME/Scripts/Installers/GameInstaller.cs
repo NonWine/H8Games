@@ -40,6 +40,9 @@ public class GameInstaller : MonoInstaller
         Container.DeclareSignal<SquadReachedEnemySignal>();
         Container.DeclareSignal<LoadNextLevelSignal>();
         Container.DeclareSignal<SquadDefeatedSignal>();
+        Container.DeclareSignal<StartButtleSignal>();
+        Container.DeclareSignal<GameIdleStateSignal>();
+
     }
 
     private void InstallHero()

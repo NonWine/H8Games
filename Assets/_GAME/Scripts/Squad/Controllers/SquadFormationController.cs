@@ -12,7 +12,8 @@ public class SquadFormationController
     private int capacity;
     
     public bool HasFreeSlot => registry.Count < capacity;
-    
+
+    public bool HasAlly => registry.HasLivingAllies;
 
     public SquadFormationController(
         SquadRootView squadRootView, 

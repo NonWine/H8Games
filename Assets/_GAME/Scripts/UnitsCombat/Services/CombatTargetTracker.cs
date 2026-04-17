@@ -2,6 +2,7 @@
 
 public class CombatTargetTracker
 {
+    private const float RotationSmoothness = 12f;
     private readonly float retargetInterval;
     private readonly float targetLockDuration;
 
@@ -89,6 +90,8 @@ public class CombatTargetTracker
         if (direction.sqrMagnitude <= 0.0001f)
             return;
 
-        selfTransform.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+        Quaternion targetRotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+        float lerpFactor = 1f - Mathf.Exp(-RotationSmoothness * Time.deltaTime);
+        selfTransform.rotation = Quaternion.Slerp(selfTransform.rotation, targetRotation, lerpFactor);
     }
 }

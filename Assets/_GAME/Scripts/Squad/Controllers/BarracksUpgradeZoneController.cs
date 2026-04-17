@@ -133,7 +133,7 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         int remaining = requiredCoins - spentCoins;
         if (remaining <= 0)
         {
-            CompleteUpgrade();
+            CompleteUpgrade(animate: true);
             return;
         }
 
@@ -151,13 +151,17 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         }
 
         spentCoins += spendAmount;
-        RefreshVisualState(animate: true);
 
         if (spentCoins >= requiredCoins)
-            CompleteUpgrade();
+        {
+            CompleteUpgrade(animate: true);
+            return;
+        }
+
+        RefreshVisualState(animate: true);
     }
 
-    private void CompleteUpgrade()
+    private void CompleteUpgrade(bool animate)
     {
         if (isCompleted)
             return;
@@ -166,6 +170,17 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         isActive = false;
         UnsubscribeFromCurrency();
         priceLabel.text = "0";
+        fillTween?.Kill();
+
+        if (animate)
+        {
+            fillTween = fillImage
+                .DOFillAmount(1f, fillDuration)
+                .SetEase(Ease.OutBack)
+                .OnComplete(FinishCompletion);
+            return;
+        }
+
         fillImage.fillAmount = 1f;
         FinishCompletion();
     }

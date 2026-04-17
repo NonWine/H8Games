@@ -12,7 +12,7 @@ public enum CombatFlowState
     Defeated = 4
 }
 
-public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGroupProvider
+public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGroupProvider ,ICombatStateProvider
 {
     private readonly LevelManager levelManager;
     private readonly SignalBus signalBus;
@@ -69,13 +69,13 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
 
     public void StartFlow()
     {
-        if (State != CombatFlowState.IdleInPreparation)
+        if (State != CombatFlowState.IdleInPreparation || !squadFormationFacade.HasAlly)
             return;
 
         CurrentTargetGroup = enemyGroupDetector.FindNearestValidGroup(levelManager.CurrentLevel);
         if (CurrentTargetGroup == null)
             return;
-        
+        signalBus.Fire<StartButtleSignal>();
         enemyDestinationContex.Set(CurrentTargetGroup.transform.position);
         State = CombatFlowState.MovingToZone;
         squadMovementFacade.MoveToEnemy();
@@ -90,6 +90,7 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
         await UniTask.Delay(2000);
         levelManager.CurrentLevel.ResetRuntimeState();
         State = CombatFlowState.IdleInPreparation;
+        signalBus.Fire<GameIdleStateSignal>();
     }
 
     private void StartRegroup()
@@ -121,4 +122,9 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
         signalBus.Unsubscribe<SquadDefeatedSignal>(SetDefeated);
     }
     
+}
+
+public interface ICombatStateProvider
+{
+    CombatFlowState State { get; }
 }

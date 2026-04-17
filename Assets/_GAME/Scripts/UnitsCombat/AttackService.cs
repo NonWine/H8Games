@@ -2,11 +2,13 @@ using UnityEngine;
 
 public class UnitAttackAgentHandler
 {
+    private const float InitialDelayFactor = 0.35f;
     private readonly AttackRuntimeModel attackData;
 
     public UnitAttackAgentHandler(AttackRuntimeModel attackData)
     {
         this.attackData = attackData;
+        ResetCooldownWithRandomDelay();
     }
 
     public bool Tick(float deltaTime)
@@ -35,5 +37,10 @@ public class UnitAttackAgentHandler
     public void ResetCooldown()
     {
         attackData.CooldownRemaining = 0f;
+    }
+
+    public void ResetCooldownWithRandomDelay()
+    {
+        attackData.CooldownRemaining = Random.Range(0f, Mathf.Max(0.05f, attackData.Cooldown * InitialDelayFactor));
     }
 }
