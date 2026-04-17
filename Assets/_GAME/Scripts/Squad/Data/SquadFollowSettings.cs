@@ -25,6 +25,18 @@ public class SquadFollowSettings : ScriptableObject
     [Min(0.01f)]
     [SerializeField] private float slotReachThreshold = 0.12f;
 
+    [Header("Moving Formation Variation")]
+    [Min(0f)]
+    [SerializeField] private float movingSlotOffsetRadius = 0.14f;
+    [SerializeField] private Vector2 soldierMoveSpeedMultiplierRange = new(0.92f, 1.08f);
+    [SerializeField] private Vector2 soldierRotationSpeedMultiplierRange = new(0.9f, 1.1f);
+    [Min(0.01f)]
+    [SerializeField] private float soldierFollowSmoothTime = 0.14f;
+    [Range(0f, 1f)]
+    [SerializeField] private float movingFacingToSlotWeight = 0.65f;
+    [Min(0f)]
+    [SerializeField] private float movingFacingYawJitter = 7f;
+
     public float RootMoveSpeed => rootMoveSpeed;
     public float RootFollowSmoothness => rootFollowSmoothness;
     public int Columns => Mathf.Max(1, columns);
@@ -33,4 +45,12 @@ public class SquadFollowSettings : ScriptableObject
     public float SoldierMoveSpeed => soldierMoveSpeed;
     public float SoldierRotationSpeed => soldierRotationSpeed;
     public float SlotReachThreshold => slotReachThreshold;
+    public float MovingSlotOffsetRadius => movingSlotOffsetRadius;
+    public float SoldierFollowSmoothTime => soldierFollowSmoothTime;
+    public float MovingFacingToSlotWeight => movingFacingToSlotWeight;
+    public float MovingFacingYawJitter => movingFacingYawJitter;
+    public float SoldierMoveSpeedMultiplierMin => Mathf.Min(soldierMoveSpeedMultiplierRange.x, soldierMoveSpeedMultiplierRange.y);
+    public float SoldierMoveSpeedMultiplierMax => Mathf.Max(soldierMoveSpeedMultiplierRange.x, soldierMoveSpeedMultiplierRange.y);
+    public float SoldierRotationSpeedMultiplierMin => Mathf.Min(soldierRotationSpeedMultiplierRange.x, soldierRotationSpeedMultiplierRange.y);
+    public float SoldierRotationSpeedMultiplierMax => Mathf.Max(soldierRotationSpeedMultiplierRange.x, soldierRotationSpeedMultiplierRange.y);
 }
