@@ -61,12 +61,19 @@ public class SoldierCombatAgent : BaseTargetingCombatAgent
 
         State = UnitState.Attack;
 
-        if (modules.Attack.Tick(Time.deltaTime, tracker.CurrentTarget, CombatView.AttackPoint.position))
+        if (modules.Attack.Tick(Time.deltaTime))
         {
-            modules.ProjectileSpawner.Spawn(
-                CombatView.AttackPoint,
-                tracker.CurrentTarget.transform,
-                unitStats.ProjectileSpeed);
+            ICombatTarget currentTarget = tracker.CurrentTarget;
+            Vector3 attackOrigin = CombatView.AttackPoint.position;
+
+            if (!modules.ProjectileSpawner.Spawn(
+                    CombatView.AttackPoint,
+                    currentTarget.transform,
+                    unitStats.ProjectileSpeed,
+                    () => modules.Attack.ApplyDamage(currentTarget, attackOrigin)))
+            {
+                modules.Attack.ApplyDamage(currentTarget, attackOrigin);
+            }
         }
     }
 

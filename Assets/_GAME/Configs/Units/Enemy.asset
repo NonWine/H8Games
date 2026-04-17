@@ -18,7 +18,7 @@ MonoBehaviour:
     DetectionRadius: 8
     AttackCooldown: 1
     Damage: 5
-    ProjectileSpeed: 12
+    ProjectileSpeed: 44
     DeathReward: 5
     ReservationPenalty: 3
     RetargetInterval: 0.35

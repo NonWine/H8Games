@@ -1,3 +1,5 @@
+using System;
+using DG.Tweening;
 using UnityEngine;
 using Zenject;
 
@@ -7,7 +9,7 @@ public class SquadBarracksSpawner : MonoBehaviour
     private CombatUnitFactory unitFactory;
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private BarracksStats barracksStats;
-
+    [SerializeField] private GameObject[] barracks;
     private SquadFormationFacade squadFormationFacade;
     private SpawnService<SoldierCombatAgent> spawnService;
 
@@ -20,9 +22,15 @@ public class SquadBarracksSpawner : MonoBehaviour
 
     private void Awake()
     {
+        barracksStats?.ResetRuntimeState();
         spawnService = new SpawnService<SoldierCombatAgent>(SpawnSoldier,
             soldier => soldier != null && soldier.gameObject.activeInHierarchy,
             () => barracksStats.SpawnInterval);
+    }
+
+    private void Start()
+    {
+        SetBarrackView();
     }
 
     private void Update()
@@ -60,7 +68,25 @@ public class SquadBarracksSpawner : MonoBehaviour
 
     }
 
-    public void UpgradeLevel() => barracksStats.Update();
+    public void UpgradeLevel()
+    {
+        barracksStats?.Update();
+        SetBarrackView();
+    }
+
+    private void SetBarrackView()
+    {
+        foreach (var barrack in barracks)
+        {
+            barrack.gameObject.SetActive(false);
+        }
+
+        var newModel = barracksStats.BarrackLevelData.UnitModel;
+        newModel.transform.localScale = Vector3.one;
+        newModel.gameObject.SetActive(true);
+        newModel.transform.DOScale(1.2f, 0.25f).SetEase(Ease.OutBack);
+        newModel.transform.DOScale(1f,0.15f).SetEase(Ease.Linear).SetDelay(0.25f);
+    }
 
     private bool CanSpawnInCurrentPhase()
     {
@@ -70,5 +96,4 @@ public class SquadBarracksSpawner : MonoBehaviour
         return true;
     }
 }
-
 

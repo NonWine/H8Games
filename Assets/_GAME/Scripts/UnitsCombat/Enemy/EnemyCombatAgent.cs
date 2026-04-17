@@ -5,6 +5,7 @@ using Zenject;
 public class EnemyCombatAgent : BaseTargetingCombatAgent
 {
     [Inject] private IAllyTargetProvider allyTargetProvider;
+    [Inject] private CurrencyService currencyService;
 
 
     public event Action<EnemyCombatAgent> Died;
@@ -63,12 +64,19 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
 
         tracker.RotateTowardsCurrentTarget(transform);
 
-        if (modules.Attack.Tick(Time.deltaTime, tracker.CurrentTarget, CombatView.AttackPoint.position))
+        if (modules.Attack.Tick(Time.deltaTime))
         {
-            modules.ProjectileSpawner.Spawn(
-                CombatView.AttackPoint,
-                tracker.CurrentTarget.transform,
-                unitStats.ProjectileSpeed);
+            ICombatTarget currentTarget = tracker.CurrentTarget;
+            Vector3 attackOrigin = CombatView.AttackPoint.position;
+
+            if (!modules.ProjectileSpawner.Spawn(
+                    CombatView.AttackPoint,
+                    currentTarget.transform,
+                    unitStats.ProjectileSpeed,
+                    () => modules.Attack.ApplyDamage(currentTarget, attackOrigin)))
+            {
+                modules.Attack.ApplyDamage(currentTarget, attackOrigin);
+            }
         }
     }
 
@@ -93,8 +101,8 @@ public class EnemyCombatAgent : BaseTargetingCombatAgent
 
     protected override void OnDied()
     {
+        currencyService?.Add(unitStats.DeathReward);
         Died?.Invoke(this);
         base.OnDied();
     }
 }
-

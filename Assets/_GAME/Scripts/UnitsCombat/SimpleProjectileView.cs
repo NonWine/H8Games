@@ -1,14 +1,19 @@
+using System;
 using UnityEngine;
 
 public class SimpleProjectileView : MonoBehaviour
 {
     private Transform target;
     private float speed;
+    private Action onHit;
+    private bool hitResolved;
 
-    public void Launch(Transform target, float speed)
+    public void Launch(Transform target, float speed, Action onHit = null)
     {
         this.target = target;
         this.speed = Mathf.Max(0.1f, speed);
+        this.onHit = onHit;
+        hitResolved = false;
     }
 
     private void Update()
@@ -25,6 +30,14 @@ public class SimpleProjectileView : MonoBehaviour
             transform.forward = direction.normalized;
 
         if ((transform.position - target.position).sqrMagnitude <= 0.01f)
+        {
+            if (!hitResolved)
+            {
+                hitResolved = true;
+                onHit?.Invoke();
+            }
+
             Destroy(gameObject);
+        }
     }
 }

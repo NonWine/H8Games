@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+using System;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 public class ProjectileVisualSpawner
 {
@@ -9,16 +11,13 @@ public class ProjectileVisualSpawner
         this.projectilePrefab = projectilePrefab;
     }
 
-    public void Spawn(Transform origin, Transform target, float speed)
+    public bool Spawn(Transform origin, Transform target, float speed, Action onHit)
     {
-        if (projectilePrefab == null || origin == null || target == null)
-            return;
+        if (target == null)
+            return false;
 
-        SimpleProjectileView projectile = Object.Instantiate(
-            projectilePrefab,
-            origin.position,
-            Quaternion.identity);
-
-        projectile.Launch(target, speed);
+        SimpleProjectileView projectile = Object.Instantiate(projectilePrefab, origin.position, Quaternion.identity);
+        projectile.Launch(target, speed, onHit);
+        return true;
     }
 }

@@ -17,8 +17,8 @@ MonoBehaviour:
     MoveSpeed: 3.5
     DetectionRadius: 8
     AttackCooldown: 0.72
-    Damage: 14.97
-    ProjectileSpeed: 12
+    Damage: 7
+    ProjectileSpeed: 44
     DeathReward: 5
     ReservationPenalty: 3
     RetargetInterval: 0.35
