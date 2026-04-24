@@ -5,9 +5,9 @@ public class TargetReservation : ITargetReservation, IResetModule, IDisposeModul
 {
     public int ReservationCount => reservationAttackers.Count;
  
-    private readonly HashSet<Component> reservationAttackers = new();
+    private readonly HashSet<ICombatTarget> reservationAttackers = new();
 
-    public bool TryRegisterAttacker(Component attacker)
+    public bool TryRegisterAttacker(ICombatTarget attacker)
     {
         if (attacker == null)
             return false;
@@ -15,7 +15,7 @@ public class TargetReservation : ITargetReservation, IResetModule, IDisposeModul
         return reservationAttackers.Add(attacker);    
     }
 
-    public bool TryUnregisterAttacker(Component attacker)
+    public bool TryUnregisterAttacker(ICombatTarget attacker)
     {
         if (attacker == null)
             return false;

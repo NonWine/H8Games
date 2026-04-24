@@ -1,48 +1,25 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class EnemyCombatAgentController : BaseCombatAgentController
 {
-    private readonly IAllyTargetProvider allyTargetProvider;
     private readonly CurrencyService currencyService;
 
     public bool IsActive { get; private set; }
 
     public EnemyCombatAgentController(
         BaseCombatAgentView baseCombatAgentView,
-        ModulesFactoryCollection modulesFactoryCollection,
-        IAllyTargetProvider allyTargetProvider,
+        ModulesFactoryCollection modulesFactoryCollection, 
         CurrencyService currencyService)
         : base(baseCombatAgentView, modulesFactoryCollection)
     {
-        this.allyTargetProvider = allyTargetProvider;
         this.currencyService = currencyService;
     }
 
     public override void Tick()
     {
+        UpdateCombatTargetTracking();
         base.Tick();
-
-        if (!IsAlive)
-            return;
-
-        if (State != UnitState.Attack)
-            return;
-
-        var tracker = modules.TargetTracker;
-
-        if (!tracker.IsCurrentTargetValid())
-        {
-            TryAcquireTarget();
-        }
-        else if (tracker.ShouldRetarget())
-        {
-            TryAcquireTarget();
-        }
-
-        if (tracker.CurrentTarget == null)
-            return;
-
-        tracker.RotateTowardsCurrentTarget(baseCombatAgentView.transform);
     }
 
     public void ResetRunTimeState()
@@ -75,20 +52,5 @@ public class EnemyCombatAgentController : BaseCombatAgentController
         IsActive = false;
         currencyService.Add(unitStats.DeathReward);
         base.OnDied();
-    }
-
-    private void TryAcquireTarget()
-    {
-        ICombatTarget target = allyTargetProvider.GetBestLivingAllyTarget(baseCombatAgentView.transform.position, unitStats.ReservationPenalty);
-        var tracker = modules.TargetTracker;
-
-        if (target == null)
-        {
-            tracker.SetCurrentTarget(null);
-            return;
-        }
-
-        tracker.SetCurrentTarget(target);
-        tracker.MarkRetargetWindow();
     }
 }

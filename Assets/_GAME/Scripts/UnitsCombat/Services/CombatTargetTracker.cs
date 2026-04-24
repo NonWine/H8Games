@@ -1,41 +1,80 @@
-﻿using UnityEngine;
+using System.Collections.Generic;
+using UnityEngine;
 
-public class CombatTargetTracker : IResetModule, IDisposeModule
+public class CombatTargetTracker : ITargetTrackerModule
 {
-    private const float RotationSmoothness = 12f;
     private readonly float retargetInterval;
     private readonly float targetLockDuration;
-    private readonly Component owner;
 
-    public CombatTargetTracker(Component owner, float retargetInterval, float targetLockDuration)
+    private readonly ICombatTargetProvider targetProvider;
+    private readonly ITargetReservation targetReservation;
+    private readonly List<ICombatTargetValidator> targetValidators;
+
+    private float nextRetargetTime;
+    private float targetLockUntil;
+    
+    public ICombatTarget CurrentTarget { get; private set; }
+
+    public CombatTargetTracker(ICombatTargetProvider targetProvider, List<ICombatTargetValidator> targetValidators, float retargetInterval, float targetLockDuration)
     {
-        this.owner = owner;
         this.retargetInterval = retargetInterval;
         this.targetLockDuration = targetLockDuration;
+        this.targetProvider = targetProvider;
+        this.targetValidators = targetValidators;
     }
 
-    public ICombatTarget CurrentTarget { get; private set; }
-    public float TargetLockUntil { get; private set; }
-    public float NextRetargetTime { get; private set; }
+    
 
-    public bool ShouldRetarget()
+    public void UpdateTarget(UnitState state)
     {
-        return Time.time >= NextRetargetTime && Time.time >= TargetLockUntil;
+        if (state != UnitState.Attack)
+        {
+            Reset();
+            return;
+        }
+
+        if (!IsCurrentTargetValid() || CanRetarget())
+        {
+            SetCurrentTarget(targetProvider.GetTarget());
+        }
     }
 
-    public void MarkRetargetWindow()
+    public bool IsCurrentTargetValid()
     {
-        NextRetargetTime = Time.time + retargetInterval;
-        TargetLockUntil = Time.time + targetLockDuration;
+        if (CurrentTarget == null)
+            return false;
+
+        for (int i = 0; i < targetValidators.Count; i++)
+        {
+            if (!targetValidators[i].IsValid(CurrentTarget))
+                return false;
+        }
+
+        return true;
     }
 
-    public void ResetTargetingTimers()
+    public void Reset()
     {
-        NextRetargetTime = 0f;
-        TargetLockUntil = 0f;
+        ReleaseCurrentTarget();
+
+        nextRetargetTime = 0f;
+        targetLockUntil = 0f;
     }
 
-    public void SetCurrentTarget(ICombatTarget newTarget)
+    private bool CanRetarget()
+    {
+        return Time.time >= nextRetargetTime && Time.time >= targetLockUntil;
+    }
+
+    private void MarkRetargetWindow()
+    {
+        nextRetargetTime = Time.time + retargetInterval;
+        targetLockUntil = CurrentTarget == null
+            ? 0f
+            : Time.time + targetLockDuration;
+    }
+
+    private void SetCurrentTarget(ICombatTarget newTarget)
     {
         if (ReferenceEquals(CurrentTarget, newTarget))
             return;
@@ -43,74 +82,20 @@ public class CombatTargetTracker : IResetModule, IDisposeModule
         ReleaseCurrentTarget();
         CurrentTarget = newTarget;
 
-        if (CurrentTarget is ITargetReservation reservationTarget)
+        if (CurrentTarget != null)
         {
-            reservationTarget.TryRegisterAttacker(owner);
+            targetReservation.TryRegisterAttacker(CurrentTarget);
+            MarkRetargetWindow();
+            return;
         }
 
-        if (CurrentTarget == null)
-        {
-            NextRetargetTime = Time.time + retargetInterval;
-            TargetLockUntil = 0f;
-        }
+        nextRetargetTime = Time.time + retargetInterval;
+        targetLockUntil = 0f;
     }
 
-    public void ReleaseCurrentTarget()
+    private void ReleaseCurrentTarget()
     {
-        if (CurrentTarget is ITargetReservation reservationTarget)
-        {
-            reservationTarget.TryUnregisterAttacker(owner);
-        }
-
+        targetReservation.TryUnregisterAttacker(CurrentTarget);
         CurrentTarget = null;
-    }
-
-    public void Reset()
-    {
-        ReleaseCurrentTarget();
-        ResetTargetingTimers();
-    }
-
-    public void Dispose()
-    {
-        Reset();
-    }
-
-    public bool IsCurrentTargetValid(EnemyGroupViewController currentGroup = null)
-    {
-        if (CurrentTarget == null || !CurrentTarget.IsAlive)
-            return false;
-
-        if (CurrentTarget is EnemyCombatAgentController enemyCombatAgentController)
-        {
-            if (!enemyCombatAgentController.IsActive)
-                return false;
-        }
-        else if (CurrentTarget is Component targetComponent)
-        {
-            if (!targetComponent.gameObject.activeInHierarchy)
-                return false;
-        }
-
-        if (currentGroup != null && !currentGroup.ContainsEnemy(CurrentTarget))
-            return false;
-
-        return true;
-    }
-
-    public void RotateTowardsCurrentTarget(Transform selfTransform)
-    {
-        if (CurrentTarget == null)
-            return;
-
-        Vector3 direction = CurrentTarget.transform.position - selfTransform.position;
-        direction.y = 0f;
-
-        if (direction.sqrMagnitude <= 0.0001f)
-            return;
-
-        Quaternion targetRotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
-        float lerpFactor = 1f - Mathf.Exp(-RotationSmoothness * Time.deltaTime);
-        selfTransform.rotation = Quaternion.Slerp(selfTransform.rotation, targetRotation, lerpFactor);
     }
 }

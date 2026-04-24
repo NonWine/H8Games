@@ -1,12 +1,19 @@
 using System;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Zenject;
 
 public class BaseCombatAgentController : ITickable, IInitializable, IDisposable, ICombatTarget
 {
+    private const float CombatRotationSmoothness = 12f;
+    private const float MinRotationDirectionSqrMagnitude = 0.0001f;
+
     protected readonly BaseCombatAgentView baseCombatAgentView;
     protected readonly UnitStats unitStats;
     protected readonly CombatUnitModules modules;
+    private readonly ProjectileVisualSpawner projectileSpawner;
+    private readonly float projectileSpeed;
     public BaseCombatUnitView CombatView => baseCombatAgentView;
     public Transform transform => baseCombatAgentView.transform;
     public UnitState State { get; protected set; } = UnitState.Idle;
@@ -14,21 +21,20 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
     public string UnitId { get; private set; }
     public bool IsAlive => modules.Health.IsAlive;
     public ITargetReservation Reservation => modules.Reservation;
+    private ITargetTrackerModule targetTracker;
+    public int ReservationCount => Reservation.ReservationCount;
     public event Action Died;
     public event Action<HitData> HitReceived;
 
 
-    public BaseCombatAgentController(BaseCombatAgentView baseCombatAgentView, ModulesFactoryCollection modulesFactoryCollection)
+    public BaseCombatAgentController(
+        BaseCombatAgentView baseCombatAgentView,
+        ModulesFactoryCollection modulesFactoryCollection)
     {
         this.baseCombatAgentView = baseCombatAgentView;
         unitStats = baseCombatAgentView.unitConfig.CreateRuntimeStats();
 
         var unitModuleFactory = modulesFactoryCollection.Create(baseCombatAgentView.unitConfig.unitModuleType);
-        if (unitModuleFactory == null)
-        {
-            throw new InvalidOperationException($"No combat unit module factory registered for {baseCombatAgentView.unitConfig.unitModuleType}.");
-        }
-
         modules = unitModuleFactory.Create(new CombatUnitModulesArgs(baseCombatAgentView, unitStats));
     }
 
@@ -40,6 +46,8 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
     public void Initialize()
     {
         modules.Health.Died += OnDied;
+        baseCombatAgentView.AttackAnimationEvents.AttackTriggered += HandleAttackAnimationTriggered;
+
     }
 
     public virtual void GetDamage(float damage, Vector3 sourceWorldPosition)
@@ -54,10 +62,41 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
         modules.Health.ApplyDamage(hitData.damage);
         baseCombatAgentView.SetEmissionHitFlash();
     }
-
+    
     public void SetIdentity(string unitId)
     {
         UnitId = unitId;
+    }
+
+    protected void UpdateCombatTargetTracking()
+    {
+        modules.TargetTracker.UpdateTarget(State);
+        RotateTowardsCombatTarget();
+    }
+
+    protected void RotateTowardsCombatTarget()
+    {
+        ICombatTarget currentTarget = modules.TargetTracker.CurrentTarget;
+        if (currentTarget == null)
+        {
+            return;
+        }
+
+        Vector3 direction = currentTarget.transform.position - transform.position;
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude <= MinRotationDirectionSqrMagnitude)
+        {
+            return;
+        }
+
+        Quaternion targetRotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+        float lerpFactor = 1f - Mathf.Exp(-CombatRotationSmoothness * Time.deltaTime);
+
+        transform.rotation = Quaternion.Slerp(
+            transform.rotation,
+            targetRotation,
+            lerpFactor);
     }
 
     protected virtual void OnDied()
@@ -65,12 +104,34 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
         State = UnitState.Dead;
         modules.DisposeModules();
         Died?.Invoke();
-        modules.Death.HandleDeathAsync();
+        modules.Death.HandleDeathAsync().Forget();
     }
 
-    public void Dispose()
+    public virtual void Dispose()
     {
         modules.Health.Died -= OnDied;
+        baseCombatAgentView.AttackAnimationEvents.AttackTriggered -= HandleAttackAnimationTriggered;
+
         modules.DisposeModules();
+    }
+    
+    private void HandleAttackAnimationTriggered()
+    {
+        if (!modules.Health.IsAlive || State != UnitState.Attack || !targetTracker.IsCurrentTargetValid())
+        {
+            return;
+        }
+
+        ICombatTarget currentTarget = targetTracker.CurrentTarget;
+        Vector3 attackOrigin = baseCombatAgentView.AttackPoint.position;
+
+        if (!projectileSpawner.Spawn(
+                baseCombatAgentView.AttackPoint,
+                currentTarget.transform,
+                projectileSpeed,
+                () => modules.Attack.ApplyDamage(currentTarget, attackOrigin)))
+        {
+            modules.Attack.ApplyDamage(currentTarget, attackOrigin);
+        }
     }
 }
