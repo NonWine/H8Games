@@ -8,20 +8,19 @@ public class SquadFormationController
     private readonly SquadFormationLayoutService squadFormationLayoutService;
     private readonly SquadFormationRegistry registry;
     private readonly List<FormationSlot> slots = new();
-    private SignalBus  signalBus;
+    private readonly SignalBus signalBus;
     private int capacity;
-    
-    public bool HasFreeSlot => registry.Count < capacity;
 
+    public bool HasFreeSlot => registry.Count < capacity;
     public bool HasAlly => registry.HasLivingAllies;
 
     public SquadFormationController(
-        SquadRootView squadRootView, 
+        SquadRootView squadRootView,
         SquadFormationLayoutService squadFormationLayoutService,
-        SquadFormationRegistry registry, 
+        SquadFormationRegistry registry,
         SignalBus signalBus)
     {
-        this.signalBus  = signalBus;
+        this.signalBus = signalBus;
         this.squadRootView = squadRootView;
         this.squadFormationLayoutService = squadFormationLayoutService;
         this.registry = registry;
@@ -29,24 +28,29 @@ public class SquadFormationController
         RebuildFormation();
     }
 
-    public bool RegisterSoldier(SoldierCombatAgent soldier)
+    public bool RegisterSoldier(SoldierCombatAgentController soldier)
     {
         if (soldier == null || !HasFreeSlot)
+        {
             return false;
-        
-        if (!registry.Register(soldier))
-            return false;
+        }
 
-        soldier.SoldierFollower.AssignSquad(squadRootView);
+        if (!registry.Register(soldier))
+        {
+            return false;
+        }
+
+        soldier.AssignSquad(squadRootView);
         RebuildFormation();
         return true;
     }
 
-    public void UnregisterSoldier(SoldierCombatAgent soldier)
+    public void UnregisterSoldier(SoldierCombatAgentController soldier)
     {
         registry.Unregister(soldier);
-        soldier.SoldierFollower.ClearSquad(squadRootView);
+        soldier.ClearSquad(squadRootView);
         RebuildFormation();
+
         if (!registry.HasLivingAllies)
         {
             signalBus.Fire<SquadDefeatedSignal>();
@@ -56,7 +60,9 @@ public class SquadFormationController
     public void IncreaseCapacity(int amount)
     {
         if (amount <= 0)
+        {
             return;
+        }
 
         capacity += amount;
         RebuildFormation();
@@ -64,6 +70,11 @@ public class SquadFormationController
 
     public void ClearFormation()
     {
+        for (int i = 0; i < registry.Soldiers.Count; i++)
+        {
+            registry.Soldiers[i].ClearSquad(squadRootView);
+        }
+
         registry.Clear();
         squadRootView.transform.position = squadRootView.HomePosition;
         squadRootView.transform.rotation = Quaternion.identity;
@@ -82,7 +93,7 @@ public class SquadFormationController
 
         for (int i = 0; i < slots.Count; i++)
         {
-            SoldierFollower soldier = i < registry.Soldiers.Count ? registry.Soldiers[i].SoldierFollower : null;
+            SoldierCombatAgentController soldier = i < registry.Soldiers.Count ? registry.Soldiers[i] : null;
             FormationSlot slot = slots[i];
             slot.AssignedSoldier = soldier;
 
@@ -102,7 +113,9 @@ public class SquadFormationController
     public Vector3 GetSlotWorldPosition(int slotIndex)
     {
         if (slotIndex < 0 || slotIndex >= slots.Count)
+        {
             return squadRootView.transform.position;
+        }
 
         return GetSlotWorldPosition(slots[slotIndex]);
     }

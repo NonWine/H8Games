@@ -1,28 +1,28 @@
 using UnityEngine;
 
-public sealed class EnemyCombatAgentController : BaseCombatAgentController
+public class EnemyCombatAgentController : BaseCombatAgentController
 {
     private readonly IAllyTargetProvider allyTargetProvider;
     private readonly CurrencyService currencyService;
 
+    public bool IsActive { get; private set; }
+
     public EnemyCombatAgentController(
         BaseCombatAgentView baseCombatAgentView,
-        Transform agentTransform,
-        GameObject agentGameObject,
         ModulesFactoryCollection modulesFactoryCollection,
         IAllyTargetProvider allyTargetProvider,
         CurrencyService currencyService)
-        : base(baseCombatAgentView, agentTransform, agentGameObject, modulesFactoryCollection)
+        : base(baseCombatAgentView, modulesFactoryCollection)
     {
         this.allyTargetProvider = allyTargetProvider;
         this.currencyService = currencyService;
     }
 
-    public override void Tick(float deltaTime)
+    public override void Tick()
     {
-        base.Tick(deltaTime);
+        base.Tick();
 
-        if (!IsAlive || allyTargetProvider == null)
+        if (!IsAlive)
             return;
 
         if (State != UnitState.Attack)
@@ -42,45 +42,53 @@ public sealed class EnemyCombatAgentController : BaseCombatAgentController
         if (tracker.CurrentTarget == null)
             return;
 
-        tracker.RotateTowardsCurrentTarget(Transform);
+        tracker.RotateTowardsCurrentTarget(baseCombatAgentView.transform);
     }
 
     public void ResetRunTimeState()
     {
+        IsActive = false;
+
         if (!IsAlive)
         {
             State = UnitState.Dead;
             return;
         }
 
-        State = UnitState.Idle;
         modules.ResetModules();
+
+        State = UnitState.Idle;
     }
 
     public void Activate()
     {
+        if (!IsAlive)
+            return;
+
+        IsActive = true;
+        modules.Attack.RandomizeAttackAnimationSpeed();
         State = UnitState.Attack;
     }
 
     protected override void OnDied()
     {
-        currencyService?.Add(unitStats.DeathReward);
+        IsActive = false;
+        currencyService.Add(unitStats.DeathReward);
         base.OnDied();
     }
 
     private void TryAcquireTarget()
     {
-        ICombatTarget target = allyTargetProvider.GetBestLivingAllyTarget(agentTransform.position, unitStats.ReservationPenalty);
+        ICombatTarget target = allyTargetProvider.GetBestLivingAllyTarget(baseCombatAgentView.transform.position, unitStats.ReservationPenalty);
         var tracker = modules.TargetTracker;
 
         if (target == null)
         {
-            tracker.SetCurrentTarget(null, agentTransform);
-            tracker.ResetTargetingTimers();
+            tracker.SetCurrentTarget(null);
             return;
         }
 
-        tracker.SetCurrentTarget(target, agentTransform);
+        tracker.SetCurrentTarget(target);
         tracker.MarkRetargetWindow();
     }
 }

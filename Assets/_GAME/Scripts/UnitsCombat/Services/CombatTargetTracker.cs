@@ -1,13 +1,15 @@
 ﻿using UnityEngine;
 
-public class CombatTargetTracker
+public class CombatTargetTracker : IResetModule, IDisposeModule
 {
     private const float RotationSmoothness = 12f;
     private readonly float retargetInterval;
     private readonly float targetLockDuration;
+    private readonly Component owner;
 
-    public CombatTargetTracker(float retargetInterval, float targetLockDuration)
+    public CombatTargetTracker(Component owner, float retargetInterval, float targetLockDuration)
     {
+        this.owner = owner;
         this.retargetInterval = retargetInterval;
         this.targetLockDuration = targetLockDuration;
     }
@@ -33,18 +35,17 @@ public class CombatTargetTracker
         TargetLockUntil = 0f;
     }
 
-    public void SetCurrentTarget(ICombatTarget newTarget, Component attacker)
+    public void SetCurrentTarget(ICombatTarget newTarget)
     {
         if (ReferenceEquals(CurrentTarget, newTarget))
             return;
 
-        ReleaseCurrentTarget(attacker);
+        ReleaseCurrentTarget();
         CurrentTarget = newTarget;
 
-        if (CurrentTarget is Component targetComponent &&
-            targetComponent is ITargetReservation reservationTarget)
+        if (CurrentTarget is ITargetReservation reservationTarget)
         {
-            reservationTarget.TryRegisterAttacker(attacker);
+            reservationTarget.TryRegisterAttacker(owner);
         }
 
         if (CurrentTarget == null)
@@ -54,15 +55,25 @@ public class CombatTargetTracker
         }
     }
 
-    public void ReleaseCurrentTarget(Component attacker)
+    public void ReleaseCurrentTarget()
     {
-        if (CurrentTarget is Component targetComponent &&
-            targetComponent is ITargetReservation reservationTarget)
+        if (CurrentTarget is ITargetReservation reservationTarget)
         {
-            reservationTarget.TryUnregisterAttacker(attacker);
+            reservationTarget.TryUnregisterAttacker(owner);
         }
 
         CurrentTarget = null;
+    }
+
+    public void Reset()
+    {
+        ReleaseCurrentTarget();
+        ResetTargetingTimers();
+    }
+
+    public void Dispose()
+    {
+        Reset();
     }
 
     public bool IsCurrentTargetValid(EnemyGroupViewController currentGroup = null)
@@ -70,8 +81,16 @@ public class CombatTargetTracker
         if (CurrentTarget == null || !CurrentTarget.IsAlive)
             return false;
 
-        if (CurrentTarget is not Component targetComponent || !targetComponent.gameObject.activeInHierarchy)
-            return false;
+        if (CurrentTarget is EnemyCombatAgentController enemyCombatAgentController)
+        {
+            if (!enemyCombatAgentController.IsActive)
+                return false;
+        }
+        else if (CurrentTarget is Component targetComponent)
+        {
+            if (!targetComponent.gameObject.activeInHierarchy)
+                return false;
+        }
 
         if (currentGroup != null && !currentGroup.ContainsEnemy(CurrentTarget))
             return false;

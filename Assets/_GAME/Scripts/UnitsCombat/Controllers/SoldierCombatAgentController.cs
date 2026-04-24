@@ -1,40 +1,51 @@
 using UnityEngine;
 
-public sealed class SoldierCombatAgentController : BaseCombatAgentController
+public class SoldierCombatAgentController : BaseCombatAgentController
 {
     private readonly IEnemyGroupProvider currentEnemyGroupProvider;
-    private readonly ISquadMovementStateReader stateReader;
-    public SoldierFollower SoldierFollower { get; private set; }
+    private readonly ISquadMovementStateReader movementStateReader;
+    private readonly ISquadSlotPositionProvider squadSlotPositionProvider;
+    private readonly SquadFollowSettings squadFollowSettings;
+    private readonly SoldierMovingFormationService movingFormationService;
+
+    private SquadRootView squadRootView;
+    private FormationSlot assignedSlot;
+
+    public SoldierFormationState FormationState { get; private set; } = SoldierFormationState.WaitingInFormation;
 
     public SoldierCombatAgentController(
         BaseCombatAgentView baseCombatAgentView,
         ModulesFactoryCollection modulesFactoryCollection,
-        SquadFollowSettings settings,
+        SquadFollowSettings squadFollowSettings,
         ISquadSlotPositionProvider squadSlotPositionProvider,
         ISquadMovementStateReader movementStateReader,
-        SquadRootView squadRootView,
         IEnemyGroupProvider currentEnemyGroupProvider)
         : base(baseCombatAgentView, modulesFactoryCollection)
     {
+        this.squadFollowSettings = squadFollowSettings;
+        this.squadSlotPositionProvider = squadSlotPositionProvider;
+        this.movementStateReader = movementStateReader;
         this.currentEnemyGroupProvider = currentEnemyGroupProvider;
-        stateReader = movementStateReader;
+        movingFormationService = new SoldierMovingFormationService(squadFollowSettings, baseCombatAgentView.GetInstanceID());
     }
-    
 
     public override void Tick()
     {
         base.Tick();
 
-        if (!IsAlive || SoldierFollower == null || currentEnemyGroupProvider == null || stateReader == null)
+        if (!IsAlive)
+        {
             return;
+        }
 
         EnemyGroupViewController currentGroup = currentEnemyGroupProvider.CurrentTargetGroup;
         var tracker = modules.TargetTracker;
 
         if (currentGroup == null || currentGroup.State != EnemyGroupState.Activated)
         {
-            tracker.SetCurrentTarget(null, baseCombatAgentView);
+            tracker.SetCurrentTarget(null);
             State = UnitState.Idle;
+            UpdateFormation();
             return;
         }
 
@@ -49,8 +60,9 @@ public sealed class SoldierCombatAgentController : BaseCombatAgentController
 
         if (!tracker.IsCurrentTargetValid(currentGroup))
         {
-            tracker.SetCurrentTarget(null, baseCombatAgentView);
+            tracker.SetCurrentTarget(null);
             State = UnitState.Idle;
+            UpdateFormation();
             return;
         }
 
@@ -59,27 +71,104 @@ public sealed class SoldierCombatAgentController : BaseCombatAgentController
         UpdateFormation();
     }
 
+    public void AssignSquad(SquadRootView squadRootView)
+    {
+        this.squadRootView = squadRootView;
+    }
+
+    public void AssignSlot(FormationSlot slot)
+    {
+        assignedSlot = slot;
+        movingFormationService.Reset();
+        FormationState = SoldierFormationState.WaitingInFormation;
+    }
+
+    public void ClearSquad(SquadRootView owner)
+    {
+        if (squadRootView != owner)
+        {
+            return;
+        }
+
+        assignedSlot = null;
+        squadRootView = null;
+        movingFormationService.Reset();
+        FormationState = SoldierFormationState.WaitingInFormation;
+    }
+
+    public bool IsInAssignedSlot(float threshold)
+    {
+        if (assignedSlot == null)
+        {
+            return false;
+        }
+
+        Vector3 targetPosition = squadSlotPositionProvider.GetSlotWorldPosition(assignedSlot);
+        Vector3 delta = targetPosition - transform.position;
+        delta.y = 0f;
+        return delta.sqrMagnitude <= threshold * threshold;
+    }
+
+    public void ResetRunTimeState()
+    {
+        modules.ResetModules();
+        State = UnitState.Idle;
+        FormationState = SoldierFormationState.WaitingInFormation;
+        movingFormationService.Reset();
+    }
+
     private void UpdateFormation()
     {
-        if (State == UnitState.Attack || State == UnitState.Dead)
+        if (State == UnitState.Attack || State == UnitState.Dead || squadRootView == null || assignedSlot == null)
+        {
             return;
+        }
 
-        SoldierFollower.UpdateFormation();
-        if (!stateReader.IsMoving)
+        Vector3 slotCenter = squadSlotPositionProvider.GetSlotWorldPosition(assignedSlot);
+        slotCenter.y = transform.position.y;
+
+        if (!movementStateReader.IsMoving)
         {
-            if (SoldierFollower.State == SoldierFormationState.WaitingInFormation)
-            {
-                State = UnitState.Idle;
-            }
-            else if (SoldierFollower.State == SoldierFormationState.MovingToSlot)
-            {
-                State = UnitState.Move;
-            }
+            movingFormationService.Reset();
+            UpdateIdleFormation(slotCenter);
+            return;
         }
-        else
+
+        FormationState = movingFormationService.Update(
+            transform,
+            squadRootView.transform,
+            slotCenter,
+            Time.deltaTime);
+        State = UnitState.Move;
+    }
+
+    private void UpdateIdleFormation(Vector3 slotCenter)
+    {
+        Vector3 delta = slotCenter - transform.position;
+        delta.y = 0f;
+
+        float distance = delta.magnitude;
+        if (distance <= squadFollowSettings.SlotReachThreshold)
         {
-            State = UnitState.Move;
+            transform.position = slotCenter;
+            FormationState = SoldierFormationState.WaitingInFormation;
+            RotateTowards(squadRootView.transform.forward, Time.deltaTime, squadFollowSettings.SoldierRotationSpeed);
+            State = UnitState.Idle;
+            return;
         }
+
+        FormationState = SoldierFormationState.MovingToSlot;
+        State = UnitState.Move;
+
+        float slowdownRadius = Mathf.Max(squadFollowSettings.SlotReachThreshold * 4f, squadFollowSettings.SlotReachThreshold + 0.01f);
+        float speedFactor = distance < slowdownRadius
+            ? Mathf.Lerp(0.35f, 1f, distance / slowdownRadius)
+            : 1f;
+
+        float step = squadFollowSettings.SoldierMoveSpeed * speedFactor * Time.deltaTime;
+        Vector3 nextPosition = Vector3.MoveTowards(transform.position, slotCenter, step);
+        transform.position = new Vector3(nextPosition.x, transform.position.y, nextPosition.z);
+        RotateTowards(delta.normalized, Time.deltaTime, squadFollowSettings.SoldierRotationSpeed);
     }
 
     private void TryAcquireTarget(EnemyGroupViewController currentGroup)
@@ -88,7 +177,7 @@ public sealed class SoldierCombatAgentController : BaseCombatAgentController
 
         if (currentGroup == null)
         {
-            tracker.SetCurrentTarget(null, baseCombatAgentView);
+            tracker.SetCurrentTarget(null);
             return;
         }
 
@@ -96,12 +185,26 @@ public sealed class SoldierCombatAgentController : BaseCombatAgentController
 
         if (target == null)
         {
-            tracker.SetCurrentTarget(null, agentTransform);
-            tracker.ResetTargetingTimers();
+            tracker.SetCurrentTarget(null);
             return;
         }
 
-        tracker.SetCurrentTarget(target, agentTransform);
+        tracker.SetCurrentTarget(target);
         tracker.MarkRetargetWindow();
+    }
+
+    private void RotateTowards(Vector3 direction, float deltaTime, float rotationSpeed)
+    {
+        direction.y = 0f;
+        if (direction.sqrMagnitude <= 0.0001f)
+        {
+            return;
+        }
+
+        Quaternion targetRotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+        transform.rotation = Quaternion.RotateTowards(
+            transform.rotation,
+            targetRotation,
+            rotationSpeed * deltaTime);
     }
 }

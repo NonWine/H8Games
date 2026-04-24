@@ -2,11 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Zenject;
 
-public sealed class EnemyGroupViewController : MonoBehaviour
+public class EnemyGroupViewController : MonoBehaviour
 {
     [SerializeField] private Transform engagePoint;
-    [SerializeField] private List<EnemyCombatAgent> enemies = new();
+    [SerializeField] private List<BaseCombatAgentView> enemyViews = new();
+
+    private readonly List<EnemyCombatAgentController> enemyControllers = new();
 
     public event Action<EnemyGroupViewController> Cleared;
 
@@ -15,19 +18,28 @@ public sealed class EnemyGroupViewController : MonoBehaviour
     public Transform EngagePoint => engagePoint != null ? engagePoint : transform;
     public Vector3 EngagePointPosition => EngagePoint.position;
 
+    private void Awake()
+    {
+        CacheControllers();
+    }
+
     private void OnValidate()
     {
-        enemies = transform.GetComponentsInChildren<EnemyCombatAgent>().ToList();
+        enemyViews = GetComponentsInChildren<BaseCombatAgentView>().ToList();
     }
 
     public void Activate()
     {
+        CacheControllers();
         State = EnemyGroupState.Activated;
-        for (int i = 0; i < enemies.Count; i++)
+
+        for (int i = 0; i < enemyControllers.Count; i++)
         {
-            EnemyCombatAgent enemy = enemies[i];
+            EnemyCombatAgentController enemy = enemyControllers[i];
             if (enemy == null || !enemy.IsAlive)
+            {
                 continue;
+            }
 
             enemy.Activate();
         }
@@ -35,16 +47,21 @@ public sealed class EnemyGroupViewController : MonoBehaviour
 
     public ICombatTarget GetBestLivingEnemyTarget(Vector3 worldPosition, float reservationPenalty)
     {
-        EnemyCombatAgent bestTarget = null;
+        CacheControllers();
+
+        ICombatTarget bestTarget = null;
         float bestScore = float.MaxValue;
 
-        for (int i = 0; i < enemies.Count; i++)
+        for (int i = 0; i < enemyControllers.Count; i++)
         {
-            EnemyCombatAgent enemy = enemies[i];
+            EnemyCombatAgentController enemy = enemyControllers[i];
             if (enemy == null || !enemy.IsAlive)
+            {
                 continue;
+            }
 
-            int reservationCount = enemy is ITargetReservation reservationTarget ? reservationTarget.ReservationCount : 0;
+            int reservationCount = enemy.Reservation.ReservationCount;
+
             float score = CombatTargetScoringUtility.CalculateScore(
                 worldPosition,
                 enemy.transform.position,
@@ -52,7 +69,9 @@ public sealed class EnemyGroupViewController : MonoBehaviour
                 reservationPenalty);
 
             if (score >= bestScore)
+            {
                 continue;
+            }
 
             bestTarget = enemy;
             bestScore = score;
@@ -64,23 +83,24 @@ public sealed class EnemyGroupViewController : MonoBehaviour
     public bool ContainsEnemy(ICombatTarget target)
     {
         if (target == null)
-            return false;
-
-        for (int i = 0; i < enemies.Count; i++)
         {
-            if (ReferenceEquals(enemies[i], target))
-                return enemies[i] != null && enemies[i].IsAlive;
+            return false;
         }
 
-        return false;
-    }
+        CacheControllers();
 
-    private bool HasLivingEnemies()
-    {
-        for (int i = 0; i < enemies.Count; i++)
+        for (int i = 0; i < enemyControllers.Count; i++)
         {
-            if (enemies[i] != null && enemies[i].IsAlive)
-                return true;
+            EnemyCombatAgentController enemy = enemyControllers[i];
+            if (enemy == null)
+            {
+                continue;
+            }
+
+            if (ReferenceEquals(enemy, target))
+            {
+                return enemy.IsAlive;
+            }
         }
 
         return false;
@@ -88,37 +108,96 @@ public sealed class EnemyGroupViewController : MonoBehaviour
 
     public void ResetRuntimeState()
     {
-        
         State = EnemyGroupState.Idle;
         RefreshEnemies();
     }
 
+    private bool HasLivingEnemies()
+    {
+        CacheControllers();
+
+        for (int i = 0; i < enemyControllers.Count; i++)
+        {
+            if (enemyControllers[i] != null && enemyControllers[i].IsAlive)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void CacheControllers()
+    {
+        if (enemyViews == null || enemyViews.Count == 0 || enemyControllers.Count == enemyViews.Count)
+        {
+            return;
+        }
+
+        enemyControllers.Clear();
+
+        for (int i = 0; i < enemyViews.Count; i++)
+        {
+            BaseCombatAgentView enemyView = enemyViews[i];
+            if (enemyView == null)
+            {
+                continue;
+            }
+
+            GameObjectContext context = enemyView.GetComponent<GameObjectContext>();
+            if (context == null)
+            {
+                continue;
+            }
+
+            try
+            {
+                BaseCombatAgentController controller = context.Container.Resolve<BaseCombatAgentController>();
+                if (controller is not EnemyCombatAgentController enemyController)
+                {
+                    Debug.LogError($"[EnemyGroupViewController] Controller on '{enemyView.name}' is not an enemy controller.");
+                    continue;
+                }
+
+                enemyController.Died += HandleEnemyDied;
+                enemyControllers.Add(enemyController);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"[EnemyGroupViewController] Could not resolve controller for '{enemyView.name}': {exception.Message}");
+            }
+        }
+    }
+
     private void RefreshEnemies()
     {
-        for (int i = 0; i < enemies.Count; i++)
+        CacheControllers();
+
+        for (int i = 0; i < enemyControllers.Count; i++)
         {
-            EnemyCombatAgent enemy = enemies[i];
+            EnemyCombatAgentController enemy = enemyControllers[i];
             if (enemy == null)
+            {
                 continue;
+            }
 
             enemy.Died -= HandleEnemyDied;
             enemy.Died += HandleEnemyDied;
             enemy.ResetRunTimeState();
-
         }
     }
 
-    private void HandleEnemyDied(EnemyCombatAgent enemy)
+    private void HandleEnemyDied()
     {
-        enemy.Died -= HandleEnemyDied;
         TryMarkCleared();
-
     }
 
     private void TryMarkCleared()
     {
         if (State == EnemyGroupState.Cleared || HasAliveMembers)
+        {
             return;
+        }
 
         State = EnemyGroupState.Cleared;
         Cleared?.Invoke(this);

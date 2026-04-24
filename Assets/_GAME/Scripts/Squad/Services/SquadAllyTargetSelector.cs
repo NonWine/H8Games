@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class SquadAllyTargetSelector : IAllyTargetProvider
 {
@@ -13,19 +13,19 @@ public class SquadAllyTargetSelector : IAllyTargetProvider
     {
         soldierRegistry.PruneInvalid();
 
-        SoldierCombatAgent bestTarget = null;
+        SoldierCombatAgentController bestTarget = null;
         float bestScore = float.MaxValue;
 
         var soldiers = soldierRegistry.Soldiers;
         for (int i = 0; i < soldiers.Count; i++)
         {
-            SoldierCombatAgent soldier = soldiers[i];
+            SoldierCombatAgentController soldier = soldiers[i];
             if (soldier == null || !soldier.IsAlive)
+            {
                 continue;
+            }
 
-            int reservationCount = soldier is ITargetReservation reservationTarget
-                ? reservationTarget.ReservationCount
-                : 0;
+            int reservationCount = soldier.Reservation.ReservationCount;
 
             float score = CombatTargetScoringUtility.CalculateScore(
                 worldPosition,
@@ -34,15 +34,14 @@ public class SquadAllyTargetSelector : IAllyTargetProvider
                 reservationPenalty);
 
             if (score >= bestScore)
+            {
                 continue;
+            }
 
             bestTarget = soldier;
             bestScore = score;
         }
 
-        if (bestTarget != null)
-            return bestTarget;
-
-        return null;
+        return bestTarget;
     }
 }

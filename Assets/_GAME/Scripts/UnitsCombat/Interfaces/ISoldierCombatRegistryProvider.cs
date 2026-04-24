@@ -1,6 +1,5 @@
-﻿public interface ISoldierCombatRegistryProvider
+public interface ISoldierCombatRegistryProvider
 {
-    bool RegisterSoldier(SoldierCombatAgent soldier);
-    void UnregisterSoldier(SoldierCombatAgent soldier);
+    bool RegisterSoldier(SoldierCombatAgentController soldier);
+    void UnregisterSoldier(SoldierCombatAgentController soldier);
 }
-

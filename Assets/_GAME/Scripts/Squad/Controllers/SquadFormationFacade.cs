@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SquadFormationFacade : ISoldierCombatRegistryProvider, ISquadSlotPositionProvider
@@ -6,20 +5,20 @@ public class SquadFormationFacade : ISoldierCombatRegistryProvider, ISquadSlotPo
     private readonly SquadFormationController formationController;
 
     public bool HasAlly => formationController.HasAlly;
-    
+
     public SquadFormationFacade(SquadFormationController formationController)
     {
         this.formationController = formationController;
     }
-    
+
     public bool HasFreeSlot => formationController.HasFreeSlot;
 
-    public bool RegisterSoldier(SoldierCombatAgent soldier)
+    public bool RegisterSoldier(SoldierCombatAgentController soldier)
     {
         return formationController.RegisterSoldier(soldier);
     }
 
-    public void UnregisterSoldier(SoldierCombatAgent soldier)
+    public void UnregisterSoldier(SoldierCombatAgentController soldier)
     {
         formationController.UnregisterSoldier(soldier);
     }
@@ -39,5 +38,8 @@ public class SquadFormationFacade : ISoldierCombatRegistryProvider, ISquadSlotPo
         return formationController.GetSlotWorldPosition(slotIndex);
     }
 
-    public void ClearSoldiers() => formationController.ClearFormation();
+    public void ClearSoldiers()
+    {
+        formationController.ClearFormation();
+    }
 }

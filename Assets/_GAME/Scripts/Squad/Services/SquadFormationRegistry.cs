@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
-public class SquadFormationRegistry : BaseUnitRegistry<SoldierCombatAgent>
+public class SquadFormationRegistry : BaseUnitRegistry<SoldierCombatAgentController>
 {
-    public SquadFormationRegistry() : base(soldier => soldier != null && soldier.IsAlive) { }
+    public SquadFormationRegistry() : base(soldier => soldier != null && soldier.IsAlive)
+    {
+    }
 
-    public IReadOnlyList<SoldierCombatAgent> Soldiers => Items;
+    public IReadOnlyList<SoldierCombatAgentController> Soldiers => Items;
 
     public bool HasLivingAllies => Count > 0;
 }

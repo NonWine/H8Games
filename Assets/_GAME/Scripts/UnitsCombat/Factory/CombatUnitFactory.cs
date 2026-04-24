@@ -3,17 +3,17 @@ using System.Linq;
 using UnityEngine;
 using Zenject;
 
-public class CombatUnitFactory : IFactory<string, BaseTargetingCombatAgent>
+public class CombatUnitFactory : IFactory<string, BaseCombatAgentController>
 {
-    private readonly DiContainer _container;
-    private readonly Dictionary<string, UnitCombatDefinition> _definitions;
+    private readonly DiContainer container;
+    private readonly Dictionary<string, UnitCombatDefinition> definitions;
 
     public CombatUnitFactory(DiContainer container, List<UnitCombatDefinition> definitions)
     {
-        _container = container;
-        _definitions = new Dictionary<string, UnitCombatDefinition>();
+        this.container = container;
+        this.definitions = new Dictionary<string, UnitCombatDefinition>();
 
-        foreach (var definition in definitions.Where(x => x != null))
+        foreach (UnitCombatDefinition definition in definitions.Where(x => x != null))
         {
             if (string.IsNullOrWhiteSpace(definition.UnitID))
             {
@@ -27,39 +27,48 @@ public class CombatUnitFactory : IFactory<string, BaseTargetingCombatAgent>
                 continue;
             }
 
-            if (_definitions.ContainsKey(definition.UnitID))
+            if (this.definitions.ContainsKey(definition.UnitID))
             {
                 Debug.LogError($"[CombatUnitFactory] Duplicate UnitID '{definition.UnitID}'");
                 continue;
             }
 
-            _definitions.Add(definition.UnitID, definition);
+            this.definitions.Add(definition.UnitID, definition);
         }
     }
 
-    public BaseTargetingCombatAgent Create(string id)
+    public BaseCombatAgentController Create(string id)
     {
-        if (!_definitions.TryGetValue(id, out var definition))
+        if (!definitions.TryGetValue(id, out UnitCombatDefinition definition))
         {
             Debug.LogError($"[CombatUnitFactory] Prefab for type '{id}' is missing in installer");
             return null;
         }
 
-        var instance = _container.InstantiatePrefab(definition.Prefab.gameObject);
+        GameObject instance = container.InstantiatePrefab(definition.Prefab.gameObject);
+        GameObjectContext context = instance.GetComponent<GameObjectContext>();
 
-        var unit = instance.GetComponent<BaseTargetingCombatAgent>();
-        if (unit == null)
+        if (context == null)
         {
-            unit = instance.GetComponentInChildren<BaseTargetingCombatAgent>();
-        }
-
-        if (unit == null)
-        {
-            Debug.LogError($"[CombatUnitFactory] Spawned prefab '{definition.name}' has no BaseTargetingCombatAgent");
+            Debug.LogError($"[CombatUnitFactory] Spawned prefab '{definition.name}' has no GameObjectContext");
+            Object.Destroy(instance);
             return null;
         }
 
-        unit.SetIdentity(id);
-        return unit;
+        BaseCombatAgentController controller;
+
+        try
+        {
+            controller = context.Container.Resolve<BaseCombatAgentController>();
+        }
+        catch (System.Exception exception)
+        {
+            Debug.LogError($"[CombatUnitFactory] Spawned prefab '{definition.name}' could not resolve BaseCombatAgentController: {exception.Message}");
+            Object.Destroy(instance);
+            return null;
+        }
+
+        controller.SetIdentity(id);
+        return controller;
     }
 }

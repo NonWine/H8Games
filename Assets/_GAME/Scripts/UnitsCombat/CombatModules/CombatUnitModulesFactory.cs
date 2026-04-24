@@ -8,10 +8,16 @@
         UnitAttackAgentHandler attack = new UnitAttackAgentHandler(attackRuntime);
         UnitHealthHandler health = new UnitHealthHandler(args.Stats.MaxHealth);
         TargetReservation reservation = new TargetReservation();
-        CombatTargetTracker targetTracker = new CombatTargetTracker(args.Stats.RetargetInterval, args.Stats.TargetLockDuration);
-
-        CombatAnimationPresenter animation = new CombatAnimationPresenter(args.ViewRefs.Animator);
+        CombatTargetTracker targetTracker = new CombatTargetTracker(args.ViewRefs, args.Stats.RetargetInterval, args.Stats.TargetLockDuration);
         ProjectileVisualSpawner projectileSpawner = new ProjectileVisualSpawner(args.ViewRefs.ProjectilePrefab);
+
+        CombatAnimationPresenter animation = new CombatAnimationPresenter(
+            args.ViewRefs,
+            attack,
+            health,
+            targetTracker,
+            projectileSpawner,
+            args.Stats.ProjectileSpeed);
         UnitDeathHandler death = new UnitDeathHandler(args.ViewRefs.gameObject);
 
         return new CombatUnitModules(

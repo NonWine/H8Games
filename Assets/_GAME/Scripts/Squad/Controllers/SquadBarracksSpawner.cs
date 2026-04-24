@@ -6,12 +6,13 @@ using Zenject;
 public class SquadBarracksSpawner : MonoBehaviour
 {
     [Inject] private SquadCombatStateController _squadCombatStateController;
-    private CombatUnitFactory unitFactory;
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private BarracksStats barracksStats;
     [SerializeField] private GameObject[] barracks;
+
+    private CombatUnitFactory unitFactory;
     private SquadFormationFacade squadFormationFacade;
-    private SpawnService<SoldierCombatAgent> spawnService;
+    private SpawnService<SoldierCombatAgentController> spawnService;
 
     [Inject]
     public void Construct(CombatUnitFactory unitFactory, SquadFormationFacade squadFormationFacade)
@@ -23,8 +24,9 @@ public class SquadBarracksSpawner : MonoBehaviour
     private void Awake()
     {
         barracksStats?.ResetRuntimeState();
-        spawnService = new SpawnService<SoldierCombatAgent>(SpawnSoldier,
-            soldier => soldier != null && soldier.gameObject.activeInHierarchy,
+        spawnService = new SpawnService<SoldierCombatAgentController>(
+            SpawnSoldier,
+            soldier => soldier != null && soldier.IsAlive,
             () => barracksStats.SpawnInterval);
     }
 
@@ -36,36 +38,57 @@ public class SquadBarracksSpawner : MonoBehaviour
     private void Update()
     {
         if (!CanSpawnInCurrentPhase())
+        {
             return;
+        }
 
         spawnService.Tick(Time.deltaTime, out _);
     }
 
-    private SoldierCombatAgent SpawnSoldier()
+    private SoldierCombatAgentController SpawnSoldier()
     {
         if (!squadFormationFacade.HasFreeSlot || !CanSpawnInCurrentPhase())
+        {
             return null;
+        }
 
         Transform origin = spawnPoint != null ? spawnPoint : transform;
-        var soldier = (SoldierCombatAgent) unitFactory.Create(barracksStats.Unit.UnitID);
+        BaseCombatAgentController baseSoldier = unitFactory.Create(barracksStats.Unit.UnitID);
+        SoldierCombatAgentController soldier = baseSoldier as SoldierCombatAgentController;
+
+        if (soldier == null)
+        {
+            if (baseSoldier != null)
+            {
+                Destroy(baseSoldier.transform.gameObject);
+            }
+
+            return null;
+        }
+
         soldier.transform.position = origin.position;
         soldier.transform.rotation = origin.rotation;
 
         if (squadFormationFacade.RegisterSoldier(soldier))
         {
-            soldier.OnDiedEvent += UnRegisterSoldier;
+            Action diedHandler = null;
+            diedHandler = () =>
+            {
+                soldier.Died -= diedHandler;
+                UnRegisterSoldier(soldier);
+            };
+
+            soldier.Died += diedHandler;
             return soldier;
         }
 
-        Destroy(soldier.gameObject);
+        Destroy(soldier.transform.gameObject);
         return null;
     }
 
-    private void UnRegisterSoldier(SoldierCombatAgent soldier)
+    private void UnRegisterSoldier(SoldierCombatAgentController soldier)
     {
-        soldier.OnDiedEvent -= UnRegisterSoldier;
         squadFormationFacade?.UnregisterSoldier(soldier);
-
     }
 
     public void UpgradeLevel()
@@ -76,7 +99,7 @@ public class SquadBarracksSpawner : MonoBehaviour
 
     private void SetBarrackView()
     {
-        foreach (var barrack in barracks)
+        foreach (GameObject barrack in barracks)
         {
             barrack.gameObject.SetActive(false);
         }
@@ -85,15 +108,11 @@ public class SquadBarracksSpawner : MonoBehaviour
         newModel.transform.localScale = Vector3.one;
         newModel.gameObject.SetActive(true);
         newModel.transform.DOScale(1.2f, 0.25f).SetEase(Ease.OutBack);
-        newModel.transform.DOScale(1f,0.15f).SetEase(Ease.Linear).SetDelay(0.25f);
+        newModel.transform.DOScale(1f, 0.15f).SetEase(Ease.Linear).SetDelay(0.25f);
     }
 
     private bool CanSpawnInCurrentPhase()
     {
-        if (_squadCombatStateController.State != CombatFlowState.IdleInPreparation)
-            return false;
-
-        return true;
+        return _squadCombatStateController.State == CombatFlowState.IdleInPreparation;
     }
 }
-
