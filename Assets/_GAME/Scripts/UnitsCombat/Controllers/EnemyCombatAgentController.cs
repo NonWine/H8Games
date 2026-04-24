@@ -15,13 +15,7 @@ public class EnemyCombatAgentController : BaseCombatAgentController
     {
         this.currencyService = currencyService;
     }
-
-    public override void Tick()
-    {
-        UpdateCombatTargetTracking();
-        base.Tick();
-    }
-
+    
     public void ResetRunTimeState()
     {
         IsActive = false;

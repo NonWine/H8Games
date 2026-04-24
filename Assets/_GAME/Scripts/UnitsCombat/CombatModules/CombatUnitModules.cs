@@ -8,7 +8,7 @@ public class CombatUnitModules
     public UnitAttackAgentHandler Attack { get; }
     public UnitHealthHandler Health { get; }
     public TargetReservation Reservation { get; }
-    public ITargetTrackerModule TargetTracker { get; }
+    public ITargetTrackerHandler TargetTracker { get; }
     public CombatAnimationPresenter Animation { get; }
     public ProjectileVisualSpawner ProjectileSpawner { get; }
     public UnitDeathHandler Death { get; }

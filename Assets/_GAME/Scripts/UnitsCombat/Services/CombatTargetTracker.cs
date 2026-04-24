@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CombatTargetTracker : ITargetTrackerModule
+public class CombatTargetTracker : ITargetTrackerHandler
 {
     private readonly float retargetInterval;
     private readonly float targetLockDuration;

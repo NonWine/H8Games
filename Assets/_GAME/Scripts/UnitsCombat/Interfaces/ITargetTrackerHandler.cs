@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface ITargetTrackerModule : IResetModule
+public interface ITargetTrackerHandler : IResetModule
 {
     ICombatTarget CurrentTarget { get; }
     bool IsCurrentTargetValid();

@@ -34,24 +34,12 @@ public class SoldierCombatAgentController : BaseCombatAgentController
         {
             return;
         }
-
-        EnemyGroupViewController currentGroup = currentEnemyGroupProvider.CurrentTargetGroup;
-        State = GetTrackingState(currentGroup);
-        UpdateCombatTargetTracking();
+        
         State = formationModule.UpdateFormation(transform, Time.deltaTime, State, squadRootView, assignedSlot);
-
         base.Tick();
     }
 
-    private UnitState GetTrackingState(EnemyGroupViewController currentGroup)
-    {
-        if (currentGroup != null && currentGroup.State == EnemyGroupState.Activated)
-        {
-            return UnitState.Attack;
-        }
 
-        return UnitState.Idle;
-    }
 
     public void AssignSquad(SquadRootView squadRootView)
     {

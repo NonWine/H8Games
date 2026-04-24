@@ -6,41 +6,42 @@ using Zenject;
 
 public class BaseCombatAgentController : ITickable, IInitializable, IDisposable, ICombatTarget
 {
-    private const float CombatRotationSmoothness = 12f;
-    private const float MinRotationDirectionSqrMagnitude = 0.0001f;
-
+    
     protected readonly BaseCombatAgentView baseCombatAgentView;
     protected readonly UnitStats unitStats;
     protected readonly CombatUnitModules modules;
-    private readonly ProjectileVisualSpawner projectileSpawner;
-    private readonly float projectileSpeed;
-    public BaseCombatUnitView CombatView => baseCombatAgentView;
+    private   readonly UnitRotatorService  unitRotatorService;
+    private   readonly ProjectileVisualSpawner projectileSpawner;
+    private   readonly ITargetTrackerHandler targetTracker;
+    private   readonly float projectileSpeed;
+    public ITargetReservation Reservation => modules.Reservation;
     public Transform transform => baseCombatAgentView.transform;
     public UnitState State { get; protected set; } = UnitState.Idle;
 
     public string UnitId { get; private set; }
     public bool IsAlive => modules.Health.IsAlive;
-    public ITargetReservation Reservation => modules.Reservation;
-    private ITargetTrackerModule targetTracker;
     public int ReservationCount => Reservation.ReservationCount;
     public event Action Died;
     public event Action<HitData> HitReceived;
 
 
-    public BaseCombatAgentController(
-        BaseCombatAgentView baseCombatAgentView,
-        ModulesFactoryCollection modulesFactoryCollection)
+    public BaseCombatAgentController(BaseCombatAgentView baseCombatAgentView, ModulesFactoryCollection modulesFactoryCollection)
     {
         this.baseCombatAgentView = baseCombatAgentView;
         unitStats = baseCombatAgentView.unitConfig.CreateRuntimeStats();
-
         var unitModuleFactory = modulesFactoryCollection.Create(baseCombatAgentView.unitConfig.unitModuleType);
         modules = unitModuleFactory.Create(new CombatUnitModulesArgs(baseCombatAgentView, unitStats));
     }
 
     public virtual void Tick()
     {
+        modules.TargetTracker.UpdateTarget(State);
         modules.Tick(State, Time.deltaTime);
+        
+        if (modules.TargetTracker.CurrentTarget != null)
+        {
+            unitRotatorService.RotateTowards(baseCombatAgentView.transform, modules.TargetTracker.CurrentTarget.transform);
+        }
     }
 
     public void Initialize()
@@ -66,37 +67,6 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
     public void SetIdentity(string unitId)
     {
         UnitId = unitId;
-    }
-
-    protected void UpdateCombatTargetTracking()
-    {
-        modules.TargetTracker.UpdateTarget(State);
-        RotateTowardsCombatTarget();
-    }
-
-    protected void RotateTowardsCombatTarget()
-    {
-        ICombatTarget currentTarget = modules.TargetTracker.CurrentTarget;
-        if (currentTarget == null)
-        {
-            return;
-        }
-
-        Vector3 direction = currentTarget.transform.position - transform.position;
-        direction.y = 0f;
-
-        if (direction.sqrMagnitude <= MinRotationDirectionSqrMagnitude)
-        {
-            return;
-        }
-
-        Quaternion targetRotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
-        float lerpFactor = 1f - Mathf.Exp(-CombatRotationSmoothness * Time.deltaTime);
-
-        transform.rotation = Quaternion.Slerp(
-            transform.rotation,
-            targetRotation,
-            lerpFactor);
     }
 
     protected virtual void OnDied()
@@ -125,13 +95,9 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
         ICombatTarget currentTarget = targetTracker.CurrentTarget;
         Vector3 attackOrigin = baseCombatAgentView.AttackPoint.position;
 
-        if (!projectileSpawner.Spawn(
-                baseCombatAgentView.AttackPoint,
-                currentTarget.transform,
-                projectileSpeed,
-                () => modules.Attack.ApplyDamage(currentTarget, attackOrigin)))
-        {
-            modules.Attack.ApplyDamage(currentTarget, attackOrigin);
-        }
+        projectileSpawner.Spawn(baseCombatAgentView.AttackPoint,
+            currentTarget.transform,
+            projectileSpeed,
+            () => modules.Attack.ApplyDamage(currentTarget, attackOrigin));
     }
 }
