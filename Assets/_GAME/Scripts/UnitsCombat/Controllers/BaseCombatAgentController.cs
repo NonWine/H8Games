@@ -6,7 +6,6 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
     where TModel : AgentRuntimeModel
 {
     protected readonly BaseCombatAgentView baseCombatAgentView;
-    protected readonly UnitStats unitStats;
     protected readonly CombatUnitModules modules;
     protected readonly TModel runtimeModel;
 
@@ -18,10 +17,8 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
     public Transform transform => baseCombatAgentView.transform;
 
     public string UnitId { get; private set; }
-    public bool IsActive { get; protected set; }
-    public bool IsAlive => modules.Health.IsAlive;
-    public UnitState State => runtimeModel.State;
-
+    public bool IsActive => baseCombatAgentView.gameObject.activeInHierarchy;
+    public bool IsAlive => runtimeModel.IsAlive;
     public event Action Died;
     public event Action<HitData> HitReceived;
 
@@ -38,16 +35,14 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
         this.targetTracker = targetTracker;
         reservationHandlerAttackers = targetReservationHandler;
         baseCombatAgentView = runtimeModel.View;
-        unitStats = runtimeModel.UnitStats;
     }
 
     public void Tick()
     {
-        if (!modules.Health.IsAlive)
+        if (!runtimeModel.IsAlive)
         {
             return;
         }
-        
         TickTracking();
         TickModules();
         TickBehaviour();
@@ -55,7 +50,7 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
 
     protected virtual void TickTracking()
     {
-        targetTracker.UpdateTarget(State);
+        targetTracker.UpdateTarget();
         
         if (targetTracker.CurrentTarget != null)
         {
@@ -67,10 +62,6 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
     {
         modules.Tick(Time.deltaTime);
     }
-
-    protected virtual void TickBehaviour()
-    {
-    }
     
     public void Initialize()
     {
@@ -80,7 +71,7 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
 
     public virtual void TakeDamage(float damage, Vector3 sourceWorldPosition)
     {
-        if (!modules.Health.IsAlive)
+        if (!runtimeModel.IsAlive)
         {
             return;
         }
@@ -100,6 +91,7 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
     {
         UnitId = unitId;
     }
+    protected abstract void TickBehaviour();
 
     protected abstract void ChangeToIdleState();
     protected abstract void ChangeToDeadState();
@@ -115,94 +107,5 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
         modules.Health.Died -= OnDied;
         reservationHandlerAttackers.ClearReservations();
         modules.DisposeModules();
-    }
-}
-
-public abstract class AgentRuntimeModel
-{
-    protected AgentRuntimeModel(
-        BaseCombatAgentView view,
-        UnitStats unitStats,
-        ITargetTrackerHandler targetTracker)
-    {
-        View = view;
-        UnitStats = unitStats;
-        TargetTracker = targetTracker;
-    }
-
-    public BaseCombatAgentView View { get; }
-    public UnitStats UnitStats { get; }
-    public ITargetTrackerHandler TargetTracker { get; }
-    public UnitState State { get; private set; } = UnitState.Idle;
-
-    public Transform Transform => View.transform;
-    public ICombatTarget CurrentTarget => TargetTracker.CurrentTarget;
-    public bool HasValidTarget => TargetTracker.IsCurrentTargetValid();
-
-    public void SetState(UnitState state)
-    {
-        State = state;
-    }
-}
-
-public class EnemyRuntimeModel : AgentRuntimeModel
-{
-    public EnemyRuntimeModel(BaseCombatAgentView view, UnitStats unitStats, ITargetTrackerHandler targetTracker)
-        : base(view, unitStats, targetTracker)
-    {
-    }
-}
-
-public class SoldierRuntimeModel : AgentRuntimeModel
-{
-    public SoldierRuntimeModel(BaseCombatAgentView view, UnitStats unitStats, ITargetTrackerHandler targetTracker)
-        : base(view, unitStats, targetTracker)
-    {
-    }
-
-    public SquadRootView SquadRootView { get; private set; }
-    public FormationSlot AssignedSlot { get; private set; }
-    public SoldierFormationState FormationState { get; private set; } = SoldierFormationState.WaitingInFormation;
-
-    public bool HasFormationAssignment => SquadRootView != null && AssignedSlot != null;
-
-    public Vector3 GetAssignedSlotCenter(ISquadSlotPositionProvider squadSlotPositionProvider)
-    {
-        Vector3 slotCenter = squadSlotPositionProvider.GetSlotWorldPosition(AssignedSlot);
-        slotCenter.y = Transform.position.y;
-        return slotCenter;
-    }
-
-    public void AssignSquad(SquadRootView squadRootView)
-    {
-        SquadRootView = squadRootView;
-    }
-
-    public void AssignSlot(FormationSlot slot)
-    {
-        AssignedSlot = slot;
-        ResetFormationState();
-    }
-
-    public void ClearSquad(SquadRootView owner)
-    {
-        if (SquadRootView != owner)
-        {
-            return;
-        }
-
-        AssignedSlot = null;
-        SquadRootView = null;
-        ResetFormationState();
-    }
-
-    public void SetFormationState(SoldierFormationState formationState)
-    {
-        FormationState = formationState;
-    }
-
-    public void ResetFormationState()
-    {
-        FormationState = SoldierFormationState.WaitingInFormation;
     }
 }

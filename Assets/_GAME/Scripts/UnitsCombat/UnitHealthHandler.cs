@@ -3,17 +3,19 @@ using UnityEngine;
 
 public class UnitHealthHandler
 {
+    private readonly IAliveState aliveState;
+
     public float MaxHealth { get; private set; }
     public float CurrentHealth { get; private set; }
-    public bool IsAlive { get; private set; }
     public event Action<float, float> HealthChanged;
     public event Action Died;
 
-    public UnitHealthHandler(float maxHealth)
+    public UnitHealthHandler(float maxHealth, IAliveState aliveState)
     {
+        this.aliveState = aliveState;
         MaxHealth = Mathf.Max(1f, maxHealth);
         CurrentHealth = MaxHealth;
-        IsAlive = true;
+        this.aliveState.IsAlive = true;
     }
 
 
@@ -26,7 +28,7 @@ public class UnitHealthHandler
 
         if (CurrentHealth <= 0f)
         {
-            IsAlive = false;
+            aliveState.IsAlive = false;
             Died?.Invoke();
         }
     }
@@ -46,7 +48,7 @@ public class UnitHealthHandler
     public void RestoreFull()
     {
         CurrentHealth = MaxHealth;
-        IsAlive = true;
+        aliveState.IsAlive = true;
         HealthChanged?.Invoke(CurrentHealth, MaxHealth);
     }
 }

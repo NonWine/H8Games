@@ -31,14 +31,8 @@ public class CombatTargetTracker : ITargetTrackerHandler
 
     
 
-    public void UpdateTarget(UnitState state)
+    public void UpdateTarget()
     {
-        if (state != UnitState.Attack)
-        {
-            Reset();
-            return;
-        }
-
         if (!IsCurrentTargetValid() || CanRetarget())
         {
             SetCurrentTarget(targetProvider.GetTarget());

@@ -28,14 +28,19 @@ public class SoldierIdleState : SoldierStateBase
 
     public override void Enter()
     {
-        Soldier.SetState(UnitState.Idle);
         agentAnimationController.SetAnimationState(UnitState.Idle);
     }
 
     public override void Tick()
     {
-        if (!Soldier.HasFormationAssignment || Soldier.State == UnitState.Attack || Soldier.State == UnitState.Dead)
+        if (!Soldier.HasFormationAssignment)
         {
+            return;
+        }
+
+        if (Soldier.HasValidTarget)
+        {
+            ChangeState<SoldierAttackState>();
             return;
         }
 
@@ -57,8 +62,6 @@ public class SoldierIdleState : SoldierStateBase
         }
 
         Soldier.Transform.position = slotCenter;
-        Soldier.SetFormationState(SoldierFormationState.WaitingInFormation);
-        Soldier.SetState(UnitState.Idle);
         unitRotatorService.RotateTowards(
             Soldier.Transform,
             Soldier.SquadRootView.transform.forward,

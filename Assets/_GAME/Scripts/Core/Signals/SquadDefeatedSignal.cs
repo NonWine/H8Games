@@ -1,7 +1,3 @@
-﻿public class SquadDefeatedSignal
-{
-}
-
-public class GameIdleStateSignal
+public class SquadDefeatedSignal
 {
 }

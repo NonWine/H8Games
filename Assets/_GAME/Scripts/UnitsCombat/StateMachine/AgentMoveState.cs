@@ -28,15 +28,20 @@ public class SoldierMoveState : SoldierStateBase
 
     public override void Enter()
     {
-        Soldier.SetState(UnitState.Move);
         agentAnimationController.SetAnimationState(UnitState.Move);
     }
 
     public override void Tick()
     {
-        if (!Soldier.HasFormationAssignment || Soldier.State == UnitState.Attack || Soldier.State == UnitState.Dead)
+        if (!Soldier.HasFormationAssignment)
         {
             ChangeState<SoldierIdleState>();
+            return;
+        }
+
+        if (Soldier.HasValidTarget)
+        {
+            ChangeState<SoldierAttackState>();
             return;
         }
 
@@ -44,12 +49,11 @@ public class SoldierMoveState : SoldierStateBase
 
         if (movementStateReader.IsMoving)
         {
-            Soldier.SetFormationState(movingFormationService.Update(
+            movingFormationService.Update(
                 Soldier.Transform,
                 Soldier.SquadRootView.transform,
                 slotCenter,
-                Time.deltaTime));
-            Soldier.SetState(UnitState.Move);
+                Time.deltaTime);
             return;
         }
 
@@ -70,14 +74,9 @@ public class SoldierMoveState : SoldierStateBase
         if (distance <= squadFollowSettings.SlotReachThreshold)
         {
             Soldier.Transform.position = slotCenter;
-            Soldier.SetFormationState(SoldierFormationState.WaitingInFormation);
-            Soldier.SetState(UnitState.Idle);
             ChangeState<SoldierIdleState>();
             return;
         }
-
-        Soldier.SetFormationState(SoldierFormationState.MovingToSlot);
-        Soldier.SetState(UnitState.Move);
 
         float slowdownRadius = Mathf.Max(squadFollowSettings.SlotReachThreshold * 4f, squadFollowSettings.SlotReachThreshold + 0.01f);
         float speedFactor = distance < slowdownRadius

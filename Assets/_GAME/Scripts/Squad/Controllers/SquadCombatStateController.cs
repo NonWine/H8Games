@@ -3,15 +3,6 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Zenject;
 
-public enum CombatFlowState
-{
-    IdleInPreparation = 0,
-    MovingToZone = 1,
-    FightingZone = 2,
-    Regrouping = 3,
-    Defeated = 4
-}
-
 public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGroupProvider ,ICombatStateProvider
 {
     private readonly LevelManager levelManager;
@@ -135,9 +126,4 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
         signalBus.Unsubscribe<SquadDefeatedSignal>(SetDefeated);
     }
     
-}
-
-public interface ICombatStateProvider
-{
-    CombatFlowState State { get; }
 }

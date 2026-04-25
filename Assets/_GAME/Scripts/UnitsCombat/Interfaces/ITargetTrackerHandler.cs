@@ -5,5 +5,5 @@ public interface ITargetTrackerHandler : IResetModule
 {
     ICombatTarget CurrentTarget { get; }
     bool IsCurrentTargetValid();
-    void UpdateTarget(UnitState state);
+    void UpdateTarget();
 }

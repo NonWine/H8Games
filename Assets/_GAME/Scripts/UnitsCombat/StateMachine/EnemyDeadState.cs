@@ -1,8 +1,8 @@
-// EnemyIdleState is implemented in AgentIdleState.cs with the shared idle state definitions.
+using Cysharp.Threading.Tasks;
 
-public class EnemyIdleState : EnemyStateBase
+public class EnemyDeadState : EnemyStateBase
 {
-    public EnemyIdleState(
+    public EnemyDeadState(
         EnemyRuntimeModel model,
         CombatUnitModules modules,
         AgentAnimationController agentAnimationController)
@@ -12,7 +12,8 @@ public class EnemyIdleState : EnemyStateBase
 
     public override void Enter()
     {
-        agentAnimationController.SetAnimationState(UnitState.Idle);
+        agentAnimationController.SetAnimationState(UnitState.Dead);
+        modules.Death.HandleDeathAsync().Forget();
     }
 
     public override void Exit()

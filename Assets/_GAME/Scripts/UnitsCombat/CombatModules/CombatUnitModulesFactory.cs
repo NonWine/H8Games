@@ -6,7 +6,7 @@
     {
         AttackRuntimeModel attackRuntime = new AttackRuntimeModel(args.Stats);
         UnitAttackAgentHandler attack = new UnitAttackAgentHandler(attackRuntime);
-        UnitHealthHandler health = new UnitHealthHandler(args.Stats.MaxHealth);
+        UnitHealthHandler health = new UnitHealthHandler(args.Stats.MaxHealth, args.AliveState);
         ProjectileVisualSpawner projectileSpawner = new ProjectileVisualSpawner(args.ViewRefs.ProjectilePrefab);
         UnitDeathModule death = new UnitDeathModule(args.ViewRefs.gameObject);
 

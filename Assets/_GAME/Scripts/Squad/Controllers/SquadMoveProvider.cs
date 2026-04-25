@@ -88,8 +88,3 @@ public class SquadMoveProvider : ITickable, IMoveProvider , ISquadMovementStateR
 
     public bool IsMoving { get; private set; }
 }
-
-public interface ISquadMovementStateReader
-{
-    bool IsMoving { get; }
-}

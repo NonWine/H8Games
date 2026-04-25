@@ -4,10 +4,11 @@ public struct CombatUnitModulesArgs
 {
     public BaseCombatUnitView ViewRefs { get; }
     public UnitStats Stats { get; }
-    public CombatUnitModulesArgs(BaseCombatUnitView viewRefs, UnitStats stats)
+    public IAliveState AliveState { get; }
+    public CombatUnitModulesArgs(BaseCombatUnitView viewRefs, UnitStats stats, IAliveState aliveState)
     {
-
         ViewRefs = viewRefs;
         Stats = stats;
+        AliveState = aliveState;
     }
 }
