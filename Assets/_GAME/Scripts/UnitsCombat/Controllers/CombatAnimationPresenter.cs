@@ -24,10 +24,14 @@ public class CombatAnimationPresenter : ICombatTickModule, IResetModule
                 animator.SetInteger("State", 0);
                 break;
             case UnitState.Move:
+            case UnitState.Chase:
                 animator.SetInteger("State", 1);
                 break;
             case UnitState.Attack:
                 animator.SetInteger("State", 2);
+                break;
+            case UnitState.Stunned:
+                animator.SetInteger("State", 0);
                 break;
             case UnitState.Dead:
                 animator.SetInteger("State", 3);

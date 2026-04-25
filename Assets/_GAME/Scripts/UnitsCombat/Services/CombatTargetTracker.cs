@@ -15,11 +15,17 @@ public class CombatTargetTracker : ITargetTrackerHandler
     
     public ICombatTarget CurrentTarget { get; private set; }
 
-    public CombatTargetTracker(ICombatTargetProvider targetProvider, List<ICombatTargetValidator> targetValidators, float retargetInterval, float targetLockDuration)
+    public CombatTargetTracker(
+        ICombatTargetProvider targetProvider,
+        ITargetReservationHandler targetReservationHandler,
+        List<ICombatTargetValidator> targetValidators,
+        float retargetInterval,
+        float targetLockDuration)
     {
         this.retargetInterval = retargetInterval;
         this.targetLockDuration = targetLockDuration;
         this.targetProvider = targetProvider;
+        this._targetReservationHandler = targetReservationHandler;
         this.targetValidators = targetValidators;
     }
 
