@@ -13,12 +13,12 @@ public class SoldierFormationHandler
         ISquadMovementStateReader movementStateReader,
         ISquadSlotPositionProvider squadSlotPositionProvider,
         SquadFollowSettings squadFollowSettings,
-        int seed)
+        SoldierMovingFormationService movingFormationService)
     {
         this.movementStateReader = movementStateReader;
         this.squadSlotPositionProvider = squadSlotPositionProvider;
         this.squadFollowSettings = squadFollowSettings;
-        movingFormationService = new SoldierMovingFormationService(squadFollowSettings, seed);
+        this.movingFormationService = movingFormationService;
     }
 
     public void Reset()

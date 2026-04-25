@@ -1,7 +1,7 @@
-public class SoldierIdleState : SoldierStateBase
+﻿public class EnemyIdleState : EnemyStateBase
 {
-    public SoldierIdleState(
-        SoldierRuntimeModel model,
+    public EnemyIdleState(
+        EnemyRuntimeModel model,
         CombatUnitModules modules,
         AgentAnimationController agentAnimationController)
         : base(model, modules, agentAnimationController)
@@ -16,6 +16,4 @@ public class SoldierIdleState : SoldierStateBase
     public override void Exit()
     {
     }
-    
-
 }

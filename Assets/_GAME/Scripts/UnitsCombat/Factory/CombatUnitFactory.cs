@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 using Zenject;
 
-public class CombatUnitFactory : IFactory<string, BaseCombatAgentController>
+public class CombatUnitFactory : IFactory<string, IAgentController>
 {
     private readonly DiContainer container;
     private readonly Dictionary<string, UnitCombatDefinition> definitions;
@@ -37,7 +37,7 @@ public class CombatUnitFactory : IFactory<string, BaseCombatAgentController>
         }
     }
 
-    public BaseCombatAgentController Create(string id)
+    public IAgentController Create(string id)
     {
         if (!definitions.TryGetValue(id, out UnitCombatDefinition definition))
         {
@@ -55,11 +55,11 @@ public class CombatUnitFactory : IFactory<string, BaseCombatAgentController>
             return null;
         }
 
-        BaseCombatAgentController controller;
+        IAgentController controller;
 
         try
         {
-            controller = context.Container.Resolve<BaseCombatAgentController>();
+            controller = context.Container.Resolve<IAgentController>();
         }
         catch (System.Exception exception)
         {

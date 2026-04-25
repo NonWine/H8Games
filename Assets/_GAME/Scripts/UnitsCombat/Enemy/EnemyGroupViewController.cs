@@ -141,7 +141,7 @@ public class EnemyGroupViewController : MonoBehaviour
 
             try
             {
-                BaseCombatAgentController controller = context.Container.Resolve<BaseCombatAgentController>();
+                EnemyCombatAgentController controller = context.Container.Resolve<EnemyCombatAgentController>();
                 if (controller is not EnemyCombatAgentController enemyController)
                 {
                     Debug.LogError($"[EnemyGroupViewController] Controller on '{enemyView.name}' is not an enemy controller.");

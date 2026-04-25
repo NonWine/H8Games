@@ -1,8 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class SoldierCombatAgentController : BaseCombatAgentController
+public class SoldierCombatAgentController : BaseCombatAgentController<SoldierRuntimeModel>
 {
+    private readonly SoldierStateMachine stateMachine;
     private readonly SoldierFormationHandler formationModule;
     private readonly ISquadSlotPositionProvider squadSlotPositionProvider;
 
@@ -10,26 +11,24 @@ public class SoldierCombatAgentController : BaseCombatAgentController
     private FormationSlot assignedSlot;
     
     public SoldierCombatAgentController(
-        BaseCombatAgentView baseCombatAgentView,
-        ModulesFactoryCollection modulesFactoryCollection,
-        SquadFollowSettings squadFollowSettings,
+        SoldierRuntimeModel runtimeModel,
+        CombatUnitModules modules,
+        SoldierStateMachine stateMachine,
+        SoldierFormationHandler formationModule,
         ISquadSlotPositionProvider squadSlotPositionProvider,
-        ISquadMovementStateReader movementStateReader,
         ITargetTrackerHandler targetTrackerHandler,
         UnitRotatorService unitRotatorService,
         ITargetReservationHandler targetReservationHandler)
-        : base(baseCombatAgentView, modulesFactoryCollection, unitRotatorService, targetTrackerHandler, targetReservationHandler)
+        : base(runtimeModel, modules, unitRotatorService, targetTrackerHandler, targetReservationHandler)
     {
+        this.stateMachine = stateMachine;
+        this.formationModule = formationModule;
         this.squadSlotPositionProvider = squadSlotPositionProvider;
-        formationModule = new SoldierFormationHandler(
-            movementStateReader,
-            squadSlotPositionProvider,
-            squadFollowSettings,
-            baseCombatAgentView.GetInstanceID());
     }
-    
+     
     protected override void TickBehaviour()
     {
+        stateMachine.Tick();
         State = formationModule.UpdateFormation(transform, Time.deltaTime, State, squadRootView, assignedSlot);
     }
     
@@ -67,6 +66,16 @@ public class SoldierCombatAgentController : BaseCombatAgentController
         Vector3 delta = targetPosition - transform.position;
         delta.y = 0f;
         return delta.sqrMagnitude <= threshold * threshold;
+    }
+
+    protected override void ChangeToIdleState()
+    {
+        stateMachine.ChangeState<SoldierIdleState>();
+    }
+
+    protected override void ChangeToDeadState()
+    {
+        stateMachine.ChangeState<SoldierDeadState>();
     }
     
 }

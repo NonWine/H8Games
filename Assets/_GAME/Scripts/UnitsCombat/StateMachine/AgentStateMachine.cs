@@ -1,11 +1,15 @@
-using System;
 using System.Collections.Generic;
-using UnityEngine;
 
-public class AgentStateMachine : StateMachine<AgentStateBase>
+public class SoldierStateMachine : StateMachine<SoldierStateBase>
 {
+    public SoldierStateMachine(List<SoldierStateBase> allStates) : base(allStates)
+    {
+    }
+}
 
-    public AgentStateMachine(List<AgentStateBase> allStates) : base(allStates)
+public class EnemyStateMachine : StateMachine<EnemyStateBase>
+{
+    public EnemyStateMachine(List<EnemyStateBase> allStates) : base(allStates)
     {
     }
 }

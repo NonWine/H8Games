@@ -10,6 +10,11 @@ public class EnemyCombatAgentInstaller : CombatAgentInstaller
             .WithArguments(
                 CombatView.transform,
                 CombatView.unitConfig.AuthoringStats.ReservationPenalty);
-        Container.Bind<BaseCombatAgentController>().To<EnemyCombatAgentController>().AsSingle().NonLazy();
+        Container.Bind<EnemyRuntimeModel>().AsSingle();
+        Container.Bind<EnemyStateBase>().To<EnemyIdleState>().AsSingle();
+        Container.Bind<EnemyStateBase>().To<EnemyAttackState>().AsSingle();
+        Container.Bind<EnemyStateBase>().To<EnemyDeadState>().AsSingle();
+        Container.Bind<EnemyStateMachine>().AsSingle();
+        Container.BindInterfacesAndSelfTo<EnemyCombatAgentController>().AsSingle().NonLazy();
     }
 }

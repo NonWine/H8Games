@@ -12,6 +12,7 @@ public class  CombatAgentInstaller : MonoInstaller
 
         Container.Bind<BaseCombatUnitView>().FromInstance(combatView).AsSingle();
         Container.Bind<BaseCombatAgentView>().FromInstance(combatView).AsSingle();
+        Container.BindInstance(combatView.Animator).AsSingle();
         Container.Bind<UnitStats>().FromInstance(unitStats).AsSingle();
         Container.Bind<CombatUnitModules>()
             .FromMethod(context =>
@@ -30,10 +31,7 @@ public class  CombatAgentInstaller : MonoInstaller
                 combatView.unitConfig.AuthoringStats.RetargetInterval,
                 combatView.unitConfig.AuthoringStats.TargetLockDuration);
         Container.Bind<UnitRotatorService>().AsSingle();
-        Container.Bind<AgentStateBase>().To<AgentIdleState>().AsSingle();
-        Container.Bind<AgentStateBase>().To<AgentAttackState>().AsSingle();
-        Container.Bind<AgentStateBase>().To<AgentDeadState>().AsSingle();
-        Container.Bind<AgentStateMachine>().AsSingle();
+        Container.Bind<AgentAnimationController>().AsSingle();
 
         InstallFeatureBindings();
     }

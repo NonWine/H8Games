@@ -1,7 +1,19 @@
-public abstract class AgentStateBase : State<AgentStateBase>
+public abstract class AgentStateBase<TState, TModel> : State<TState>
+    where TState : AgentStateBase<TState, TModel>
+    where TModel : AgentRuntimeModel
 {
+    protected readonly TModel model;
     protected readonly CombatUnitModules modules;
     protected readonly UnitStats unitStats;
     protected readonly BaseCombatAgentView baseCombatAgentView;
     protected readonly AgentAnimationController agentAnimationController;
+
+    protected AgentStateBase(TModel model, CombatUnitModules modules, AgentAnimationController agentAnimationController)
+    {
+        this.model = model;
+        this.modules = modules;
+        unitStats = model.UnitStats;
+        baseCombatAgentView = model.View;
+        this.agentAnimationController = agentAnimationController;
+    }
 }

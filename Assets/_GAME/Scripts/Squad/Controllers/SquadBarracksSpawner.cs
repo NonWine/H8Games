@@ -53,7 +53,7 @@ public class SquadBarracksSpawner : MonoBehaviour
         }
 
         Transform origin = spawnPoint != null ? spawnPoint : transform;
-        BaseCombatAgentController baseSoldier = unitFactory.Create(barracksStats.Unit.UnitID);
+        IAgentController baseSoldier = unitFactory.Create(barracksStats.Unit.UnitID);
         SoldierCombatAgentController soldier = baseSoldier as SoldierCombatAgentController;
 
         if (soldier == null)

@@ -2,16 +2,18 @@ using System;
 using UnityEngine;
 using Zenject;
 
-public class BaseCombatAgentController : ITickable, IInitializable, IDisposable, ICombatTarget
+public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializable, IDisposable, ICombatTarget, IAgentController
+    where TModel : AgentRuntimeModel
 {
-    
     protected readonly BaseCombatAgentView baseCombatAgentView;
     protected readonly UnitStats unitStats;
     protected readonly CombatUnitModules modules;
-    private   readonly UnitRotatorService  unitRotatorService;
-    private   readonly ITargetTrackerHandler targetTracker;
-    private   readonly ITargetReservationHandler reservationHandlerAttackers;
-    private readonly AgentStateMachine stateMachine;
+    protected readonly TModel runtimeModel;
+
+    private readonly UnitRotatorService unitRotatorService;
+    private readonly ITargetTrackerHandler targetTracker;
+    private readonly ITargetReservationHandler reservationHandlerAttackers;
+
     public ITargetReservationHandler reservationHandler => reservationHandlerAttackers;
     public Transform transform => baseCombatAgentView.transform;
 
@@ -23,26 +25,28 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
     public event Action Died;
     public event Action<HitData> HitReceived;
 
-
-    public BaseCombatAgentController(BaseCombatAgentView baseCombatAgentView, 
-        ModulesFactoryCollection modulesFactoryCollection,
+    protected BaseCombatAgentController(
+        TModel runtimeModel,
+        CombatUnitModules modules,
         UnitRotatorService unitRotatorService,
         ITargetTrackerHandler targetTracker,
         ITargetReservationHandler targetReservationHandler)
     {
-        this.baseCombatAgentView = baseCombatAgentView;
+        this.runtimeModel = runtimeModel;
+        this.modules = modules;
         this.unitRotatorService = unitRotatorService;
         this.targetTracker = targetTracker;
-        this.reservationHandlerAttackers = targetReservationHandler;
-        var unitModuleFactory = modulesFactoryCollection.Create(baseCombatAgentView.unitConfig.unitModuleType);
-        unitStats = baseCombatAgentView.unitConfig.CreateRuntimeStats();
-        modules = unitModuleFactory.Create(new CombatUnitModulesArgs(baseCombatAgentView, unitStats));
+        reservationHandlerAttackers = targetReservationHandler;
+        baseCombatAgentView = runtimeModel.View;
+        unitStats = runtimeModel.UnitStats;
     }
 
     public void Tick()
     {
-        if(!modules.Health.IsAlive)
+        if (!modules.Health.IsAlive)
+        {
             return;
+        }
         
         TickTracking();
         TickModules();
@@ -66,13 +70,12 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
 
     protected virtual void TickBehaviour()
     {
-        stateMachine.Tick();
     }
     
     public void Initialize()
     {
         modules.Health.Died += OnDied;
-        stateMachine.ChangeState<AgentIdleState>();
+        ChangeToIdleState();
     }
 
     public virtual void TakeDamage(float damage, Vector3 sourceWorldPosition)
@@ -98,9 +101,12 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
         UnitId = unitId;
     }
 
+    protected abstract void ChangeToIdleState();
+    protected abstract void ChangeToDeadState();
+
     protected virtual void OnDied()
     {
-        stateMachine.ChangeState<AgentDeadState>();
+        ChangeToDeadState();
         Died?.Invoke();
     }
 
@@ -112,3 +118,39 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
     }
 }
 
+public abstract class AgentRuntimeModel
+{
+    protected AgentRuntimeModel(
+        BaseCombatAgentView view,
+        UnitStats unitStats,
+        ITargetTrackerHandler targetTracker)
+    {
+        View = view;
+        UnitStats = unitStats;
+        TargetTracker = targetTracker;
+    }
+
+    public BaseCombatAgentView View { get; }
+    public UnitStats UnitStats { get; }
+    public ITargetTrackerHandler TargetTracker { get; }
+
+    public Transform Transform => View.transform;
+    public ICombatTarget CurrentTarget => TargetTracker.CurrentTarget;
+    public bool HasValidTarget => TargetTracker.IsCurrentTargetValid();
+}
+
+public class EnemyRuntimeModel : AgentRuntimeModel
+{
+    public EnemyRuntimeModel(BaseCombatAgentView view, UnitStats unitStats, ITargetTrackerHandler targetTracker)
+        : base(view, unitStats, targetTracker)
+    {
+    }
+}
+
+public class SoldierRuntimeModel : AgentRuntimeModel
+{
+    public SoldierRuntimeModel(BaseCombatAgentView view, UnitStats unitStats, ITargetTrackerHandler targetTracker)
+        : base(view, unitStats, targetTracker)
+    {
+    }
+}

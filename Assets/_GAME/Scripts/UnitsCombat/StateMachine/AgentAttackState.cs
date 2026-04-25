@@ -1,38 +1,73 @@
-public class AgentAttackState : AgentStateBase
+public class SoldierAttackState : SoldierStateBase
 {
-    private readonly ITargetTrackerHandler targetTracker;
-   public UnitAttackAnimationEventRelay AttackAnimationEvents { get; private set; }
-
-
-    public AgentAttackState(ITargetTrackerHandler targetTracker)
+    public SoldierAttackState(
+        SoldierRuntimeModel model,
+        CombatUnitModules modules,
+        AgentAnimationController agentAnimationController)
+        : base(model, modules, agentAnimationController)
     {
-        this.targetTracker = targetTracker;
     }
 
     public override void Enter()
     {
         agentAnimationController.SetAnimationState(UnitState.Attack);
-        AttackAnimationEvents.AttackTriggered += HandleAttack;
+        baseCombatAgentView.AttackAnimationEvents.AttackTriggered += HandleAttack;
     }
 
     public override void Exit()
     {
-        AttackAnimationEvents.AttackTriggered -= HandleAttack;
+        baseCombatAgentView.AttackAnimationEvents.AttackTriggered -= HandleAttack;
     }
     
     private void HandleAttack()
     {
-        if (!modules.Health.IsAlive || !targetTracker.IsCurrentTargetValid())
+        if (!modules.Health.IsAlive || !Soldier.HasValidTarget)
         {
             return;
         }
 
-        ICombatTarget target = targetTracker.CurrentTarget;
+        ICombatTarget target = Soldier.CurrentTarget;
 
         modules.Attack.HandleAttack(
             target,
             baseCombatAgentView.AttackPoint,
             () => target.TakeDamage(unitStats.Damage, baseCombatAgentView.AttackPoint.position));
     }
+}
 
+public class EnemyAttackState : EnemyStateBase
+{
+    public EnemyAttackState(
+        EnemyRuntimeModel model,
+        CombatUnitModules modules,
+        AgentAnimationController agentAnimationController)
+        : base(model, modules, agentAnimationController)
+    {
+    }
+
+    public override void Enter()
+    {
+        agentAnimationController.SetAnimationState(UnitState.Attack);
+        baseCombatAgentView.AttackAnimationEvents.AttackTriggered += HandleAttack;
+    }
+
+    public override void Exit()
+    {
+        baseCombatAgentView.AttackAnimationEvents.AttackTriggered -= HandleAttack;
+    }
+    
+    private void HandleAttack()
+    {
+        if (!modules.Health.IsAlive || !Enemy.HasValidTarget)
+        {
+            return;
+        }
+
+        ICombatTarget target = Enemy.CurrentTarget;
+
+        modules.Attack.HandleAttack(
+            target,
+            baseCombatAgentView.AttackPoint,
+            () => target.TakeDamage(unitStats.Damage, baseCombatAgentView.AttackPoint.position));
+    }
 }
