@@ -1,4 +1,4 @@
-﻿public abstract class SoldierStateBase : AgentStateBase<SoldierStateBase, SoldierRuntimeModel>
+public abstract class SoldierStateBase : AgentStateBase<SoldierStateBase, SoldierRuntimeModel>
 {
     protected SoldierStateBase(
         SoldierRuntimeModel model,
@@ -7,4 +7,6 @@
         : base(model, modules, agentAnimationController)
     {
     }
+
+    protected SoldierRuntimeModel Soldier => model;
 }

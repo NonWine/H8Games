@@ -12,6 +12,7 @@ public class SoldierDeadState : SoldierStateBase
 
     public override void Enter()
     {
+        Soldier.SetState(UnitState.Dead);
         agentAnimationController.SetAnimationState(UnitState.Dead);
         modules.Death.HandleDeathAsync().Forget();
     }
@@ -33,6 +34,7 @@ public class EnemyDeadState : EnemyStateBase
 
     public override void Enter()
     {
+        Enemy.SetState(UnitState.Dead);
         agentAnimationController.SetAnimationState(UnitState.Dead);
         modules.Death.HandleDeathAsync().Forget();
     }

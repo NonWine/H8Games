@@ -17,8 +17,8 @@ public class SoldierCombatAgentInstaller : CombatAgentInstaller
         Container.Bind<SoldierMovingFormationService>()
             .FromMethod(context => new SoldierMovingFormationService(context.Container.Resolve<SquadFollowSettings>(), CombatView.GetInstanceID()))
             .AsSingle();
-        Container.Bind<SoldierFormationHandler>().AsSingle();
         Container.Bind<SoldierStateBase>().To<SoldierIdleState>().AsSingle();
+        Container.Bind<SoldierStateBase>().To<SoldierMoveState>().AsSingle();
         Container.Bind<SoldierStateBase>().To<SoldierAttackState>().AsSingle();
         Container.Bind<SoldierStateBase>().To<SoldierDeadState>().AsSingle();
         Container.Bind<SoldierStateMachine>().AsSingle();

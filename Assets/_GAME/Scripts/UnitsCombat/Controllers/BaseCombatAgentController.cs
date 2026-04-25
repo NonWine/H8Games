@@ -20,7 +20,7 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
     public string UnitId { get; private set; }
     public bool IsActive { get; protected set; }
     public bool IsAlive => modules.Health.IsAlive;
-    public UnitState State { get; protected set; } = UnitState.Idle;
+    public UnitState State => runtimeModel.State;
 
     public event Action Died;
     public event Action<HitData> HitReceived;
@@ -133,10 +133,16 @@ public abstract class AgentRuntimeModel
     public BaseCombatAgentView View { get; }
     public UnitStats UnitStats { get; }
     public ITargetTrackerHandler TargetTracker { get; }
+    public UnitState State { get; private set; } = UnitState.Idle;
 
     public Transform Transform => View.transform;
     public ICombatTarget CurrentTarget => TargetTracker.CurrentTarget;
     public bool HasValidTarget => TargetTracker.IsCurrentTargetValid();
+
+    public void SetState(UnitState state)
+    {
+        State = state;
+    }
 }
 
 public class EnemyRuntimeModel : AgentRuntimeModel
@@ -152,5 +158,51 @@ public class SoldierRuntimeModel : AgentRuntimeModel
     public SoldierRuntimeModel(BaseCombatAgentView view, UnitStats unitStats, ITargetTrackerHandler targetTracker)
         : base(view, unitStats, targetTracker)
     {
+    }
+
+    public SquadRootView SquadRootView { get; private set; }
+    public FormationSlot AssignedSlot { get; private set; }
+    public SoldierFormationState FormationState { get; private set; } = SoldierFormationState.WaitingInFormation;
+
+    public bool HasFormationAssignment => SquadRootView != null && AssignedSlot != null;
+
+    public Vector3 GetAssignedSlotCenter(ISquadSlotPositionProvider squadSlotPositionProvider)
+    {
+        Vector3 slotCenter = squadSlotPositionProvider.GetSlotWorldPosition(AssignedSlot);
+        slotCenter.y = Transform.position.y;
+        return slotCenter;
+    }
+
+    public void AssignSquad(SquadRootView squadRootView)
+    {
+        SquadRootView = squadRootView;
+    }
+
+    public void AssignSlot(FormationSlot slot)
+    {
+        AssignedSlot = slot;
+        ResetFormationState();
+    }
+
+    public void ClearSquad(SquadRootView owner)
+    {
+        if (SquadRootView != owner)
+        {
+            return;
+        }
+
+        AssignedSlot = null;
+        SquadRootView = null;
+        ResetFormationState();
+    }
+
+    public void SetFormationState(SoldierFormationState formationState)
+    {
+        FormationState = formationState;
+    }
+
+    public void ResetFormationState()
+    {
+        FormationState = SoldierFormationState.WaitingInFormation;
     }
 }

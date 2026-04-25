@@ -10,6 +10,7 @@ public class SoldierAttackState : SoldierStateBase
 
     public override void Enter()
     {
+        Soldier.SetState(UnitState.Attack);
         agentAnimationController.SetAnimationState(UnitState.Attack);
         baseCombatAgentView.AttackAnimationEvents.AttackTriggered += HandleAttack;
     }
@@ -47,6 +48,7 @@ public class EnemyAttackState : EnemyStateBase
 
     public override void Enter()
     {
+        Enemy.SetState(UnitState.Attack);
         agentAnimationController.SetAnimationState(UnitState.Attack);
         baseCombatAgentView.AttackAnimationEvents.AttackTriggered += HandleAttack;
     }

@@ -1,4 +1,6 @@
-﻿public class EnemyIdleState : EnemyStateBase
+// EnemyIdleState is implemented in AgentIdleState.cs with the shared idle state definitions.
+
+public class EnemyIdleState : EnemyStateBase
 {
     public EnemyIdleState(
         EnemyRuntimeModel model,
@@ -10,6 +12,7 @@
 
     public override void Enter()
     {
+        Enemy.SetState(UnitState.Idle);
         agentAnimationController.SetAnimationState(UnitState.Idle);
     }
 

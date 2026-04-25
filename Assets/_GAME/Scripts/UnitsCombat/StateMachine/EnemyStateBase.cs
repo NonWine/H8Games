@@ -1,4 +1,4 @@
-﻿public abstract class EnemyStateBase : AgentStateBase<EnemyStateBase, EnemyRuntimeModel>
+public abstract class EnemyStateBase : AgentStateBase<EnemyStateBase, EnemyRuntimeModel>
 {
     protected EnemyStateBase(
         EnemyRuntimeModel model,
@@ -7,4 +7,6 @@
         : base(model, modules, agentAnimationController)
     {
     }
+
+    protected EnemyRuntimeModel Enemy => model;
 }

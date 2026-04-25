@@ -18,4 +18,19 @@ public class UnitRotatorService
 
         self.rotation = Quaternion.Slerp(self.rotation, targetRotation, lerpFactor);
     }
+
+    public void RotateTowards(Transform self, Vector3 direction, float deltaTime, float rotationSpeed)
+    {
+        direction.y = 0f;
+        if (direction.sqrMagnitude <= MinRotationDirectionSqrMagnitude)
+        {
+            return;
+        }
+
+        Quaternion targetRotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+        self.rotation = Quaternion.RotateTowards(
+            self.rotation,
+            targetRotation,
+            rotationSpeed * deltaTime);
+    }
 }
