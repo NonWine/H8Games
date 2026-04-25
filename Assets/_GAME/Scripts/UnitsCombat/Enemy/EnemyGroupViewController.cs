@@ -32,17 +32,6 @@ public class EnemyGroupViewController : MonoBehaviour
     {
         CacheControllers();
         State = EnemyGroupState.Activated;
-
-        for (int i = 0; i < enemyControllers.Count; i++)
-        {
-            EnemyCombatAgentController enemy = enemyControllers[i];
-            if (enemy == null || !enemy.IsAlive)
-            {
-                continue;
-            }
-
-            enemy.Activate();
-        }
     }
 
     public ICombatTarget GetBestLivingEnemyTarget(Vector3 worldPosition, float reservationPenalty)

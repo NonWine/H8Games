@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class AgentStateMachine : StateMachine<AgentStateBase>
 {
+
     public AgentStateMachine(List<AgentStateBase> allStates) : base(allStates)
     {
     }

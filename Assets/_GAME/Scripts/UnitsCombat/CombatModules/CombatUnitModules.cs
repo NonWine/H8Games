@@ -8,39 +8,28 @@ public class CombatUnitModules
     
     public UnitAttackAgentHandler Attack { get; }
     public UnitHealthHandler Health { get; }
-    public CombatAnimationPresenter Animation { get; }
     public ProjectileVisualSpawner ProjectileSpawner { get; }
-    public UnitDeathHandler Death { get; }
+    public UnitDeathModule Death { get; }
     
     public CombatUnitModules(
         UnitAttackAgentHandler attack,
         UnitHealthHandler health,
-        CombatAnimationPresenter animation,
         ProjectileVisualSpawner projectileSpawner,
-        UnitDeathHandler death)
+        UnitDeathModule death)
     {
         Attack = attack;
         Health = health;
-        Animation = animation;
         ProjectileSpawner = projectileSpawner;
         Death = death;
-        tickModules = new List<ICombatTickModule>
-        {
-            animation
-        };
-        resetModules = new List<IResetModule>
-        {
-            animation
-        };
     }
 
 
 
-    public void Tick(UnitState state, float deltaTime)
+    public void Tick(float deltaTime)
     {
         for (int i = 0; i < tickModules.Count; i++)
         {
-            tickModules[i]?.Tick(state, deltaTime);
+            tickModules[i]?.Tick(deltaTime);
         }
     }
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-public abstract class StateMachine<TState> : ITickable, IDisposable, IStateMachine<TState>
+public abstract class StateMachine<TState> : IDisposable, IStateMachine<TState>
     where TState : State<TState>
 {
     private readonly Dictionary<Type, TState> states = new Dictionary<Type, TState>();

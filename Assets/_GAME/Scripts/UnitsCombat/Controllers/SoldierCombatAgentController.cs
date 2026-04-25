@@ -68,11 +68,5 @@ public class SoldierCombatAgentController : BaseCombatAgentController
         delta.y = 0f;
         return delta.sqrMagnitude <= threshold * threshold;
     }
-
-    public void ResetRunTimeState()
-    {
-        formationModule.Reset();
-        modules.ResetModules();
-        State = UnitState.Idle;
-    }
+    
 }

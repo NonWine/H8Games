@@ -9,13 +9,11 @@ public class TankUnitModulesFactory : UnitModulesFactory
         UnitAttackAgentHandler attack = new UnitAttackAgentHandler(attackRuntime);
         UnitHealthHandler health = new UnitHealthHandler(args.Stats.MaxHealth);
         ProjectileVisualSpawner projectileSpawner = new ProjectileVisualSpawner(args.ViewRefs.ProjectilePrefab);
-        CombatAnimationPresenter animation = new CombatAnimationPresenter(args.ViewRefs);
-        UnitDeathHandler death = new UnitDeathHandler(args.ViewRefs.gameObject);
+        UnitDeathModule death = new UnitDeathModule(args.ViewRefs.gameObject);
 
         return new CombatUnitModules(
             attack,
             health,
-            animation,
             projectileSpawner,
             death);
     }

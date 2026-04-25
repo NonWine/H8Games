@@ -1,21 +1,18 @@
 using System;
 using UnityEngine;
 
-public class CombatAnimationPresenter : ICombatTickModule, IResetModule
+public class AgentAnimationController
 {
-    private readonly BaseCombatUnitView view;
 
     private readonly Animator animator;
 
-
-    public CombatAnimationPresenter(BaseCombatUnitView view)
+    public AgentAnimationController(Animator animator)
     {
-        this.view = view;
-        animator = view.Animator;
+       this.animator = animator;
 
     }
 
-    public void Tick(UnitState state, float deltaTime)
+    public void SetAnimationState(UnitState state)
     {
         
         switch (state)
@@ -24,14 +21,10 @@ public class CombatAnimationPresenter : ICombatTickModule, IResetModule
                 animator.SetInteger("State", 0);
                 break;
             case UnitState.Move:
-            case UnitState.Chase:
                 animator.SetInteger("State", 1);
                 break;
             case UnitState.Attack:
                 animator.SetInteger("State", 2);
-                break;
-            case UnitState.Stunned:
-                animator.SetInteger("State", 0);
                 break;
             case UnitState.Dead:
                 animator.SetInteger("State", 3);
