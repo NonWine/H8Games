@@ -43,6 +43,8 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
 
     public virtual void Tick()
     {
+        if(State == UnitState.Dead) return;
+        
         targetTracker.UpdateTarget(State);
         modules.Tick(State, Time.deltaTime);
         
@@ -55,23 +57,31 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
     public void Initialize()
     {
         modules.Health.Died += OnDied;
-        baseCombatAgentView.AttackAnimationEvents.AttackTriggered += HandleAttackAnimationTriggered;
-
+        baseCombatAgentView.AttackAnimationEvents.AttackTriggered += HandleAttack;
     }
 
-    private void HandleAttackAnimationTriggered()
+    private void HandleAttack()
     {
         if (!modules.Health.IsAlive || State != UnitState.Attack || !targetTracker.IsCurrentTargetValid())
         {
             return;
         }
-        
-        modules.Attack.HandleAttack(targetTracker.CurrentTarget, baseCombatAgentView.AttackPoint,
-            () => targetTracker.CurrentTarget.TakeDamage(unitStats.Damage, Vector3.zero));
+
+        ICombatTarget target = targetTracker.CurrentTarget;
+
+        modules.Attack.HandleAttack(
+            target,
+            baseCombatAgentView.AttackPoint,
+            () => target.TakeDamage(unitStats.Damage, baseCombatAgentView.AttackPoint.position));
     }
 
     public virtual void TakeDamage(float damage, Vector3 sourceWorldPosition)
     {
+        if (!modules.Health.IsAlive)
+        {
+            return;
+        }
+
         HitData hitData = new HitData
         {
             damage = damage,
@@ -91,7 +101,6 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
     protected virtual void OnDied()
     {
         State = UnitState.Dead;
-        modules.DisposeModules();
         Died?.Invoke();
         modules.Death.HandleDeathAsync().Forget();
     }
@@ -99,7 +108,7 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
     public virtual void Dispose()
     {
         modules.Health.Died -= OnDied;
-        baseCombatAgentView.AttackAnimationEvents.AttackTriggered -= HandleAttackAnimationTriggered;
+        baseCombatAgentView.AttackAnimationEvents.AttackTriggered -= HandleAttack;
         _reservationHandlerAttackers.ClearReservations();
         modules.DisposeModules();
     }

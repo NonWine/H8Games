@@ -20,9 +20,7 @@ public class UnitHealthHandler
 
     public void ApplyDamage(float amount)
     {
-        if (!IsAlive || amount <= 0f)
-            return;
-
+        
         CurrentHealth = Mathf.Max(0f, CurrentHealth - amount);
         HealthChanged?.Invoke(CurrentHealth, MaxHealth);
 
