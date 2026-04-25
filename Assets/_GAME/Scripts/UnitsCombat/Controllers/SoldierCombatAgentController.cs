@@ -28,19 +28,11 @@ public class SoldierCombatAgentController : BaseCombatAgentController
             baseCombatAgentView.GetInstanceID());
     }
     
-    public override void Tick()
+    protected override void TickBehaviour()
     {
-        if (!IsAlive)
-        {
-            return;
-        }
-        
         State = formationModule.UpdateFormation(transform, Time.deltaTime, State, squadRootView, assignedSlot);
-        base.Tick();
     }
-
-
-
+    
     public void AssignSquad(SquadRootView squadRootView)
     {
         this.squadRootView = squadRootView;

@@ -12,9 +12,9 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
     protected readonly CombatUnitModules modules;
     private   readonly UnitRotatorService  unitRotatorService;
     private   readonly ITargetTrackerHandler targetTracker;
-    private   readonly ITargetReservationHandler _reservationHandlerAttackers;
+    private   readonly ITargetReservationHandler reservationHandlerAttackers;
     
-    public ITargetReservationHandler reservationHandler => _reservationHandlerAttackers;
+    public ITargetReservationHandler reservationHandler => reservationHandlerAttackers;
     public Transform transform => baseCombatAgentView.transform;
     public UnitState State { get; protected set; } = UnitState.Idle;
 
@@ -35,25 +35,44 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
         this.baseCombatAgentView = baseCombatAgentView;
         this.unitRotatorService = unitRotatorService;
         this.targetTracker = targetTracker;
-        this._reservationHandlerAttackers = targetReservationHandler;
+        this.reservationHandlerAttackers = targetReservationHandler;
         var unitModuleFactory = modulesFactoryCollection.Create(baseCombatAgentView.unitConfig.unitModuleType);
         unitStats = baseCombatAgentView.unitConfig.CreateRuntimeStats();
         modules = unitModuleFactory.Create(new CombatUnitModulesArgs(baseCombatAgentView, unitStats));
     }
 
-    public virtual void Tick()
+    public void Tick()
     {
         if(State == UnitState.Dead) return;
-        
+        TickTracking();
+        TickModules();
+        TickRotation();
+        TickBehaviour();
+    }
+
+    protected virtual void TickTracking()
+    {
         targetTracker.UpdateTarget(State);
+    }
+
+    protected virtual void TickModules()
+    {
         modules.Tick(State, Time.deltaTime);
-        
+    }
+
+    protected virtual void TickRotation()
+    {
         if (targetTracker.CurrentTarget != null)
         {
             unitRotatorService.RotateTowards(baseCombatAgentView.transform, targetTracker.CurrentTarget.transform);
         }
     }
 
+    protected virtual void TickBehaviour()
+    {
+        
+    }
+    
     public void Initialize()
     {
         modules.Health.Died += OnDied;
@@ -109,7 +128,7 @@ public class BaseCombatAgentController : ITickable, IInitializable, IDisposable,
     {
         modules.Health.Died -= OnDied;
         baseCombatAgentView.AttackAnimationEvents.AttackTriggered -= HandleAttack;
-        _reservationHandlerAttackers.ClearReservations();
+        reservationHandlerAttackers.ClearReservations();
         modules.DisposeModules();
     }
 }
