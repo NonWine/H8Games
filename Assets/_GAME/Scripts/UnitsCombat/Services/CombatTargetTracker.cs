@@ -7,7 +7,7 @@ public class CombatTargetTracker : ITargetTrackerHandler
     private readonly float targetLockDuration;
 
     private readonly ICombatTargetProvider targetProvider;
-    private readonly ITargetReservation targetReservation;
+    private readonly ITargetReservationHandler _targetReservationHandler;
     private readonly List<ICombatTargetValidator> targetValidators;
 
     private float nextRetargetTime;
@@ -84,7 +84,7 @@ public class CombatTargetTracker : ITargetTrackerHandler
 
         if (CurrentTarget != null)
         {
-            targetReservation.TryRegisterAttacker(CurrentTarget);
+            _targetReservationHandler.TryRegisterAttacker(CurrentTarget);
             MarkRetargetWindow();
             return;
         }
@@ -95,7 +95,7 @@ public class CombatTargetTracker : ITargetTrackerHandler
 
     private void ReleaseCurrentTarget()
     {
-        targetReservation.TryUnregisterAttacker(CurrentTarget);
+        _targetReservationHandler.TryUnregisterAttacker(CurrentTarget);
         CurrentTarget = null;
     }
 }

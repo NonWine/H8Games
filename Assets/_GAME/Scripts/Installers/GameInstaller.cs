@@ -20,7 +20,7 @@ public class GameInstaller : MonoInstaller
         BindUnitsModules();
 
         Container.BindInstance(joystick).AsSingle();
-        Container.Bind<TargetReservation>().AsTransient();
+        Container.Bind<TargetReservationHandler>().AsTransient();
         InstallHero();
     }
 

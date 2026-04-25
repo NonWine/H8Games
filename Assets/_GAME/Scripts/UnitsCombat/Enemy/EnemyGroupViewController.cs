@@ -60,7 +60,7 @@ public class EnemyGroupViewController : MonoBehaviour
                 continue;
             }
 
-            int reservationCount = enemy.Reservation.ReservationCount;
+            int reservationCount = enemy.reservationHandler.ReservationCount;
 
             float score = CombatTargetScoringUtility.CalculateScore(
                 worldPosition,

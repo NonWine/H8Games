@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class TargetReservation : ITargetReservation, IResetModule, IDisposeModule
+public class TargetReservationHandler : ITargetReservationHandler
 {
     public int ReservationCount => reservationAttackers.Count;
  
@@ -27,14 +27,5 @@ public class TargetReservation : ITargetReservation, IResetModule, IDisposeModul
     {
         reservationAttackers.Clear();
     }
-
-    public void Reset()
-    {
-        ClearReservations();
-    }
-
-    public void Dispose()
-    {
-        ClearReservations();
-    }
+    
 }

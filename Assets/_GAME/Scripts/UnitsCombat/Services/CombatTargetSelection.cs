@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public interface ITargetReservation
+public interface ITargetReservationHandler
 {
     int ReservationCount { get; }
     bool TryRegisterAttacker(ICombatTarget attacker);

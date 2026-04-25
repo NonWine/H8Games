@@ -5,13 +5,15 @@ public class EnemyCombatAgentController : BaseCombatAgentController
 {
     private readonly CurrencyService currencyService;
 
-    public bool IsActive { get; private set; }
 
     public EnemyCombatAgentController(
         BaseCombatAgentView baseCombatAgentView,
         ModulesFactoryCollection modulesFactoryCollection, 
+        ITargetTrackerHandler targetTrackerHandler,
+        UnitRotatorService unitRotatorService,
+        ITargetReservationHandler targetReservationHandler,
         CurrencyService currencyService)
-        : base(baseCombatAgentView, modulesFactoryCollection)
+        : base(baseCombatAgentView, modulesFactoryCollection, unitRotatorService, targetTrackerHandler, targetReservationHandler)
     {
         this.currencyService = currencyService;
     }

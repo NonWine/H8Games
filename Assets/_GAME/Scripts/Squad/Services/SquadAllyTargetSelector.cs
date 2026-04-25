@@ -25,7 +25,7 @@ public class SquadAllyTargetSelector : IAllyTargetProvider
                 continue;
             }
 
-            int reservationCount = soldier.Reservation.ReservationCount;
+            int reservationCount = soldier.reservationHandler.ReservationCount;
 
             float score = CombatTargetScoringUtility.CalculateScore(
                 worldPosition,

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 public class SoldierCombatAgentController : BaseCombatAgentController
 {
     private readonly SoldierFormationHandler formationModule;
-    private readonly IEnemyGroupProvider currentEnemyGroupProvider;
     private readonly ISquadSlotPositionProvider squadSlotPositionProvider;
 
     private SquadRootView squadRootView;
@@ -16,10 +15,11 @@ public class SoldierCombatAgentController : BaseCombatAgentController
         SquadFollowSettings squadFollowSettings,
         ISquadSlotPositionProvider squadSlotPositionProvider,
         ISquadMovementStateReader movementStateReader,
-        IEnemyGroupProvider currentEnemyGroupProvider)
-        : base(baseCombatAgentView, modulesFactoryCollection)
+        ITargetTrackerHandler targetTrackerHandler,
+        UnitRotatorService unitRotatorService,
+        ITargetReservationHandler targetReservationHandler)
+        : base(baseCombatAgentView, modulesFactoryCollection, unitRotatorService, targetTrackerHandler, targetReservationHandler)
     {
-        this.currentEnemyGroupProvider = currentEnemyGroupProvider;
         this.squadSlotPositionProvider = squadSlotPositionProvider;
         formationModule = new SoldierFormationHandler(
             movementStateReader,
