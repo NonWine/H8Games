@@ -22,8 +22,10 @@ public class EnemyCombatAgentInstaller : CombatAgentInstaller
 
     private void BindRuntime()
     {
-        Container.Bind<AgentRuntimeModel>().To<EnemyRuntimeModel>().AsSingle();
         Container.Bind<EnemyRuntimeModel>().AsSingle();
+        Container.Bind<AgentRuntimeModel>()
+            .FromResolveGetter<EnemyRuntimeModel>(x => x)
+            .AsSingle();
     }
 
     private void BindStateMachine()

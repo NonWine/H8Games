@@ -26,7 +26,6 @@ public class CombatAgentInstaller : MonoInstaller
         Container.Bind<BaseCombatAgentView>().FromInstance(combatView).AsSingle();
         Container.BindInstance(combatView.Animator).AsSingle();
         Container.Bind<UnitStats>().FromInstance(unitStats).AsSingle();
-        Container.Bind<AgentRuntimeModel>().AsSingle();
     }
 
     private void BindSharedServices()

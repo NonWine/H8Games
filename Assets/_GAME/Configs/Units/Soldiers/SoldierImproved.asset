@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50be4e199ee8f8d479cfda2602a69442, type: 3}
   m_Name: SoldierImproved
   m_EditorClassIdentifier: 
-  prefab: {fileID: 4118415844405586779, guid: 1306168f8f6f03f41b4bf370d77d1162, type: 3}
+  prefab: {fileID: 7654671516463908688, guid: 1306168f8f6f03f41b4bf370d77d1162, type: 3}

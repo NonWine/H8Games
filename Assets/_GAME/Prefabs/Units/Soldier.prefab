@@ -8,6 +8,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 659474785926432852, guid: 01ced4803ad69094da1641053a107106, type: 3}
+      propertyPath: <unitConfig>k__BackingField
+      value: 
+      objectReference: {fileID: 11400000, guid: eee80853735f166489a1c0b6fde95d49, type: 2}
     - target: {fileID: 1384962790743585289, guid: 01ced4803ad69094da1641053a107106, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -55,6 +59,10 @@ PrefabInstance:
     - target: {fileID: 1574595976911709773, guid: 01ced4803ad69094da1641053a107106, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3328288774996239104, guid: 01ced4803ad69094da1641053a107106, type: 3}
+      propertyPath: _monoInstallers.Array.size
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3328288774996239104, guid: 01ced4803ad69094da1641053a107106, type: 3}
       propertyPath: '_monoInstallers.Array.data[0]'
@@ -181,4 +189,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fd21f2bcbdc4f2fb1df0e9d7ea8fd11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  combatView: {fileID: 0}
+  combatView: {fileID: 7654671516463908688}
+--- !u!114 &7654671516463908688 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 659474785926432852, guid: 01ced4803ad69094da1641053a107106, type: 3}
+  m_PrefabInstance: {fileID: 7141644556165517060}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1132071011719142381}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 002e452c90d94a3d95564ecfdb2fc8b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
