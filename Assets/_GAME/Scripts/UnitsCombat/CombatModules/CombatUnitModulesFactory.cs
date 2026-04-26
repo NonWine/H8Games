@@ -5,9 +5,9 @@
     public override CombatUnitModules Create(CombatUnitModulesArgs args)
     {
         AttackRuntimeModel attackRuntime = new AttackRuntimeModel(args.Stats);
-        UnitAttackAgentHandler attack = new UnitAttackAgentHandler(attackRuntime);
-        UnitHealthHandler health = new UnitHealthHandler(args.Stats.MaxHealth, args.AliveState);
         ProjectileVisualSpawner projectileSpawner = new ProjectileVisualSpawner(args.ViewRefs.ProjectilePrefab);
+        UnitAttackAgentHandler attack = new UnitAttackAgentHandler(attackRuntime, projectileSpawner);
+        UnitHealthHandler health = new UnitHealthHandler(args.Stats.MaxHealth, args.AliveState);
         UnitDeathModule death = new UnitDeathModule(args.ViewRefs.gameObject);
 
         return new CombatUnitModules(

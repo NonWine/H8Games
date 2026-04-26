@@ -24,7 +24,7 @@ public class EnemyCombatAgentInstaller : CombatAgentInstaller
     {
         Container.Bind<EnemyRuntimeModel>().AsSingle();
         Container.Bind<AgentRuntimeModel>()
-            .FromResolveGetter<EnemyRuntimeModel>(x => x)
+            .FromMethod(context => context.Container.Resolve<EnemyRuntimeModel>())
             .AsSingle();
     }
 
@@ -38,6 +38,6 @@ public class EnemyCombatAgentInstaller : CombatAgentInstaller
 
     private void BindController()
     {
-        Container.BindInterfacesAndSelfTo<EnemyCombatAgentController>().AsSingle().NonLazy();
+        Container.BindInterfacesAndSelfTo<EnemyCombatAgentController>().AsSingle();
     }
 }

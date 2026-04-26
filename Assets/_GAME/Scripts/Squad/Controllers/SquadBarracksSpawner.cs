@@ -47,22 +47,33 @@ public class SquadBarracksSpawner : MonoBehaviour
 
     private SoldierCombatAgentController SpawnSoldier()
     {
-        if (!squadFormationFacade.HasFreeSlot || !CanSpawnInCurrentPhase())
+        if (!squadFormationFacade.HasFreeSlot)
         {
+            Debug.Log("[SquadBarracksSpawner] No free slot in formation");
+            return null;
+        }
+
+        if (!CanSpawnInCurrentPhase())
+        {
+            Debug.Log($"[SquadBarracksSpawner] Cannot spawn in current phase: {_squadCombatStateController.State}");
             return null;
         }
 
         Transform origin = spawnPoint != null ? spawnPoint : transform;
         IAgentController baseSoldier = unitFactory.Create(barracksStats.Unit.UnitID);
+
+        if (baseSoldier == null)
+        {
+            Debug.LogError("[SquadBarracksSpawner] unitFactory.Create() returned null!");
+            return null;
+        }
+
         SoldierCombatAgentController soldier = baseSoldier as SoldierCombatAgentController;
 
         if (soldier == null)
         {
-            if (baseSoldier != null)
-            {
-                Destroy(baseSoldier.transform.gameObject);
-            }
-
+            Debug.LogError($"[SquadBarracksSpawner] Created unit is not SoldierCombatAgentController! Type: {baseSoldier.GetType().Name}");
+            Destroy(baseSoldier.transform.gameObject);
             return null;
         }
 
@@ -71,6 +82,7 @@ public class SquadBarracksSpawner : MonoBehaviour
 
         if (squadFormationFacade.RegisterSoldier(soldier))
         {
+            Debug.Log("[SquadBarracksSpawner] Soldier spawned and registered successfully");
             Action diedHandler = null;
             diedHandler = () =>
             {
@@ -82,6 +94,7 @@ public class SquadBarracksSpawner : MonoBehaviour
             return soldier;
         }
 
+        Debug.LogError("[SquadBarracksSpawner] Failed to register soldier in formation");
         Destroy(soldier.transform.gameObject);
         return null;
     }

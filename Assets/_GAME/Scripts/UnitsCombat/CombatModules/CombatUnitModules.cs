@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 public class CombatUnitModules
 {
-    private readonly List<ICombatTickModule> tickModules;
-    private readonly List<IResetModule> resetModules;
-    private readonly List<IDisposeModule> disposeModules;
+    private readonly List<ICombatTickModule> tickModules = new List<ICombatTickModule>();
+    private readonly List<IResetModule> resetModules = new List<IResetModule>();
+    private readonly List<IDisposeModule> disposeModules = new List<IDisposeModule>();
     
     public UnitAttackAgentHandler Attack { get; }
     public UnitHealthHandler Health { get; }

@@ -7,13 +7,14 @@ public class UnitAttackAgentHandler
     private const float MinAttackAnimationSpeedMultiplier = 0.92f;
     private const float MaxAttackAnimationSpeedMultiplier = 1.08f;
     private readonly AttackRuntimeModel attackData;
-    private   readonly ProjectileVisualSpawner projectileSpawner;
+    private readonly ProjectileVisualSpawner projectileSpawner;
 
     public float AttackAnimationSpeedMultiplier { get; private set; } = 1f;
 
-    public UnitAttackAgentHandler(AttackRuntimeModel attackData)
+    public UnitAttackAgentHandler(AttackRuntimeModel attackData, ProjectileVisualSpawner projectileSpawner)
     {
         this.attackData = attackData;
+        this.projectileSpawner = projectileSpawner;
         RandomizeAttackAnimationSpeed();
     }
 

@@ -27,7 +27,7 @@ public class SoldierCombatAgentInstaller : CombatAgentInstaller
     {
         Container.Bind<SoldierRuntimeModel>().AsSingle();
         Container.Bind<AgentRuntimeModel>()
-            .FromResolveGetter<SoldierRuntimeModel>(x => x)
+            .FromMethod(context => context.Container.Resolve<SoldierRuntimeModel>())
             .AsSingle();
         Container.Bind<SoldierMovingFormationService>()
             .FromMethod(context => new SoldierMovingFormationService(context.Container.Resolve<SquadFollowSettings>(), CombatView.GetInstanceID()))
@@ -45,6 +45,6 @@ public class SoldierCombatAgentInstaller : CombatAgentInstaller
 
     private void BindController()
     {
-        Container.BindInterfacesAndSelfTo<SoldierCombatAgentController>().AsSingle().NonLazy();
+        Container.BindInterfacesAndSelfTo<SoldierCombatAgentController>().AsSingle();
     }
 }
