@@ -37,13 +37,7 @@ public class SoldierIdleState : SoldierStateBase
         {
             return;
         }
-
-        if (Soldier.HasValidTarget)
-        {
-            ChangeState<SoldierAttackState>();
-            return;
-        }
-
+        
         if (movementStateReader.IsMoving)
         {
             ChangeState<SoldierMoveState>();
@@ -54,8 +48,9 @@ public class SoldierIdleState : SoldierStateBase
         Vector3 slotCenter = Soldier.GetAssignedSlotCenter(squadSlotPositionProvider);
         Vector3 delta = slotCenter - Soldier.Transform.position;
         delta.y = 0f;
+        float distance = delta.magnitude;
 
-        if (delta.magnitude > squadFollowSettings.SlotReachThreshold)
+        if (distance > squadFollowSettings.SlotReachThreshold)
         {
             ChangeState<SoldierMoveState>();
             return;

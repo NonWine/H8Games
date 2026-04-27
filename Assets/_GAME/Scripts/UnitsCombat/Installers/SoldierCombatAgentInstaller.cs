@@ -17,7 +17,8 @@ public class SoldierCombatAgentInstaller : CombatAgentInstaller
             .AsSingle()
             .WithArguments(
                 CombatView.transform,
-                CombatView.unitConfig.AuthoringStats.ReservationPenalty);
+                CombatView.unitConfig.AuthoringStats.ReservationPenalty,
+                CombatView.unitConfig.AuthoringStats.DetectionRadius);
         Container.Bind<ICombatTargetValidator>()
             .To<EnemyGroupCombatTargetValidator>()
             .AsSingle();

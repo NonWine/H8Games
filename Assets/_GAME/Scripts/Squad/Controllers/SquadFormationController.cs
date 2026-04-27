@@ -86,6 +86,7 @@ public class SquadFormationController
         slots.Clear();
 
         List<Vector3> offsets = squadFormationLayoutService.CalculateLocalOffsets(capacity);
+
         for (int i = 0; i < offsets.Count; i++)
         {
             slots.Add(new FormationSlot(i, offsets[i]));

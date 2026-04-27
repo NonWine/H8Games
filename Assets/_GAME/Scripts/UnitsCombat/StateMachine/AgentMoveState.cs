@@ -7,6 +7,7 @@ public class SoldierMoveState : SoldierStateBase
     private readonly SquadFollowSettings squadFollowSettings;
     private readonly SoldierMovingFormationService movingFormationService;
     private readonly UnitRotatorService unitRotatorService;
+    private readonly ICombatTargetProvider combatTargetProvider;
 
     public SoldierMoveState(
         SoldierRuntimeModel model,
@@ -16,7 +17,8 @@ public class SoldierMoveState : SoldierStateBase
         ISquadSlotPositionProvider squadSlotPositionProvider,
         SquadFollowSettings squadFollowSettings,
         SoldierMovingFormationService movingFormationService,
-        UnitRotatorService unitRotatorService)
+        UnitRotatorService unitRotatorService,
+        ICombatTargetProvider combatTargetProvider)
         : base(model, modules, agentAnimationController)
     {
         this.movementStateReader = movementStateReader;
@@ -24,6 +26,7 @@ public class SoldierMoveState : SoldierStateBase
         this.squadFollowSettings = squadFollowSettings;
         this.movingFormationService = movingFormationService;
         this.unitRotatorService = unitRotatorService;
+        this.combatTargetProvider = combatTargetProvider;
     }
 
     public override void Enter()
@@ -39,7 +42,7 @@ public class SoldierMoveState : SoldierStateBase
             return;
         }
 
-        if (Soldier.HasValidTarget)
+        if (combatTargetProvider.GetTarget() != null)
         {
             ChangeState<SoldierAttackState>();
             return;
@@ -58,6 +61,14 @@ public class SoldierMoveState : SoldierStateBase
         }
 
         movingFormationService.Reset();
+        Vector3 delta = slotCenter - Soldier.Transform.position;
+        delta.y = 0f;
+        if (delta.magnitude <= squadFollowSettings.SlotReachThreshold)
+        {
+            ChangeState<SoldierIdleState>();
+            return;
+        }
+
         UpdateIdleSlotMovement(slotCenter);
     }
 

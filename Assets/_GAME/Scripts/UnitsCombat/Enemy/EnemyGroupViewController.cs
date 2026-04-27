@@ -34,17 +34,25 @@ public class EnemyGroupViewController : MonoBehaviour
         State = EnemyGroupState.Activated;
     }
 
-    public ICombatTarget GetBestLivingEnemyTarget(Vector3 worldPosition, float reservationPenalty)
+    public ICombatTarget GetBestLivingEnemyTarget(Vector3 worldPosition, float reservationPenalty, float maxRange = float.MaxValue)
     {
         CacheControllers();
 
         ICombatTarget bestTarget = null;
         float bestScore = float.MaxValue;
+        float maxRangeSq = maxRange * maxRange;
 
         for (int i = 0; i < enemyControllers.Count; i++)
         {
             EnemyCombatAgentController enemy = enemyControllers[i];
             if (enemy == null || !enemy.IsAlive)
+            {
+                continue;
+            }
+
+            Vector3 toEnemy = enemy.transform.position - worldPosition;
+            toEnemy.y = 0f;
+            if (toEnemy.sqrMagnitude > maxRangeSq)
             {
                 continue;
             }
