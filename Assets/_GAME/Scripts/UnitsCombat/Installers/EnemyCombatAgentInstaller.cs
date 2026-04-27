@@ -2,6 +2,17 @@ using Zenject;
 
 public class EnemyCombatAgentInstaller : CombatAgentInstaller
 {
+    protected override void BindModules()
+    {
+        base.BindModules();
+
+        Container.Rebind<IDeathModule>().To<EnemyDeathModule>()
+            .AsSingle()
+            .WithArguments(
+                CombatView.gameObject,
+                CombatView.unitConfig.AuthoringStats.DeathReward);
+    }
+
     protected override void InstallFeatureBindings()
     {
         BindTargeting();
@@ -25,6 +36,9 @@ public class EnemyCombatAgentInstaller : CombatAgentInstaller
         Container.Bind<EnemyRuntimeModel>().AsSingle();
         Container.Bind<AgentRuntimeModel>()
             .FromMethod(context => context.Container.Resolve<EnemyRuntimeModel>())
+            .AsSingle();
+        Container.Bind<IAliveState>()
+            .FromMethod(context => context.Container.Resolve<AgentRuntimeModel>())
             .AsSingle();
     }
 

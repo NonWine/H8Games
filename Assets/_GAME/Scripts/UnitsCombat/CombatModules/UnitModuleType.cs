@@ -1,6 +1,1 @@
-﻿public enum UnitModuleType
-{
-    Combat,
-    Tank,
-    Air
-}
+// Removed — module creation moved to installer BindModules()

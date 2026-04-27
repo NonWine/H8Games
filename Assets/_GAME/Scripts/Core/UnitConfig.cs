@@ -6,7 +6,6 @@ public class UnitConfig : ScriptableObject
     [SerializeField] private UnitStats unitStats = new();
 
     public UnitStats AuthoringStats => unitStats;
-    public UnitModuleType unitModuleType { get; set; }
 
     public UnitStats CreateRuntimeStats()
     {

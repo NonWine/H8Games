@@ -18,7 +18,10 @@ public class SoldierAttackState : SoldierStateBase
     {
         if (!Soldier.HasValidTarget)
         {
-            ChangeState<SoldierIdleState>();
+            if (Soldier.HasFormationAssignment)
+                ChangeState<SoldierMoveState>();
+            else
+                ChangeState<SoldierIdleState>();
         }
     }
 

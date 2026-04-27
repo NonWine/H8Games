@@ -82,13 +82,6 @@ public class SoldierMoveState : SoldierStateBase
         delta.y = 0f;
 
         float distance = delta.magnitude;
-        if (distance <= squadFollowSettings.SlotReachThreshold)
-        {
-            Soldier.Transform.position = slotCenter;
-            ChangeState<SoldierIdleState>();
-            return;
-        }
-
         float slowdownRadius = Mathf.Max(squadFollowSettings.SlotReachThreshold * 4f, squadFollowSettings.SlotReachThreshold + 0.01f);
         float speedFactor = distance < slowdownRadius
             ? Mathf.Lerp(0.35f, 1f, distance / slowdownRadius)

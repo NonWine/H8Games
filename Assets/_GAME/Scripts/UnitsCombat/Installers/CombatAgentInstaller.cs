@@ -10,12 +10,33 @@ public class CombatAgentInstaller : MonoInstaller
     {
         BindCore();
         BindSharedServices();
+        BindModules();
         InstallFeatureBindings();
-        BindCombatModules();
     }
 
     protected virtual void InstallFeatureBindings()
     {
+    }
+
+    protected virtual void BindModules()
+    {
+        Container.Bind<AttackRuntimeModel>().AsSingle();
+
+        Container.Bind<ProjectileVisualSpawner>()
+            .AsSingle()
+            .WithArguments(CombatView.ProjectilePrefab);
+
+        Container.Bind<IAttackModule>().To<UnitAttackAgentHandler>().AsSingle();
+
+        Container.Bind<IHealthModule>().To<UnitHealthHandler>()
+            .AsSingle()
+            .WithArguments(CombatView.unitConfig.AuthoringStats.MaxHealth);
+
+        Container.Bind<IDeathModule>().To<UnitDeathModule>()
+            .AsSingle()
+            .WithArguments(CombatView.gameObject);
+
+        Container.Bind<CombatUnitModules>().AsSingle();
     }
 
     private void BindCore()
@@ -40,19 +61,5 @@ public class CombatAgentInstaller : MonoInstaller
                 combatView.unitConfig.AuthoringStats.TargetLockDuration);
         Container.Bind<UnitRotatorService>().AsSingle();
         Container.Bind<AgentAnimationController>().AsSingle();
-    }
-
-    private void BindCombatModules()
-    {
-        Container.Bind<CombatUnitModules>()
-            .FromMethod(context =>
-            {
-                ModulesFactoryCollection modulesFactoryCollection = context.Container.Resolve<ModulesFactoryCollection>();
-                IUnitModulesFactory unitModuleFactory = modulesFactoryCollection.Create(combatView.unitConfig.unitModuleType);
-                AgentRuntimeModel runtimeModel = context.Container.Resolve<AgentRuntimeModel>();
-                UnitStats unitStats = context.Container.Resolve<UnitStats>();
-                return unitModuleFactory.Create(new CombatUnitModulesArgs(combatView, unitStats, runtimeModel));
-            })
-            .AsSingle();
     }
 }

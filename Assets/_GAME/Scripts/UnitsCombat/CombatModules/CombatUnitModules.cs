@@ -5,31 +5,27 @@ public class CombatUnitModules
     private readonly List<ICombatTickModule> tickModules = new List<ICombatTickModule>();
     private readonly List<IResetModule> resetModules = new List<IResetModule>();
     private readonly List<IDisposeModule> disposeModules = new List<IDisposeModule>();
-    
-    public UnitAttackAgentHandler Attack { get; }
-    public UnitHealthHandler Health { get; }
-    public ProjectileVisualSpawner ProjectileSpawner { get; }
-    public UnitDeathModule Death { get; }
-    
-    public CombatUnitModules(
-        UnitAttackAgentHandler attack,
-        UnitHealthHandler health,
-        ProjectileVisualSpawner projectileSpawner,
-        UnitDeathModule death)
+
+    public IAttackModule Attack { get; }
+    public IHealthModule Health { get; }
+    public IDeathModule Death { get; }
+
+    public CombatUnitModules(IAttackModule attack, IHealthModule health, IDeathModule death)
     {
         Attack = attack;
         Health = health;
-        ProjectileSpawner = projectileSpawner;
         Death = death;
+
+        TryRegister(attack);
+        TryRegister(health);
+        TryRegister(death);
     }
-
-
 
     public void Tick(float deltaTime)
     {
         for (int i = 0; i < tickModules.Count; i++)
         {
-            tickModules[i]?.Tick(deltaTime);
+            tickModules[i].Tick(deltaTime);
         }
     }
 
@@ -37,7 +33,7 @@ public class CombatUnitModules
     {
         for (int i = 0; i < resetModules.Count; i++)
         {
-            resetModules[i]?.Reset();
+            resetModules[i].Reset();
         }
     }
 
@@ -45,7 +41,14 @@ public class CombatUnitModules
     {
         for (int i = 0; i < disposeModules.Count; i++)
         {
-            disposeModules[i]?.Dispose();
+            disposeModules[i].Dispose();
         }
+    }
+
+    private void TryRegister(object module)
+    {
+        if (module is ICombatTickModule tick) tickModules.Add(tick);
+        if (module is IResetModule reset) resetModules.Add(reset);
+        if (module is IDisposeModule dispose) disposeModules.Add(dispose);
     }
 }

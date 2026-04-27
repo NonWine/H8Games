@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
@@ -10,26 +9,15 @@ public class GameInstaller : MonoInstaller
     [SerializeField] private Transform heroSpawnPoint;
     [SerializeField] private Joystick joystick;
     [SerializeField] private int startingLevelIndex;
-    [SerializeField] private LevelRuntime[]  levels;
-    
+    [SerializeField] private LevelRuntime[] levels;
+
     public override void InstallBindings()
     {
         BindSignals();
         Container.BindInterfacesAndSelfTo<LevelManager>().AsSingle().WithArguments(levels, startingLevelIndex);
-
-        BindUnitsModules();
-
         Container.BindInstance(joystick).AsSingle();
         Container.Bind<TargetReservationHandler>().AsTransient();
         InstallHero();
-    }
-
-    private void BindUnitsModules()
-    {
-        Container.Bind<IUnitModulesFactory>().To<CombatUnitModulesFactory>().AsSingle().NonLazy();
-        Container.Bind<IUnitModulesFactory>().To<TankUnitModulesFactory>().AsSingle().NonLazy();
-
-        Container.Bind<ModulesFactoryCollection>().AsSingle().NonLazy();
     }
 
     private void BindSignals()

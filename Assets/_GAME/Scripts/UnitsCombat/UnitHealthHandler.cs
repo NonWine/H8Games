@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class UnitHealthHandler
+public class UnitHealthHandler : IHealthModule
 {
     private readonly IAliveState aliveState;
 

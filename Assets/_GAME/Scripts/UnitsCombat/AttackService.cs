@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class UnitAttackAgentHandler
+public class UnitAttackAgentHandler : IAttackModule
 {
     private const float MinAttackAnimationSpeedMultiplier = 0.92f;
     private const float MaxAttackAnimationSpeedMultiplier = 1.08f;
@@ -17,12 +17,6 @@ public class UnitAttackAgentHandler
         this.projectileSpawner = projectileSpawner;
         RandomizeAttackAnimationSpeed();
     }
-
-    public float GetAttackAnimationSpeed(float animationCycleDuration)
-    {
-        float baseSpeed = animationCycleDuration / Mathf.Max(0.05f, attackData.Cooldown);
-        return Mathf.Max(0.01f, baseSpeed * AttackAnimationSpeedMultiplier);
-    }
     
 
     public void RandomizeAttackAnimationSpeed()
@@ -32,8 +26,8 @@ public class UnitAttackAgentHandler
             MaxAttackAnimationSpeedMultiplier);
     }
     
-    public void HandleAttack(ICombatTarget target, Transform AttackPointStart, Action Hit)
+    public void HandleAttack(ICombatTarget target, Transform attackPoint, Action onHit)
     {
-        projectileSpawner.Spawn(AttackPointStart, target.transform, 80f, Hit);
+        projectileSpawner.Spawn(attackPoint, target.transform, 80f, onHit);
     }
 }

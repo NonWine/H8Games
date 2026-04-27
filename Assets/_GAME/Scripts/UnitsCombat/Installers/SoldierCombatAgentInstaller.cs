@@ -30,6 +30,9 @@ public class SoldierCombatAgentInstaller : CombatAgentInstaller
         Container.Bind<AgentRuntimeModel>()
             .FromMethod(context => context.Container.Resolve<SoldierRuntimeModel>())
             .AsSingle();
+        Container.Bind<IAliveState>()
+            .FromMethod(context => context.Container.Resolve<AgentRuntimeModel>())
+            .AsSingle();
         Container.Bind<SoldierMovingFormationService>()
             .FromMethod(context => new SoldierMovingFormationService(context.Container.Resolve<SquadFollowSettings>(), CombatView.GetInstanceID()))
             .AsSingle();
