@@ -1,1 +1,5 @@
-// Moved to SoldierCombatUnitPool.cs — this file can be deleted from the project.
+
+public class SoldierPoolableRoot : CombatUnitPoolableRoot<SoldierCombatAgentController>, IAgentDespawnRequester
+{
+    public void RequestDespawn() => Dispose();
+}

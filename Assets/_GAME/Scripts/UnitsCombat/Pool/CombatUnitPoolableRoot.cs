@@ -5,7 +5,6 @@ using Zenject;
 public class CombatUnitPoolableRoot<TController> : MonoBehaviour, IPoolable<AgentSpawnParams, IMemoryPool>, IDisposable
     where TController : class, IAgentController
 {
-    [Inject] PoolableManager poolableManager;
     private TController controller;
     private IMemoryPool pool;
 
@@ -24,13 +23,12 @@ public class CombatUnitPoolableRoot<TController> : MonoBehaviour, IPoolable<Agen
         transform.SetPositionAndRotation(spawnParams.Position, spawnParams.Rotation);
         controller.SetIdentity(spawnParams.UnitId);
         controller.ResetState();
-        poolableManager.TriggerOnSpawned();
+
     }
 
     public void OnDespawned()
     {
         pool = null;
-        poolableManager.TriggerOnDespawned();
     }
 
     public void Dispose()

@@ -18,7 +18,7 @@ public class EnemyGroupViewController : MonoBehaviour
     public Transform EngagePoint => engagePoint != null ? engagePoint : transform;
     public Vector3 EngagePointPosition => EngagePoint.position;
 
-    private void Awake()
+    private void Start()
     {
         CacheControllers();
     }
@@ -142,7 +142,7 @@ public class EnemyGroupViewController : MonoBehaviour
             }
 
             GameObjectContext context = enemyView.GetComponent<GameObjectContext>();
-            if (context == null)
+            if (context == null || context.Container == null)
             {
                 continue;
             }

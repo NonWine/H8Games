@@ -50,6 +50,6 @@ public class SoldierCombatAgentInstaller : CombatAgentInstaller
     private void BindController()
     {
         Container.BindInterfacesAndSelfTo<SoldierCombatAgentController>().AsSingle();
-        Container.Bind<IAgentDespawnRequester>().FromComponentOnRoot().AsSingle();
+        Container.BindInterfacesAndSelfTo<SoldierPoolableRoot>().FromComponentOnRoot().AsSingle();
     }
 }

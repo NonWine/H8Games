@@ -28,7 +28,7 @@ public class SoldierFactory
             Debug.LogError($"[SoldierFactory] No pool found for unit '{unitId}'");
             return null;
         }
-
+        Debug.Log(position);
         AgentSpawnParams spawnParams = new AgentSpawnParams(position, rotation, unitId);
         SoldierPoolableRoot root = pool.Spawn(spawnParams);
         SoldierCombatAgentController controller = root.Controller;

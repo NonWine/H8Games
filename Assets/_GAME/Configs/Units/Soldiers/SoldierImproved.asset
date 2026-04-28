@@ -12,4 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50be4e199ee8f8d479cfda2602a69442, type: 3}
   m_Name: SoldierImproved
   m_EditorClassIdentifier: 
-  prefab: {fileID: 7654671516463908688, guid: 1306168f8f6f03f41b4bf370d77d1162, type: 3}
+  unitID: c2d6eceb-b8e2-42da-a055-145a92f74256
+  prefab: {fileID: 4066400899556473448, guid: 3e177192a0fb16140819615c5f7b3c68, type: 3}
+  initialPoolSize: 5
