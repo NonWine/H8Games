@@ -19,11 +19,10 @@ public class CombatTargetTracker : ITargetTrackerHandler
         ICombatTargetProvider targetProvider,
         ITargetReservationHandler targetReservationHandler,
         List<ICombatTargetValidator> targetValidators,
-        float retargetInterval,
-        float targetLockDuration)
+        TargetingData targetingData)
     {
-        this.retargetInterval = retargetInterval;
-        this.targetLockDuration = targetLockDuration;
+        retargetInterval = targetingData.RetargetInterval;
+        targetLockDuration = targetingData.TargetLockDuration;
         this.targetProvider = targetProvider;
         this._targetReservationHandler = targetReservationHandler;
         this.targetValidators = targetValidators;

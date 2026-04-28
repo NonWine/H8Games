@@ -42,12 +42,6 @@ public class SoldierMoveState : SoldierStateBase
             return;
         }
 
-        if (combatTargetProvider.GetTarget() != null)
-        {
-            ChangeState<SoldierAttackState>();
-            return;
-        }
-
         Vector3 slotCenter = Soldier.GetAssignedSlotCenter(squadSlotPositionProvider);
 
         if (movementStateReader.IsMoving)

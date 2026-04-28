@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using Zenject;
 
-public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializable, IDisposable, ICombatTarget, IAgentController
+public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializable, IDisposable, ITargetSelectionCandidate, IAgentController
     where TModel : AgentRuntimeModel
 {
     protected readonly IAgentView agentView;
@@ -14,6 +14,8 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
 
     public ITargetReservationHandler reservationHandler => reservationHandlerAttackers;
     public Transform transform => agentView.Transform;
+    public Vector3 Position => agentView.Transform.position;
+    public int ReservationCount => reservationHandlerAttackers.ReservationCount;
 
     public string UnitId { get; private set; }
     public bool IsAlive => runtimeModel.IsAlive;
@@ -49,6 +51,11 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
     protected virtual void TickTracking()
     {
         targetTracker.UpdateTarget();
+        
+        if (targetTracker.IsCurrentTargetValid())
+        {
+            ChangeToAttackState();
+        }
     }
 
     protected virtual void TickModules()
@@ -95,6 +102,7 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
     protected abstract void TickBehaviour();
     protected abstract void ChangeToIdleState();
     protected abstract void ChangeToDeadState();
+    protected abstract void ChangeToAttackState();
 
     protected virtual void OnDied()
     {

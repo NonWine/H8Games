@@ -25,10 +25,7 @@ public class EnemyCombatAgentInstaller : CombatAgentInstaller
     {
         Container.Bind<ICombatTargetProvider>()
             .To<AllyCombatTargetProvider>()
-            .AsSingle()
-            .WithArguments(
-                CombatView.transform,
-                CombatView.unitConfig.AuthoringStats.ReservationPenalty);
+            .AsSingle();
     }
 
     private void BindRuntime()

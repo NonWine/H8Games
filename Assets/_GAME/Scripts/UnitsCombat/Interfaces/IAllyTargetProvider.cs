@@ -2,5 +2,5 @@
 
 public interface IAllyTargetProvider
 {
-    ICombatTarget GetBestLivingAllyTarget(Vector3 worldPosition, float reservationPenalty);
+    ICombatTarget GetBestLivingAllyTarget(Vector3 worldPosition, TargetingData targetingData);
 }

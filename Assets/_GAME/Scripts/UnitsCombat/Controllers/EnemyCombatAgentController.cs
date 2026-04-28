@@ -34,4 +34,9 @@ public class EnemyCombatAgentController : BaseCombatAgentController<EnemyRuntime
     {
         stateMachine.ChangeState<EnemyDeadState>();
     }
+
+    protected override void ChangeToAttackState()
+    {
+        stateMachine.ChangeState<EnemyAttackState>();
+    }
 }

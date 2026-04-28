@@ -42,23 +42,21 @@ public class CombatAgentInstaller : MonoInstaller
     private void BindCore()
     {
         UnitStats unitStats = combatView.unitConfig.CreateRuntimeStats();
-
+        TargetingData targetingData = combatView.unitConfig.CreateTargetingData();
+        Container.Bind<Transform>().FromInstance(combatView.transform).AsSingle();
         Container.Bind<BaseCombatUnitView>().FromInstance(combatView).AsSingle();
         Container.Bind<BaseCombatAgentView>().FromInstance(combatView).AsSingle();
         Container.BindInstance(combatView.Animator).AsSingle();
         Container.Bind<UnitStats>().FromInstance(unitStats).AsSingle();
+        Container.Bind<TargetingData>().FromInstance(targetingData).AsSingle();
+
     }
 
     private void BindSharedServices()
     {
         Container.Bind<ICombatTargetValidator>().To<DefaultCombatTargetValidator>().AsSingle();
         Container.Bind<ITargetReservationHandler>().To<TargetReservationHandler>().AsSingle();
-        Container.Bind<ITargetTrackerHandler>()
-            .To<CombatTargetTracker>()
-            .AsSingle()
-            .WithArguments(
-                combatView.unitConfig.AuthoringStats.RetargetInterval,
-                combatView.unitConfig.AuthoringStats.TargetLockDuration);
+        Container.Bind<ITargetTrackerHandler>().To<CombatTargetTracker>().AsSingle();
         Container.Bind<UnitRotatorService>().AsSingle();
         Container.Bind<AgentAnimationController>().AsSingle();
     }

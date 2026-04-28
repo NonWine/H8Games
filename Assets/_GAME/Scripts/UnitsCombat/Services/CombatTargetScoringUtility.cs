@@ -6,11 +6,18 @@ public static class CombatTargetScoringUtility
         Vector3 attackerPosition,
         Vector3 targetPosition,
         int assignedAttackersCount,
-        float reservationPenalty)
+        float reservationPenalty,
+        float maxRangeSq = float.MaxValue)
     {
+
         Vector3 delta = targetPosition - attackerPosition;
         delta.y = 0f;
 
+        if (delta.sqrMagnitude > maxRangeSq)
+        {
+            return float.PositiveInfinity;
+        }
+        
         float distance = delta.magnitude;
         float penalty = Mathf.Max(0f, assignedAttackersCount) * Mathf.Max(0f, reservationPenalty);
         return distance + penalty;

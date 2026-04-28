@@ -12,16 +12,8 @@ public class SoldierCombatAgentInstaller : CombatAgentInstaller
 
     private void BindTargeting()
     {
-        Container.Bind<ICombatTargetProvider>()
-            .To<EnemyGroupCombatTargetProvider>()
-            .AsSingle()
-            .WithArguments(
-                CombatView.transform,
-                CombatView.unitConfig.AuthoringStats.ReservationPenalty,
-                CombatView.unitConfig.AuthoringStats.DetectionRadius);
-        Container.Rebind<ICombatTargetValidator>()
-            .To<EnemyGroupCombatTargetValidator>()
-            .AsSingle();
+        Container.Bind<ICombatTargetProvider>().To<EnemyGroupCombatTargetProvider>().AsSingle();
+        Container.Rebind<ICombatTargetValidator>().To<EnemyGroupCombatTargetValidator>().AsSingle();
     }
 
     private void BindRuntime()

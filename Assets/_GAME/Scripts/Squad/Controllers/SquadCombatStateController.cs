@@ -14,7 +14,6 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
     
     public EnemyGroupViewController CurrentTargetGroup { get; set; }
     public CombatFlowState State { get; private set; } = CombatFlowState.IdleInPreparation;
-    public bool HasActiveEncounter => CurrentTargetGroup != null && CurrentTargetGroup.State == EnemyGroupState.Activated;
 
     public SquadCombatStateController(
         SquadMovementFacade squadMovementFacade,

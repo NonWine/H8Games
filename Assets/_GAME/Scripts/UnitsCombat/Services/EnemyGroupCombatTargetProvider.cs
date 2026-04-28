@@ -3,19 +3,16 @@ using UnityEngine;
 public class EnemyGroupCombatTargetProvider : ICombatTargetProvider
 {
     private readonly Transform ownerTransform;
-    private readonly float reservationPenalty;
-    private readonly float maxEngageRange;
+    private readonly TargetingData targetingData;
     private readonly IEnemyGroupProvider enemyGroupProvider;
 
     public EnemyGroupCombatTargetProvider(
         Transform ownerTransform,
-        float reservationPenalty,
-        float maxEngageRange,
+        TargetingData targetingData,
         IEnemyGroupProvider enemyGroupProvider)
     {
         this.ownerTransform = ownerTransform;
-        this.reservationPenalty = reservationPenalty;
-        this.maxEngageRange = maxEngageRange;
+        this.targetingData = targetingData;
         this.enemyGroupProvider = enemyGroupProvider;
     }
 
@@ -23,7 +20,15 @@ public class EnemyGroupCombatTargetProvider : ICombatTargetProvider
     {
         EnemyGroupViewController currentGroup = enemyGroupProvider.CurrentTargetGroup;
         return currentGroup != null
-            ? currentGroup.GetBestLivingEnemyTarget(ownerTransform.position, reservationPenalty, maxEngageRange)
+            ? currentGroup.GetBestLivingEnemyTarget(ownerTransform.position, targetingData)
             : null;
+    }
+}
+
+public class CombatTargetProvider : ICombatTargetProvider
+{
+    public ICombatTarget GetTarget()
+    {
+        return null;
     }
 }

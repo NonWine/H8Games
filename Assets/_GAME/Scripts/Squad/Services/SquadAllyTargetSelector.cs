@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SquadAllyTargetSelector : IAllyTargetProvider
@@ -9,39 +10,12 @@ public class SquadAllyTargetSelector : IAllyTargetProvider
         this.soldierRegistry = soldierRegistry;
     }
 
-    public ICombatTarget GetBestLivingAllyTarget(Vector3 worldPosition, float reservationPenalty)
+    public ICombatTarget GetBestLivingAllyTarget(Vector3 worldPosition, TargetingData targetingData)
     {
         soldierRegistry.PruneInvalid();
-
-        SoldierCombatAgentController bestTarget = null;
-        float bestScore = float.MaxValue;
-
-        var soldiers = soldierRegistry.Soldiers;
-        for (int i = 0; i < soldiers.Count; i++)
-        {
-            SoldierCombatAgentController soldier = soldiers[i];
-            if (soldier == null || !soldier.IsAlive)
-            {
-                continue;
-            }
-
-            int reservationCount = soldier.reservationHandler.ReservationCount;
-
-            float score = CombatTargetScoringUtility.CalculateScore(
-                worldPosition,
-                soldier.transform.position,
-                reservationCount,
-                reservationPenalty);
-
-            if (score >= bestScore)
-            {
-                continue;
-            }
-
-            bestTarget = soldier;
-            bestScore = score;
-        }
-
-        return bestTarget;
+        return CombatTargetSelectionUtility.SelectBestTarget(
+            soldierRegistry.Soldiers,
+            worldPosition,
+            targetingData);
     }
 }
