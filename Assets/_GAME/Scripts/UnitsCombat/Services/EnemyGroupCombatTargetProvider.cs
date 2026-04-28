@@ -19,16 +19,14 @@ public class EnemyGroupCombatTargetProvider : ICombatTargetProvider
     public ICombatTarget GetTarget()
     {
         EnemyGroupViewController currentGroup = enemyGroupProvider.CurrentTargetGroup;
-        return currentGroup != null
-            ? currentGroup.GetBestLivingEnemyTarget(ownerTransform.position, targetingData)
-            : null;
-    }
-}
+        if (currentGroup == null)
+        {
+            return null;
+        }
 
-public class CombatTargetProvider : ICombatTargetProvider
-{
-    public ICombatTarget GetTarget()
-    {
-        return null;
+        return CombatTargetSelectionUtility.SelectBestTarget(
+            currentGroup.Enemies,
+            ownerTransform.position,
+            targetingData);
     }
 }

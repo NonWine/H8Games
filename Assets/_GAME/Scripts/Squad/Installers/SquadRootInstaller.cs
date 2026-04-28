@@ -29,7 +29,6 @@ public class SquadRootInstaller : MonoInstaller
         Container.Bind<SquadFormationRegistry>().AsSingle();
         Container.Bind<SquadFormationController>().AsSingle();
         Container.Bind<EnemyGroupDetector>().AsSingle();
-        Container.BindInterfacesAndSelfTo<SquadAllyTargetSelector>().AsSingle();
         Container.Bind<EnemyDestinationContex>().AsSingle();
         Container.Bind<IDestinationProvider>().To<EnemyDestinationContex>().FromResolve();
     }

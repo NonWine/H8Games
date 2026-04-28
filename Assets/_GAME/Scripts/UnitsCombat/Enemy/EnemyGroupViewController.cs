@@ -17,6 +17,14 @@ public class EnemyGroupViewController : MonoBehaviour
     public bool HasAliveMembers => HasLivingEnemies();
     public Transform EngagePoint => engagePoint != null ? engagePoint : transform;
     public Vector3 EngagePointPosition => EngagePoint.position;
+    public IReadOnlyList<EnemyCombatAgentController> Enemies
+    {
+        get
+        {
+            CacheControllers();
+            return enemyControllers;
+        }
+    }
 
     private void Start()
     {
@@ -32,15 +40,6 @@ public class EnemyGroupViewController : MonoBehaviour
     {
         CacheControllers();
         State = EnemyGroupState.Activated;
-    }
-
-    public ICombatTarget GetBestLivingEnemyTarget(Vector3 worldPosition, TargetingData targetingData)
-    {
-        CacheControllers();
-        return CombatTargetSelectionUtility.SelectBestTarget(
-            enemyControllers,
-            worldPosition,
-            targetingData);
     }
 
     public bool ContainsEnemy(ICombatTarget target)

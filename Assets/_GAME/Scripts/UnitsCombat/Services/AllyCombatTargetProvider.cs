@@ -4,20 +4,24 @@ public class AllyCombatTargetProvider : ICombatTargetProvider
 {
     private readonly Transform ownerTransform;
     private readonly TargetingData targetingData;
-    private readonly IAllyTargetProvider allyTargetProvider;
+    private readonly SquadFormationRegistry soldierRegistry;
 
     public AllyCombatTargetProvider(
         Transform ownerTransform,
         TargetingData targetingData,
-        IAllyTargetProvider allyTargetProvider)
+        SquadFormationRegistry soldierRegistry)
     {
         this.ownerTransform = ownerTransform;
-        this.allyTargetProvider = allyTargetProvider;
         this.targetingData = targetingData;
+        this.soldierRegistry = soldierRegistry;
     }
 
     public ICombatTarget GetTarget()
     {
-        return allyTargetProvider.GetBestLivingAllyTarget(ownerTransform.position, targetingData);
+        soldierRegistry.PruneInvalid();
+        return CombatTargetSelectionUtility.SelectBestTarget(
+            soldierRegistry.Soldiers,
+            ownerTransform.position,
+            targetingData);
     }
 }
