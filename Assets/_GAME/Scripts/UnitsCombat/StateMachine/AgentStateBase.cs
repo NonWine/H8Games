@@ -5,7 +5,7 @@ public abstract class AgentStateBase<TState, TModel> : State<TState>
     protected readonly TModel model;
     protected readonly CombatUnitModules modules;
     protected readonly UnitStats unitStats;
-    protected readonly BaseCombatAgentView baseCombatAgentView;
+    protected readonly IAgentView agentView;
     protected readonly AgentAnimationController agentAnimationController;
 
     protected AgentStateBase(TModel model, CombatUnitModules modules, AgentAnimationController agentAnimationController)
@@ -13,7 +13,7 @@ public abstract class AgentStateBase<TState, TModel> : State<TState>
         this.model = model;
         this.modules = modules;
         unitStats = model.UnitStats;
-        baseCombatAgentView = model.View;
+        agentView = model.View;
         this.agentAnimationController = agentAnimationController;
     }
 }

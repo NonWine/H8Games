@@ -3,5 +3,8 @@ using UnityEngine;
 public interface IAgentController
 {
     Transform transform { get; }
-    void SetIdentity(string identity);
+    bool IsAlive { get; }
+
+    void SetIdentity(string unitId);
+    void ResetState();
 }

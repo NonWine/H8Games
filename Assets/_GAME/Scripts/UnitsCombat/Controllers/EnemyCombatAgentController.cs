@@ -10,9 +10,8 @@ public class EnemyCombatAgentController : BaseCombatAgentController<EnemyRuntime
         CombatUnitModules modules,
         EnemyStateMachine stateMachine,
         ITargetTrackerHandler targetTrackerHandler,
-        UnitRotatorService unitRotatorService,
         ITargetReservationHandler targetReservationHandler)
-        : base(runtimeModel, modules, unitRotatorService, targetTrackerHandler, targetReservationHandler)
+        : base(runtimeModel, modules, targetTrackerHandler, targetReservationHandler)
     {
         this.stateMachine = stateMachine;
     }

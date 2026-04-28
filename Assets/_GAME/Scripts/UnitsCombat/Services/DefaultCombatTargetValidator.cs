@@ -9,11 +9,6 @@ public class DefaultCombatTargetValidator : ICombatTargetValidator
             return false;
         }
 
-        if (target is EnemyCombatAgentController enemyCombatAgentController)
-        {
-            return enemyCombatAgentController.IsActive;
-        }
-
         if (target is Component targetComponent)
         {
             return targetComponent.gameObject.activeInHierarchy;

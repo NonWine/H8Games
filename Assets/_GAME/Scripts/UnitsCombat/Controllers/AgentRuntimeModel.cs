@@ -3,7 +3,7 @@
 public abstract class AgentRuntimeModel : IAliveState
 {
     protected AgentRuntimeModel(
-        BaseCombatAgentView view,
+        IAgentView view,
         UnitStats unitStats,
         ITargetTrackerHandler targetTracker)
     {
@@ -12,11 +12,11 @@ public abstract class AgentRuntimeModel : IAliveState
         TargetTracker = targetTracker;
     }
 
-    public BaseCombatAgentView View { get; }
+    public IAgentView View { get; }
     public UnitStats UnitStats { get; }
     public ITargetTrackerHandler TargetTracker { get; }
     public bool IsAlive { get; set; } = true;
-    public Transform Transform => View.transform;
+    public Transform Transform => View.Transform;
     public ICombatTarget CurrentTarget => TargetTracker.CurrentTarget;
     public bool HasValidTarget => TargetTracker.IsCurrentTargetValid();
 }

@@ -2,7 +2,7 @@ using System;
 using DG.Tweening;
 using UnityEngine;
 
-public class BaseCombatUnitView : MonoBehaviour
+public class BaseCombatUnitView : MonoBehaviour, IAgentView
 {
     [field: SerializeField] public SkinnedMeshRenderer[] renderers { get; private set; }
     [SerializeField] private float timeToSetColor = 0.2f;
@@ -12,6 +12,9 @@ public class BaseCombatUnitView : MonoBehaviour
     [field: SerializeField] public Animator Animator { get; private set; }
     [field: SerializeField] public UnitAttackAnimationEventRelay AttackAnimationEvents { get; private set; }
     [field: SerializeField, Min(0.01f)] public float AttackAnimationCycleDuration { get; private set; } = 1f;
+
+    public Transform Transform => transform;
+    public bool IsActive => gameObject.activeInHierarchy;
 
     private Material[] hitFlashMaterials = Array.Empty<Material>();
     private Color[] baseEmissionColors = Array.Empty<Color>();
@@ -28,6 +31,8 @@ public class BaseCombatUnitView : MonoBehaviour
             DOTween.Kill(material);
         }
     }
+
+    public void PlayHitFeedback() => SetEmissionHitFlash();
 
     public void SetEmissionHitFlash()
     {

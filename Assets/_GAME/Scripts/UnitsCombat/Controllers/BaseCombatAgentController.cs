@@ -5,36 +5,33 @@ using Zenject;
 public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializable, IDisposable, ICombatTarget, IAgentController
     where TModel : AgentRuntimeModel
 {
-    protected readonly BaseCombatAgentView baseCombatAgentView;
+    protected readonly IAgentView agentView;
     protected readonly CombatUnitModules modules;
     protected readonly TModel runtimeModel;
 
-    private readonly UnitRotatorService unitRotatorService;
     private readonly ITargetTrackerHandler targetTracker;
     private readonly ITargetReservationHandler reservationHandlerAttackers;
 
     public ITargetReservationHandler reservationHandler => reservationHandlerAttackers;
-    public Transform transform => baseCombatAgentView.transform;
+    public Transform transform => agentView.Transform;
 
     public string UnitId { get; private set; }
-    public bool IsActive => baseCombatAgentView.gameObject.activeInHierarchy;
     public bool IsAlive => runtimeModel.IsAlive;
+
     public event Action Died;
     public event Action<HitData> HitReceived;
 
     protected BaseCombatAgentController(
         TModel runtimeModel,
         CombatUnitModules modules,
-        UnitRotatorService unitRotatorService,
         ITargetTrackerHandler targetTracker,
         ITargetReservationHandler targetReservationHandler)
     {
         this.runtimeModel = runtimeModel;
         this.modules = modules;
-        this.unitRotatorService = unitRotatorService;
         this.targetTracker = targetTracker;
         reservationHandlerAttackers = targetReservationHandler;
-        baseCombatAgentView = runtimeModel.View;
+        agentView = runtimeModel.View;
     }
 
     public void Tick()
@@ -43,6 +40,7 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
         {
             return;
         }
+
         TickTracking();
         TickModules();
         TickBehaviour();
@@ -51,18 +49,13 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
     protected virtual void TickTracking()
     {
         targetTracker.UpdateTarget();
-        
-        if (targetTracker.CurrentTarget != null)
-        {
-            unitRotatorService.RotateTowards(baseCombatAgentView.transform, targetTracker.CurrentTarget.transform);
-        }
     }
 
     protected virtual void TickModules()
     {
         modules.Tick(Time.deltaTime);
     }
-    
+
     public void Initialize()
     {
         modules.Health.Died += OnDied;
@@ -84,15 +77,22 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
 
         HitReceived?.Invoke(hitData);
         modules.Health.ApplyDamage(hitData.damage);
-        baseCombatAgentView.SetEmissionHitFlash();
+        agentView.PlayHitFeedback();
     }
-    
+
     public void SetIdentity(string unitId)
     {
         UnitId = unitId;
     }
-    protected abstract void TickBehaviour();
 
+    public void ResetState()
+    {
+        runtimeModel.IsAlive = true;
+        modules.ResetModules();
+        ChangeToIdleState();
+    }
+
+    protected abstract void TickBehaviour();
     protected abstract void ChangeToIdleState();
     protected abstract void ChangeToDeadState();
 

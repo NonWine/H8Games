@@ -1,17 +1,24 @@
 public class SoldierAttackState : SoldierStateBase
 {
+    private readonly BaseCombatAgentView combatView;
+    private readonly UnitRotatorService unitRotatorService;
+
     public SoldierAttackState(
         SoldierRuntimeModel model,
         CombatUnitModules modules,
-        AgentAnimationController agentAnimationController)
+        AgentAnimationController agentAnimationController,
+        BaseCombatAgentView combatView,
+        UnitRotatorService unitRotatorService)
         : base(model, modules, agentAnimationController)
     {
+        this.combatView = combatView;
+        this.unitRotatorService = unitRotatorService;
     }
 
     public override void Enter()
     {
         agentAnimationController.SetAnimationState(UnitState.Attack);
-        baseCombatAgentView.AttackAnimationEvents.AttackTriggered += HandleAttack;
+        combatView.AttackAnimationEvents.AttackTriggered += HandleAttack;
     }
 
     public override void Tick()
@@ -22,14 +29,18 @@ public class SoldierAttackState : SoldierStateBase
                 ChangeState<SoldierMoveState>();
             else
                 ChangeState<SoldierIdleState>();
+
+            return;
         }
+
+        unitRotatorService.RotateTowards(Soldier.Transform, Soldier.CurrentTarget.transform);
     }
 
     public override void Exit()
     {
-        baseCombatAgentView.AttackAnimationEvents.AttackTriggered -= HandleAttack;
+        combatView.AttackAnimationEvents.AttackTriggered -= HandleAttack;
     }
-    
+
     private void HandleAttack()
     {
         if (!Soldier.IsAlive || !Soldier.HasValidTarget)
@@ -41,7 +52,7 @@ public class SoldierAttackState : SoldierStateBase
 
         modules.Attack.HandleAttack(
             target,
-            baseCombatAgentView.AttackPoint,
-            () => target.TakeDamage(unitStats.Damage, baseCombatAgentView.AttackPoint.position));
+            combatView.AttackPoint,
+            () => target.TakeDamage(unitStats.Damage, combatView.AttackPoint.position));
     }
 }

@@ -19,7 +19,7 @@ public class SoldierCombatAgentInstaller : CombatAgentInstaller
                 CombatView.transform,
                 CombatView.unitConfig.AuthoringStats.ReservationPenalty,
                 CombatView.unitConfig.AuthoringStats.DetectionRadius);
-        Container.Bind<ICombatTargetValidator>()
+        Container.Rebind<ICombatTargetValidator>()
             .To<EnemyGroupCombatTargetValidator>()
             .AsSingle();
     }
@@ -50,5 +50,6 @@ public class SoldierCombatAgentInstaller : CombatAgentInstaller
     private void BindController()
     {
         Container.BindInterfacesAndSelfTo<SoldierCombatAgentController>().AsSingle();
+        Container.Bind<IAgentDespawnRequester>().FromComponentOnRoot().AsSingle();
     }
 }

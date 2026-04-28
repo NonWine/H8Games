@@ -10,14 +10,14 @@ public class SquadBarracksSpawner : MonoBehaviour
     [SerializeField] private BarracksStats barracksStats;
     [SerializeField] private GameObject[] barracks;
 
-    private CombatUnitFactory unitFactory;
+    private SoldierFactory soldierFactory;
     private SquadFormationFacade squadFormationFacade;
     private SpawnService<SoldierCombatAgentController> spawnService;
 
     [Inject]
-    public void Construct(CombatUnitFactory unitFactory, SquadFormationFacade squadFormationFacade)
+    public void Construct(SoldierFactory soldierFactory, SquadFormationFacade squadFormationFacade)
     {
-        this.unitFactory = unitFactory;
+        this.soldierFactory = soldierFactory;
         this.squadFormationFacade = squadFormationFacade;
     }
 
@@ -58,23 +58,7 @@ public class SquadBarracksSpawner : MonoBehaviour
         }
 
         Transform origin = spawnPoint != null ? spawnPoint : transform;
-        IAgentController baseSoldier = unitFactory.Create(barracksStats.Unit.UnitID);
-
-        if (baseSoldier == null)
-        {
-            return null;
-        }
-
-        SoldierCombatAgentController soldier = baseSoldier as SoldierCombatAgentController;
-
-        if (soldier == null)
-        {
-            Destroy(baseSoldier.transform.gameObject);
-            return null;
-        }
-
-        soldier.transform.position = origin.position;
-        soldier.transform.rotation = origin.rotation;
+        SoldierCombatAgentController soldier = soldierFactory.Create(barracksStats.Unit.UnitID, origin.position, origin.rotation);
 
         if (squadFormationFacade.RegisterSoldier(soldier))
         {
@@ -89,7 +73,7 @@ public class SquadBarracksSpawner : MonoBehaviour
             return soldier;
         }
 
-        Destroy(soldier.transform.gameObject);
+        soldierFactory.Release(soldier);
         return null;
     }
 
