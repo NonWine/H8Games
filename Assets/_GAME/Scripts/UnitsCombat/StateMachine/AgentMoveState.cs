@@ -5,9 +5,7 @@ public class SoldierMoveState : SoldierStateBase
     private readonly ISquadMovementStateReader movementStateReader;
     private readonly ISquadSlotPositionProvider squadSlotPositionProvider;
     private readonly SquadFollowSettings squadFollowSettings;
-    private readonly SoldierMovingFormationService movingFormationService;
-    private readonly UnitRotatorService unitRotatorService;
-    private readonly ICombatTargetProvider combatTargetProvider;
+    private readonly ISoldierFormationMover formationMover;
 
     public SoldierMoveState(
         SoldierRuntimeModel model,
@@ -16,21 +14,18 @@ public class SoldierMoveState : SoldierStateBase
         ISquadMovementStateReader movementStateReader,
         ISquadSlotPositionProvider squadSlotPositionProvider,
         SquadFollowSettings squadFollowSettings,
-        SoldierMovingFormationService movingFormationService,
-        UnitRotatorService unitRotatorService,
-        ICombatTargetProvider combatTargetProvider)
+        ISoldierFormationMover formationMover)
         : base(model, modules, agentAnimationController)
     {
         this.movementStateReader = movementStateReader;
         this.squadSlotPositionProvider = squadSlotPositionProvider;
         this.squadFollowSettings = squadFollowSettings;
-        this.movingFormationService = movingFormationService;
-        this.unitRotatorService = unitRotatorService;
-        this.combatTargetProvider = combatTargetProvider;
+        this.formationMover = formationMover;
     }
 
     public override void Enter()
     {
+        formationMover.Reset();
         agentAnimationController.SetAnimationState(UnitState.Move);
     }
 
@@ -46,18 +41,15 @@ public class SoldierMoveState : SoldierStateBase
 
         if (movementStateReader.IsMoving)
         {
-            movingFormationService.Update(
-                Soldier.Transform,
+            formationMover.MoveToSlot(
                 Soldier.SquadRootView.transform,
                 slotCenter,
+                true,
                 Time.deltaTime);
             return;
         }
 
-        movingFormationService.Reset();
-        Vector3 delta = slotCenter - Soldier.Transform.position;
-        delta.y = 0f;
-        if (delta.magnitude <= squadFollowSettings.SlotReachThreshold)
+        if (formationMover.IsAt(slotCenter, squadFollowSettings.SlotReachThreshold))
         {
             ChangeState<SoldierIdleState>();
             return;
@@ -72,22 +64,10 @@ public class SoldierMoveState : SoldierStateBase
 
     private void UpdateIdleSlotMovement(Vector3 slotCenter)
     {
-        Vector3 delta = slotCenter - Soldier.Transform.position;
-        delta.y = 0f;
-
-        float distance = delta.magnitude;
-        float slowdownRadius = Mathf.Max(squadFollowSettings.SlotReachThreshold * 4f, squadFollowSettings.SlotReachThreshold + 0.01f);
-        float speedFactor = distance < slowdownRadius
-            ? Mathf.Lerp(0.35f, 1f, distance / slowdownRadius)
-            : 1f;
-
-        float step = squadFollowSettings.SoldierMoveSpeed * speedFactor * Time.deltaTime;
-        Vector3 nextPosition = Vector3.MoveTowards(Soldier.Transform.position, slotCenter, step);
-        Soldier.Transform.position = new Vector3(nextPosition.x, Soldier.Transform.position.y, nextPosition.z);
-        unitRotatorService.RotateTowards(
-            Soldier.Transform,
-            delta.normalized,
-            Time.deltaTime,
-            squadFollowSettings.SoldierRotationSpeed);
+        formationMover.MoveToSlot(
+            Soldier.SquadRootView.transform,
+            slotCenter,
+            false,
+            Time.deltaTime);
     }
 }

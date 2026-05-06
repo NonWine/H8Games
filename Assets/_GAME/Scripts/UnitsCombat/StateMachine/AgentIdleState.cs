@@ -5,7 +5,7 @@ public class SoldierIdleState : SoldierStateBase
     private readonly ISquadMovementStateReader movementStateReader;
     private readonly ISquadSlotPositionProvider squadSlotPositionProvider;
     private readonly SquadFollowSettings squadFollowSettings;
-    private readonly SoldierMovingFormationService movingFormationService;
+    private readonly ISoldierFormationMover formationMover;
     private readonly UnitRotatorService unitRotatorService;
 
     public SoldierIdleState(
@@ -15,19 +15,20 @@ public class SoldierIdleState : SoldierStateBase
         ISquadMovementStateReader movementStateReader,
         ISquadSlotPositionProvider squadSlotPositionProvider,
         SquadFollowSettings squadFollowSettings,
-        SoldierMovingFormationService movingFormationService,
+        ISoldierFormationMover formationMover,
         UnitRotatorService unitRotatorService)
         : base(model, modules, agentAnimationController)
     {
         this.movementStateReader = movementStateReader;
         this.squadSlotPositionProvider = squadSlotPositionProvider;
         this.squadFollowSettings = squadFollowSettings;
-        this.movingFormationService = movingFormationService;
+        this.formationMover = formationMover;
         this.unitRotatorService = unitRotatorService;
     }
 
     public override void Enter()
     {
+        formationMover.Stop();
         agentAnimationController.SetAnimationState(UnitState.Idle);
     }
 
@@ -44,7 +45,6 @@ public class SoldierIdleState : SoldierStateBase
             return;
         }
 
-        movingFormationService.Reset();
         Vector3 slotCenter = Soldier.GetAssignedSlotCenter(squadSlotPositionProvider);
         Vector3 delta = slotCenter - Soldier.Transform.position;
         delta.y = 0f;
@@ -56,7 +56,7 @@ public class SoldierIdleState : SoldierStateBase
             return;
         }
 
-        Soldier.Transform.position = slotCenter;
+        formationMover.Stop();
         unitRotatorService.RotateTowards(
             Soldier.Transform,
             Soldier.SquadRootView.transform.forward,

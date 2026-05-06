@@ -2,21 +2,25 @@ public class SoldierAttackState : SoldierStateBase
 {
     private readonly BaseCombatAgentView combatView;
     private readonly UnitRotatorService unitRotatorService;
+    private readonly ISoldierFormationMover formationMover;
 
     public SoldierAttackState(
         SoldierRuntimeModel model,
         CombatUnitModules modules,
         AgentAnimationController agentAnimationController,
         BaseCombatAgentView combatView,
-        UnitRotatorService unitRotatorService)
+        UnitRotatorService unitRotatorService,
+        ISoldierFormationMover formationMover)
         : base(model, modules, agentAnimationController)
     {
         this.combatView = combatView;
         this.unitRotatorService = unitRotatorService;
+        this.formationMover = formationMover;
     }
 
     public override void Enter()
     {
+        formationMover.Stop();
         agentAnimationController.SetAnimationState(UnitState.Attack);
         combatView.AttackAnimationEvents.AttackTriggered += HandleAttack;
     }

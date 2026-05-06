@@ -5,18 +5,21 @@ public class SoldierCombatAgentController : BaseCombatAgentController<SoldierRun
 {
     private readonly SoldierStateMachine stateMachine;
     private readonly ISquadSlotPositionProvider squadSlotPositionProvider;
+    private readonly ISoldierFormationMover formationMover;
     
     public SoldierCombatAgentController(
         SoldierRuntimeModel runtimeModel,
         CombatUnitModules modules,
         SoldierStateMachine stateMachine,
         ISquadSlotPositionProvider squadSlotPositionProvider,
+        ISoldierFormationMover formationMover,
         ITargetTrackerHandler targetTrackerHandler,
         ITargetReservationHandler targetReservationHandler)
         : base(runtimeModel, modules, targetTrackerHandler, targetReservationHandler)
     {
         this.stateMachine = stateMachine;
         this.squadSlotPositionProvider = squadSlotPositionProvider;
+        this.formationMover = formationMover;
     }
      
     protected override void TickBehaviour()
@@ -39,13 +42,15 @@ public class SoldierCombatAgentController : BaseCombatAgentController<SoldierRun
         runtimeModel.ClearSquad(owner);
     }
 
+    public override void ResetState()
+    {
+        formationMover.SyncToCurrentPosition();
+        runtimeModel.TargetTracker.Reset();
+        base.ResetState();
+    }
+
     public bool IsInAssignedSlot(float threshold)
     {
-        if (runtimeModel.AssignedSlot == null)
-        {
-            return false;
-        }
-
         Vector3 targetPosition = squadSlotPositionProvider.GetSlotWorldPosition(runtimeModel.AssignedSlot);
         Vector3 delta = targetPosition - transform.position;
         delta.y = 0f;

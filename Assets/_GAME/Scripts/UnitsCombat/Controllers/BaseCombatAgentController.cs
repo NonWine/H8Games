@@ -92,7 +92,7 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
         UnitId = unitId;
     }
 
-    public void ResetState()
+    public virtual void ResetState()
     {
         runtimeModel.IsAlive = true;
         modules.ResetModules();

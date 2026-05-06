@@ -657,7 +657,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7437123684959751836, guid: 352f81a597363e343a95a761eade85fe, type: 3}
       propertyPath: enemyViews.Array.size
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7437123684959751836, guid: 352f81a597363e343a95a761eade85fe, type: 3}
       propertyPath: 'enemyViews.Array.data[2]'
@@ -1693,7 +1693,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7437123684959751836, guid: 352f81a597363e343a95a761eade85fe, type: 3}
       propertyPath: enemyViews.Array.size
-      value: 6
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7437123684959751836, guid: 352f81a597363e343a95a761eade85fe, type: 3}
       propertyPath: 'enemyViews.Array.data[2]'
@@ -2427,7 +2427,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7437123684959751836, guid: 352f81a597363e343a95a761eade85fe, type: 3}
       propertyPath: enemyViews.Array.size
-      value: 6
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7437123684959751836, guid: 352f81a597363e343a95a761eade85fe, type: 3}
       propertyPath: 'enemyViews.Array.data[2]'
@@ -2568,7 +2568,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7437123684959751836, guid: 352f81a597363e343a95a761eade85fe, type: 3}
       propertyPath: enemyViews.Array.size
-      value: 5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7437123684959751836, guid: 352f81a597363e343a95a761eade85fe, type: 3}
       propertyPath: 'enemyViews.Array.data[0]'
@@ -3516,7 +3516,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1513510026
 Transform:
@@ -4235,7 +4235,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7437123684959751836, guid: 352f81a597363e343a95a761eade85fe, type: 3}
       propertyPath: enemyViews.Array.size
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7437123684959751836, guid: 352f81a597363e343a95a761eade85fe, type: 3}
       propertyPath: 'enemyViews.Array.data[2]'
@@ -4344,7 +4344,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7437123684959751836, guid: 352f81a597363e343a95a761eade85fe, type: 3}
       propertyPath: enemyViews.Array.size
-      value: 5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7437123684959751836, guid: 352f81a597363e343a95a761eade85fe, type: 3}
       propertyPath: 'enemyViews.Array.data[0]'
@@ -4503,12 +4503,13 @@ GameObject:
   - component: {fileID: 1985664402}
   - component: {fileID: 1985664401}
   - component: {fileID: 1985664400}
+  - component: {fileID: 1985664403}
   m_Layer: 0
   m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1985664399
 Transform:
@@ -4601,6 +4602,38 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1985664398}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1985664403
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1985664398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SerializedVersion: 0
+  m_AgentTypeID: 0
+  m_CollectObjects: 0
+  m_Size: {x: 10, y: 10, z: 10}
+  m_Center: {x: 0, y: 2, z: 0}
+  m_LayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_UseGeometry: 0
+  m_DefaultArea: 0
+  m_GenerateLinks: 0
+  m_IgnoreNavMeshAgent: 1
+  m_IgnoreNavMeshObstacle: 1
+  m_OverrideTileSize: 0
+  m_TileSize: 256
+  m_OverrideVoxelSize: 0
+  m_VoxelSize: 0.16666667
+  m_MinRegionArea: 2
+  m_NavMeshData: {fileID: 23800000, guid: 3266cbcd25415ee4b82e017142b1b733, type: 2}
+  m_BuildHeightMesh: 0
 --- !u!1 &2015854977
 GameObject:
   m_ObjectHideFlags: 0
@@ -4865,7 +4898,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7437123684959751836, guid: 352f81a597363e343a95a761eade85fe, type: 3}
       propertyPath: enemyViews.Array.size
-      value: 5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7437123684959751836, guid: 352f81a597363e343a95a761eade85fe, type: 3}
       propertyPath: 'enemyViews.Array.data[0]'

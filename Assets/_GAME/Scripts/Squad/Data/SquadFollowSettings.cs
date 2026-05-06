@@ -37,6 +37,10 @@ public class SquadFollowSettings : ScriptableObject
     [Min(0f)]
     [SerializeField] private float movingFacingYawJitter = 7f;
 
+    [Header("Soldier NavMesh")]
+    [SerializeField] private Vector2 destinationRefreshIntervalRange = new(0.08f, 0.16f);
+    [SerializeField] private Vector2Int avoidancePriorityRange = new(30, 70);
+
     public float RootMoveSpeed => rootMoveSpeed;
     public float RootFollowSmoothness => rootFollowSmoothness;
     public int Columns => Mathf.Max(1, columns);
@@ -53,4 +57,8 @@ public class SquadFollowSettings : ScriptableObject
     public float SoldierMoveSpeedMultiplierMax => Mathf.Max(soldierMoveSpeedMultiplierRange.x, soldierMoveSpeedMultiplierRange.y);
     public float SoldierRotationSpeedMultiplierMin => Mathf.Min(soldierRotationSpeedMultiplierRange.x, soldierRotationSpeedMultiplierRange.y);
     public float SoldierRotationSpeedMultiplierMax => Mathf.Max(soldierRotationSpeedMultiplierRange.x, soldierRotationSpeedMultiplierRange.y);
+    public float DestinationRefreshIntervalMin => Mathf.Min(destinationRefreshIntervalRange.x, destinationRefreshIntervalRange.y);
+    public float DestinationRefreshIntervalMax => Mathf.Max(destinationRefreshIntervalRange.x, destinationRefreshIntervalRange.y);
+    public int AvoidancePriorityMin => Mathf.Clamp(Mathf.Min(avoidancePriorityRange.x, avoidancePriorityRange.y), 0, 99);
+    public int AvoidancePriorityMax => Mathf.Clamp(Mathf.Max(avoidancePriorityRange.x, avoidancePriorityRange.y), 0, 99);
 }
