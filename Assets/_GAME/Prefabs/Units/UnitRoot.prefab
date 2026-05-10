@@ -285,8 +285,10 @@ MonoBehaviour:
   - {fileID: 7097182484788790319}
   - {fileID: 7097182484638663493}
   - {fileID: 7097182485667304783}
-  timeToSetColor: 0.2
-  emissionHitColor: {r: 830.7925, g: 387.9644, b: 387.9644, a: 1}
+  timeToSetColor: 0.12
+  emissionHitColor: {r: 1, g: 0.8627451, b: 0.19607843, a: 1}
+  hitGlow: 5
+  hitBlend: 1
   <ProjectilePrefab>k__BackingField: {fileID: 4041960524083155756, guid: 4d339c7c02696d14196569d8dae8f7b8, type: 3}
   <AttackPoint>k__BackingField: {fileID: 599491131084117077}
   <Animator>k__BackingField: {fileID: 7097182484956019553}
@@ -302,7 +304,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 7830030720844190953}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.55
+  m_Radius: 0.3
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
