@@ -51,11 +51,6 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
     protected virtual void TickTracking()
     {
         targetTracker.UpdateTarget();
-        
-        if (targetTracker.IsCurrentTargetValid())
-        {
-            ChangeToAttackState();
-        }
     }
 
     protected virtual void TickModules()
@@ -102,7 +97,6 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
     protected abstract void TickBehaviour();
     protected abstract void ChangeToIdleState();
     protected abstract void ChangeToDeadState();
-    protected abstract void ChangeToAttackState();
 
     protected virtual void OnDied()
     {

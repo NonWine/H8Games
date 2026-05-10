@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: Enemy
   m_EditorClassIdentifier: 
   unitStats:
-    MaxHealth: 30
+    MaxHealth: 25
     MoveSpeed: 3.5
-    AttackCooldown: 0.75
+    AttackCooldownRange: {x: 0.8, y: 1.5}
     Damage: 2
-    ProjectileSpeed: 44
+    ProjectileSpeed: 33
     DeathReward: 3
   targetingData:
     DetectionRadius: 8

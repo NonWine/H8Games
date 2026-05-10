@@ -20,7 +20,7 @@ public class SimpleProjectileView : MonoBehaviour
     {
         if (target == null)
         {
-            Destroy(gameObject);
+            DestroyProjectile();
             return;
         }
 
@@ -37,7 +37,19 @@ public class SimpleProjectileView : MonoBehaviour
                 onHit?.Invoke();
             }
 
-            Destroy(gameObject);
+            DestroyProjectile();
         }
+    }
+
+    private void DestroyProjectile()
+    {
+        AudioSource audio = GetComponent<AudioSource>();
+        if (audio != null && audio.isPlaying)
+        {
+            audio.transform.SetParent(null);
+            Destroy(audio.gameObject, audio.clip != null ? audio.clip.length : 2f);
+        }
+
+        Destroy(gameObject);
     }
 }

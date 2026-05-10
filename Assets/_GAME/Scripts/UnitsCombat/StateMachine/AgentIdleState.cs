@@ -34,6 +34,12 @@ public class SoldierIdleState : SoldierStateBase
 
     public override void Tick()
     {
+        if (Soldier.HasValidTarget)
+        {
+            ChangeState<SoldierAttackState>();
+            return;
+        }
+
         if (!Soldier.HasFormationAssignment)
         {
             return;

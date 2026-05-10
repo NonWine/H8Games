@@ -6,7 +6,7 @@ public class UnitStats
 {
     [Min(1f)] public float MaxHealth = 30f;
     [Min(0f)] public float MoveSpeed = 3.5f;
-    [Min(0.05f)] public float AttackCooldown = 1f;
+    public Vector2 AttackCooldownRange = new Vector2(0.8f, 1.5f);
     [Min(0f)] public float Damage = 5f;
     [Min(0f)] public float ProjectileSpeed = 12f;
     [Min(0f)] public int DeathReward = 5;
@@ -24,7 +24,7 @@ public class UnitStats
 
         MaxHealth = source.MaxHealth;
         MoveSpeed = source.MoveSpeed;
-        AttackCooldown = source.AttackCooldown;
+        AttackCooldownRange = source.AttackCooldownRange;
         Damage = source.Damage;
         ProjectileSpeed = source.ProjectileSpeed;
         DeathReward = source.DeathReward;

@@ -67,8 +67,4 @@ public class SoldierCombatAgentController : BaseCombatAgentController<SoldierRun
         stateMachine.ChangeState<SoldierDeadState>();
     }
 
-    protected override void ChangeToAttackState()
-    {
-        stateMachine.ChangeState<SoldierAttackState>();
-    }
 }

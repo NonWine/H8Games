@@ -11,7 +11,6 @@ public class BaseCombatUnitView : MonoBehaviour, IAgentView
     [field: SerializeField] public Transform AttackPoint { get; private set; }
     [field: SerializeField] public Animator Animator { get; private set; }
     [field: SerializeField] public UnitAttackAnimationEventRelay AttackAnimationEvents { get; private set; }
-    [field: SerializeField, Min(0.01f)] public float AttackAnimationCycleDuration { get; private set; } = 1f;
 
     public Transform Transform => transform;
     public bool IsActive => gameObject.activeInHierarchy;
