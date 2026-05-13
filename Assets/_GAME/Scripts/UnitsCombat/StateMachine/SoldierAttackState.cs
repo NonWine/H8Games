@@ -25,7 +25,6 @@ public class SoldierAttackState : SoldierStateBase
     {
         formationMover.Stop();
         agentAnimationController.SetAnimationState(UnitState.Attack);
-        attackData.CooldownRemaining = 0f;
     }
 
     public override void Tick()
@@ -53,7 +52,6 @@ public class SoldierAttackState : SoldierStateBase
 
     public override void Exit()
     {
-        attackData.CooldownRemaining = attackData.GetRandomizedCooldown();
     }
 
     private void HandleAttack()

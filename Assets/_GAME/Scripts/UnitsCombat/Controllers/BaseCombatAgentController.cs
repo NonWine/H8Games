@@ -78,6 +78,7 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
         };
 
         HitReceived?.Invoke(hitData);
+        ParticlePool.Instance.PlayHit(agentView.Transform.position);
         modules.Health.ApplyDamage(hitData.damage);
         agentView.PlayHitFeedback();
     }
