@@ -12,7 +12,11 @@ public class EnemyDeadState : EnemyStateBase
 
     public override void Enter()
     {
-        agentAnimationController.SetAnimationState(UnitState.Dead);
+        var ragdoll = (model.View as BaseCombatAgentView)?.RagdollView;
+
+        var damageData = UnitDamageData.FromHitData(model.LastHitData, model.Transform.position);
+        ragdoll.EnableRagdoll(damageData);
+
         modules.Death.HandleDeathAsync().Forget();
     }
 
