@@ -47,9 +47,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   engagePoint: {fileID: 3715617691735042106}
-  enemies:
-  - {fileID: 4403935575686647443}
-  - {fileID: 3876670930388267578}
+  enemyViews:
+  - {fileID: 5459505665409475221}
+  - {fileID: 4833858575070977596}
 --- !u!1 &4246531675741702345
 GameObject:
   m_ObjectHideFlags: 0
@@ -201,7 +201,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1067683569306364666
 Transform:
   m_ObjectHideFlags: 0
@@ -359,15 +359,15 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 702ce084e36f560499889726dd14c788, type: 3}
---- !u!114 &4403935575686647443 stripped
+--- !u!114 &5459505665409475221 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4546979500894070685, guid: 702ce084e36f560499889726dd14c788, type: 3}
+  m_CorrespondingSourceObject: {fileID: 5315371997611608987, guid: 702ce084e36f560499889726dd14c788, type: 3}
   m_PrefabInstance: {fileID: 146351394696472846}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c8de227e653133542bbce24f5ce0a875, type: 3}
+  m_Script: {fileID: 11500000, guid: 002e452c90d94a3d95564ecfdb2fc8b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!4 &5898171775986538696 stripped
@@ -440,15 +440,15 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 702ce084e36f560499889726dd14c788, type: 3}
---- !u!114 &3876670930388267578 stripped
+--- !u!114 &4833858575070977596 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4546979500894070685, guid: 702ce084e36f560499889726dd14c788, type: 3}
+  m_CorrespondingSourceObject: {fileID: 5315371997611608987, guid: 702ce084e36f560499889726dd14c788, type: 3}
   m_PrefabInstance: {fileID: 781003347819107751}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c8de227e653133542bbce24f5ce0a875, type: 3}
+  m_Script: {fileID: 11500000, guid: 002e452c90d94a3d95564ecfdb2fc8b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!4 &6416464277620368481 stripped
