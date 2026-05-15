@@ -1,32 +1,48 @@
+using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using Zenject;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
-public class TerritoryView : MonoBehaviour
+public class TerritoryView : MonoBehaviour, ITerritoryView
 {
     [SerializeField] private MeshFilter   meshFilter;
     [SerializeField] private MeshRenderer meshRenderer;
     [SerializeField] private LineRenderer borderLine;
 
+    private TerritoryMeshBuilder meshBuilder;
+
     private Mesh          runtimeMesh;
     private List<Vector3> borderPoints = new();
-    private Vector3[]     borderArray  = System.Array.Empty<Vector3>();
+    private Vector3[]     borderArray  = Array.Empty<Vector3>();
 
     private Tween fillTween;
     private Tween borderTween;
+    private Tween collapseTween;
     private float fillAlpha;
     private float borderAlpha;
     private bool  isVisible;
 
+    private readonly List<Vector3> collapseSourcePositions = new();
+    private readonly List<Vector3> collapseWorkPositions   = new();
+    private Vector3                collapseCentroid;
+    private float                  collapseT;
+
     private MaterialPropertyBlock fillMpb;
     private int                   colorPropertyId;
 
+    [Inject]
+    public void Construct(TerritoryMeshBuilder builder)
+    {
+        meshBuilder = builder;
+    }
+
     private void Awake()
     {
-        Material mat = meshRenderer != null ? meshRenderer.sharedMaterial : null;
-        int urp  = Shader.PropertyToID("_BaseColor");
+        Material mat =  meshRenderer.sharedMaterial;
+        int urp    = Shader.PropertyToID("_BaseColor");
         int legacy = Shader.PropertyToID("_Color");
         colorPropertyId = mat != null && mat.HasProperty(urp) ? urp : legacy;
     }
@@ -35,18 +51,19 @@ public class TerritoryView : MonoBehaviour
     {
         if (unitPositions == null || unitPositions.Count == 0)
         {
-            FadeOut(config);
+            CollapseAndFade(config);
             return;
         }
 
+        StoreCollapseSnapshot(unitPositions);
+
         EnsureMesh();
 
-        bool built = TerritoryMeshBuilder.TryBuild(
-            runtimeMesh, transform, unitPositions, config, borderPoints);
+        bool built = meshBuilder.TryBuild(runtimeMesh, transform, unitPositions, config, borderPoints);
 
         if (!built)
         {
-            FadeOut(config);
+            CollapseAndFade(config);
             return;
         }
 
@@ -64,13 +81,15 @@ public class TerritoryView : MonoBehaviour
         meshRenderer.enabled = false;
         if (borderLine != null) borderLine.enabled = false;
         isVisible = false;
+        collapseSourcePositions.Clear();
+        collapseWorkPositions.Clear();
     }
 
     private void FadeIn(TerritoryConfig config)
     {
         isVisible            = true;
-        meshRenderer.enabled = true;
-        if (borderLine != null) borderLine.enabled = true;
+        meshRenderer.enabled = true; 
+        borderLine.enabled = true;
 
         float targetFill   = TargetFillAlpha();
         float targetBorder = TargetBorderAlpha();
@@ -82,20 +101,35 @@ public class TerritoryView : MonoBehaviour
             .SetEase(Ease.OutQuad)
             .SetLink(gameObject);
 
-        if (borderLine != null)
-        {
-            borderTween = DOTween
-                .To(() => borderAlpha, a => { borderAlpha = a; ApplyBorderAlpha(a); }, targetBorder, config.FadeInDuration)
-                .SetEase(Ease.OutQuad)
-                .SetLink(gameObject);
-        }
+        borderTween = DOTween
+            .To(() => borderAlpha, a => { borderAlpha = a; ApplyBorderAlpha(a); }, targetBorder, config.FadeInDuration)
+            .SetEase(Ease.OutQuad)
+            .SetLink(gameObject);
     }
 
-    private void FadeOut(TerritoryConfig config)
+    private void CollapseAndFade(TerritoryConfig config)
     {
         if (!isVisible) return;
+        if (collapseSourcePositions.Count == 0) return;
 
         KillTweens();
+
+        collapseT = 0f;
+        collapseWorkPositions.Clear();
+        for (int i = 0; i < collapseSourcePositions.Count; i++)
+            collapseWorkPositions.Add(collapseSourcePositions[i]);
+
+        collapseTween = DOTween
+            .To(() => collapseT, t =>
+                {
+                    collapseT = t;
+                    for (int i = 0; i < collapseWorkPositions.Count; i++)
+                        collapseWorkPositions[i] = Vector3.Lerp(collapseSourcePositions[i], collapseCentroid, t);
+                    meshBuilder.TryBuild(runtimeMesh, transform, collapseWorkPositions, config, null);
+                },
+                1f, config.FadeOutDuration)
+            .SetEase(Ease.InQuad)
+            .SetLink(gameObject);
 
         fillTween = DOTween
             .To(() => fillAlpha, a => { fillAlpha = a; ApplyFillAlpha(a); }, 0f, config.FadeOutDuration)
@@ -107,19 +141,27 @@ public class TerritoryView : MonoBehaviour
                 isVisible            = false;
             });
 
-        if (borderLine != null)
+        borderTween = DOTween
+            .To(() => borderAlpha, a => { borderAlpha = a; ApplyBorderAlpha(a); }, 0f, config.FadeOutDuration)
+            .SetEase(Ease.InQuad)
+            .SetLink(gameObject)
+            .OnComplete(() => { if (borderLine != null) borderLine.enabled = false; });
+    }
+
+    private void StoreCollapseSnapshot(IReadOnlyList<Vector3> positions)
+    {
+        collapseSourcePositions.Clear();
+        Vector3 sum = Vector3.zero;
+        for (int i = 0; i < positions.Count; i++)
         {
-            borderTween = DOTween
-                .To(() => borderAlpha, a => { borderAlpha = a; ApplyBorderAlpha(a); }, 0f, config.FadeOutDuration)
-                .SetEase(Ease.InQuad)
-                .SetLink(gameObject)
-                .OnComplete(() => { if (borderLine != null) borderLine.enabled = false; });
+            collapseSourcePositions.Add(positions[i]);
+            sum += positions[i];
         }
+        collapseCentroid = sum / positions.Count;
     }
 
     private void ApplyFillAlpha(float a)
     {
-        if (meshRenderer == null) return;
         if (fillMpb == null) fillMpb = new MaterialPropertyBlock();
 
         meshRenderer.GetPropertyBlock(fillMpb);
@@ -133,7 +175,6 @@ public class TerritoryView : MonoBehaviour
 
     private void ApplyBorderAlpha(float a)
     {
-        if (borderLine == null) return;
         Color s = borderLine.startColor; s.a = a; borderLine.startColor = s;
         Color e = borderLine.endColor;   e.a = a; borderLine.endColor   = e;
     }
@@ -148,7 +189,7 @@ public class TerritoryView : MonoBehaviour
 
     private void UpdateBorderPositions(TerritoryConfig config)
     {
-        if (borderLine == null || borderPoints.Count == 0) return;
+        if (borderPoints.Count == 0) return;
 
         if (borderArray.Length != borderPoints.Count)
             borderArray = new Vector3[borderPoints.Count];
@@ -179,6 +220,7 @@ public class TerritoryView : MonoBehaviour
     {
         fillTween?.Kill();
         borderTween?.Kill();
+        collapseTween?.Kill();
     }
 
     private void OnDestroy()

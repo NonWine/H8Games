@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class TerritoryMeshBuilder
+public class TerritoryMeshBuilder
 {
-    private static readonly List<Vector2> sourcePoints = new();
-    private static readonly List<Vector2> hull2D       = new();
-    private static readonly List<Vector2> boundary2D   = new();
-    private static readonly List<Vector3> vertices     = new();
-    private static readonly List<int>     triangles    = new();
+    private readonly List<Vector2> sourcePoints = new();
+    private readonly List<Vector2> hull2D       = new();
+    private readonly List<Vector2> boundary2D   = new();
+    private readonly List<Vector3> vertices     = new();
+    private readonly List<int>     triangles    = new();
 
-    public static bool TryBuild(
+    public bool TryBuild(
         Mesh                   mesh,
         Transform              origin,
         IReadOnlyList<Vector3> unitPositions,
@@ -70,7 +70,7 @@ public static class TerritoryMeshBuilder
         return true;
     }
 
-    private static void BuildConvexHull(List<Vector2> points, List<Vector2> result)
+    private void BuildConvexHull(List<Vector2> points, List<Vector2> result)
     {
         var sorted = new List<Vector2>(points);
         sorted.Sort((a, b) =>
@@ -109,7 +109,7 @@ public static class TerritoryMeshBuilder
     private static float Cross(Vector2 o, Vector2 a, Vector2 b)
         => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
 
-    private static void BuildExpandedBoundary(
+    private void BuildExpandedBoundary(
         List<Vector2> hull, float padding, int cornerSegments, List<Vector2> result)
     {
         int n = hull.Count;
@@ -160,7 +160,7 @@ public static class TerritoryMeshBuilder
         }
     }
 
-    private static void BuildFillMesh(Mesh mesh, List<Vector2> boundary, Vector2 centroid, float y)
+    private void BuildFillMesh(Mesh mesh, List<Vector2> boundary, Vector2 centroid, float y)
     {
         int n = boundary.Count;
         vertices.Clear();
@@ -184,7 +184,7 @@ public static class TerritoryMeshBuilder
         mesh.RecalculateBounds();
     }
 
-    private static void BuildCircleMesh(Mesh mesh, Vector2 center, float radius, int segments, float y)
+    private void BuildCircleMesh(Mesh mesh, Vector2 center, float radius, int segments, float y)
     {
         vertices.Clear();
         triangles.Clear();

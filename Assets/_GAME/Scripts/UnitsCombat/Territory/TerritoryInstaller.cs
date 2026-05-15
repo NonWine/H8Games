@@ -8,8 +8,10 @@ public class TerritoryInstaller : MonoInstaller
 
     public override void InstallBindings()
     {
-        Container.BindInstance(view).AsSingle();
         Container.BindInstance(config).AsSingle();
+        Container.Bind<TerritoryMeshBuilder>().AsSingle();
+        Container.BindInstance(view).AsSingle();
+        Container.Bind<ITerritoryView>().To<TerritoryView>().FromResolve();
         Container.BindInterfacesTo<TerritoryService>().AsSingle();
     }
 
