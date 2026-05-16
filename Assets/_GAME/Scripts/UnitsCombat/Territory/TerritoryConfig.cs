@@ -24,6 +24,34 @@ public class TerritoryConfig : ScriptableObject
     public Material BorderMaterial;
 
     [Header("Animation")]
-    public float FadeInDuration = 0.35f;
+    public float FadeInDuration  = 0.35f;
     public float FadeOutDuration = 0.6f;
+    public float FillAlpha       = 0.4f;
+
+    [Header("Zone Static")]
+    public Color StaticFillColor = new Color(0.55f, 0.55f, 0.55f, 1f);
+
+    [Header("Zone Pulse")]
+    public Color PulseColorA = new Color(0.80f, 0f, 0f, 1f);
+    public Color PulseColorB = new Color(1f, 0.33f, 0f, 1f);
+    public float PulseFrequency = 2.5f;
+
+    [Header("Border Particles")]
+    public float BorderParticlesPerSecond = 15f;
+    public float BorderParticleSpeed = 1.5f;
+    public float BorderParticleLifetime = 0.8f;
+    public float BorderParticleSize = 0.12f;
+
+    [Header("Combat Alert")]
+    public float CombatTriggerDistance = 5f;
+    public float CombatPulseFrequency = 5f;
+    public float CombatBrightnessMult = 1.4f;
+    public int   CombatBurstCount = 40;
+
+    [Header("Danger Camera FX")]
+    public float DangerVignetteIntensity = 0.35f;
+    public float DangerChromaticAberration = 0.4f;
+    public float CameraShakeAmplitude = 0.02f;
+    public float CameraShakeFrequency = 15f;
+    public float DangerFXDuration = 0.4f;
 }

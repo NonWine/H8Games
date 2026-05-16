@@ -93,10 +93,10 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
     {
         NavMeshAgent agent = Agent;
 
-        if (!agent.enabled)
-        {
-            agent.enabled = true;
-        }
+        // Force re-init: if the agent was enabled at a stale pool position (e.g. origin),
+        // updatePosition=true would otherwise pull the transform back there after ConfigureAgent().
+        agent.enabled = false;
+        agent.enabled = true;
 
         if (NavMesh.SamplePosition(combatView.Transform.position, out NavMeshHit hit, NavMeshSampleDistance, agent.areaMask))
         {

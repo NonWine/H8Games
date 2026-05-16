@@ -3,16 +3,33 @@ using Zenject;
 
 public class TerritoryInstaller : MonoInstaller
 {
-    [SerializeField] private TerritoryView   view;
-    [SerializeField] private TerritoryConfig config;
+    [SerializeField] private TerritoryView         view;
+    [SerializeField] private TerritoryConfig        config;
+    [SerializeField] private TerritoryDangerCameraFX cameraFX;
 
     public override void InstallBindings()
     {
-        Container.BindInstance(config).AsSingle();
-        Container.Bind<TerritoryMeshBuilder>().AsSingle();
+        BindViews();
+        BindData();
+        BindServices();
+    }
+
+    private void BindViews()
+    {
         Container.BindInstance(view).AsSingle();
         Container.Bind<ITerritoryView>().To<TerritoryView>().FromResolve();
-        Container.BindInterfacesTo<TerritoryService>().AsSingle();
+        Container.BindInstance(cameraFX).AsSingle();
+    }
+
+    private void BindData()
+    {
+        Container.BindInstance(config).AsSingle();
+        Container.Bind<TerritoryMeshBuilder>().AsSingle();
+    }
+
+    private void BindServices()
+    {
+        Container.BindInterfacesAndSelfTo<TerritoryService>().AsSingle();
     }
 
 #if UNITY_EDITOR
@@ -23,6 +40,9 @@ public class TerritoryInstaller : MonoInstaller
 
         if (config == null)
             Debug.LogWarning("[TerritoryInstaller] TerritoryConfig is not assigned.", this);
+
+        if (cameraFX == null)
+            Debug.LogWarning("[TerritoryInstaller] TerritoryDangerCameraFX is not assigned.", this);
     }
 #endif
 }

@@ -8,9 +8,10 @@ using Zenject;
 [RequireComponent(typeof(MeshRenderer))]
 public class TerritoryView : MonoBehaviour, ITerritoryView
 {
-    [SerializeField] private MeshFilter   meshFilter;
+    [SerializeField] private MeshFilter meshFilter;
     [SerializeField] private MeshRenderer meshRenderer;
     [SerializeField] private LineRenderer borderLine;
+    [SerializeField] private TerritoryZoneAnimator zoneAnimator;
 
     private TerritoryMeshBuilder meshBuilder;
 
@@ -18,33 +19,21 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
     private List<Vector3> borderPoints = new();
     private Vector3[]     borderArray  = Array.Empty<Vector3>();
 
-    private Tween fillTween;
-    private Tween borderTween;
-    private Tween collapseTween;
-    private float fillAlpha;
-    private float borderAlpha;
-    private bool  isVisible;
+    private Tween   borderTween;
+    private float   borderAlpha;
+    private bool    isVisible;
 
     private readonly List<Vector3> collapseSourcePositions = new();
     private readonly List<Vector3> collapseWorkPositions   = new();
     private Vector3                collapseCentroid;
     private float                  collapseT;
-
-    private MaterialPropertyBlock fillMpb;
-    private int                   colorPropertyId;
+    private Tween                  collapseTween;
 
     [Inject]
-    public void Construct(TerritoryMeshBuilder builder)
+    public void Construct(TerritoryMeshBuilder builder, TerritoryConfig config)
     {
         meshBuilder = builder;
-    }
-
-    private void Awake()
-    {
-        Material mat =  meshRenderer.sharedMaterial;
-        int urp    = Shader.PropertyToID("_BaseColor");
-        int legacy = Shader.PropertyToID("_Color");
-        colorPropertyId = mat != null && mat.HasProperty(urp) ? urp : legacy;
+        zoneAnimator.Initialize(config);
     }
 
     public void Refresh(IReadOnlyList<Vector3> unitPositions, TerritoryConfig config)
@@ -76,41 +65,50 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
     public void Clear()
     {
         KillTweens();
-        ApplyFillAlpha(0f);
+        zoneAnimator.Hide();
         ApplyBorderAlpha(0f);
         meshRenderer.enabled = false;
-        if (borderLine != null) borderLine.enabled = false;
+        if (borderLine != null)
+            borderLine.enabled = false;
+
         isVisible = false;
         collapseSourcePositions.Clear();
         collapseWorkPositions.Clear();
     }
 
+    public void SetAnimating(bool active)
+    {
+        zoneAnimator.SetAnimating(active);
+    }
+
+    public void SetCombatAlert(bool active)
+    {
+        zoneAnimator.SetCombatAlert(active);
+    }
+
     private void FadeIn(TerritoryConfig config)
     {
         isVisible            = true;
-        meshRenderer.enabled = true; 
-        borderLine.enabled = true;
-
-        float targetFill   = TargetFillAlpha();
-        float targetBorder = TargetBorderAlpha();
+        meshRenderer.enabled = true;
+        borderLine.enabled   = true;
 
         KillTweens();
 
-        fillTween = DOTween
-            .To(() => fillAlpha, a => { fillAlpha = a; ApplyFillAlpha(a); }, targetFill, config.FadeInDuration)
-            .SetEase(Ease.OutQuad)
-            .SetLink(gameObject);
+        zoneAnimator.FadeIn(config.FillAlpha, config.FadeInDuration);
 
         borderTween = DOTween
-            .To(() => borderAlpha, a => { borderAlpha = a; ApplyBorderAlpha(a); }, targetBorder, config.FadeInDuration)
+            .To(() => borderAlpha, a => { borderAlpha = a; ApplyBorderAlpha(a); }, TargetBorderAlpha(), config.FadeInDuration)
             .SetEase(Ease.OutQuad)
             .SetLink(gameObject);
     }
 
     private void CollapseAndFade(TerritoryConfig config)
     {
-        if (!isVisible) return;
-        if (collapseSourcePositions.Count == 0) return;
+        if (!isVisible)
+            return;
+
+        if (collapseSourcePositions.Count == 0)
+            return;
 
         KillTweens();
 
@@ -131,21 +129,21 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
             .SetEase(Ease.InQuad)
             .SetLink(gameObject);
 
-        fillTween = DOTween
-            .To(() => fillAlpha, a => { fillAlpha = a; ApplyFillAlpha(a); }, 0f, config.FadeOutDuration)
-            .SetEase(Ease.InQuad)
-            .SetLink(gameObject)
-            .OnComplete(() =>
-            {
-                meshRenderer.enabled = false;
-                isVisible            = false;
-            });
+        zoneAnimator.FadeOut(config.FadeOutDuration, () =>
+        {
+            meshRenderer.enabled = false;
+            isVisible            = false;
+        });
 
         borderTween = DOTween
             .To(() => borderAlpha, a => { borderAlpha = a; ApplyBorderAlpha(a); }, 0f, config.FadeOutDuration)
             .SetEase(Ease.InQuad)
             .SetLink(gameObject)
-            .OnComplete(() => { if (borderLine != null) borderLine.enabled = false; });
+            .OnComplete(() =>
+            {
+                if (borderLine != null)
+                    borderLine.enabled = false;
+            });
     }
 
     private void StoreCollapseSnapshot(IReadOnlyList<Vector3> positions)
@@ -160,36 +158,19 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
         collapseCentroid = sum / positions.Count;
     }
 
-    private void ApplyFillAlpha(float a)
-    {
-        if (fillMpb == null) fillMpb = new MaterialPropertyBlock();
-
-        meshRenderer.GetPropertyBlock(fillMpb);
-        Color c = meshRenderer.sharedMaterial != null
-            ? meshRenderer.sharedMaterial.GetColor(colorPropertyId)
-            : Color.white;
-        c.a = a;
-        fillMpb.SetColor(colorPropertyId, c);
-        meshRenderer.SetPropertyBlock(fillMpb);
-    }
-
     private void ApplyBorderAlpha(float a)
     {
         Color s = borderLine.startColor; s.a = a; borderLine.startColor = s;
         Color e = borderLine.endColor;   e.a = a; borderLine.endColor   = e;
     }
 
-    private float TargetFillAlpha()
-        => meshRenderer.sharedMaterial != null
-            ? meshRenderer.sharedMaterial.GetColor(colorPropertyId).a
-            : 1f;
-
     private float TargetBorderAlpha()
         => borderLine != null ? borderLine.startColor.a : 1f;
 
     private void UpdateBorderPositions(TerritoryConfig config)
     {
-        if (borderPoints.Count == 0) return;
+        if (borderPoints.Count == 0)
+            return;
 
         if (borderArray.Length != borderPoints.Count)
             borderArray = new Vector3[borderPoints.Count];
@@ -206,11 +187,15 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
 
         if (config.BorderMaterial != null)
             borderLine.sharedMaterial = config.BorderMaterial;
+
+        zoneAnimator.UpdateBorderPoints(borderPoints);
     }
 
     private void EnsureMesh()
     {
-        if (runtimeMesh != null) return;
+        if (runtimeMesh != null)
+            return;
+
         runtimeMesh = new Mesh { name = "TerritoryMesh" };
         runtimeMesh.MarkDynamic();
         meshFilter.mesh = runtimeMesh;
@@ -218,7 +203,6 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
 
     private void KillTweens()
     {
-        fillTween?.Kill();
         borderTween?.Kill();
         collapseTween?.Kill();
     }
@@ -226,7 +210,8 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
     private void OnDestroy()
     {
         KillTweens();
-        if (runtimeMesh != null) Destroy(runtimeMesh);
+        if (runtimeMesh != null)
+            Destroy(runtimeMesh);
     }
 
     private void Reset()
@@ -234,5 +219,6 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
         meshFilter   = GetComponent<MeshFilter>();
         meshRenderer = GetComponent<MeshRenderer>();
         borderLine   = GetComponent<LineRenderer>();
+        zoneAnimator = GetComponent<TerritoryZoneAnimator>();
     }
 }

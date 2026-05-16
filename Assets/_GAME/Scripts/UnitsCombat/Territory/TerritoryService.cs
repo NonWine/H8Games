@@ -4,23 +4,38 @@ using Zenject;
 
 public class TerritoryService : IInitializable, ITickable, IDisposable
 {
-    private readonly ITerritoryView      view;
-    private readonly TerritoryConfig     config;
-    private readonly TerritoryUnitTracker tracker;
+    private readonly ITerritoryView          view;
+    private readonly TerritoryConfig         config;
+    private readonly TerritoryUnitTracker    tracker;
+    private readonly TerritoryDangerCameraFX cameraFX;
+    private readonly SignalBus               signalBus;
 
     private float scanTimer;
+    private bool  combatAlertActive;
+    private bool  isAnimating;
 
     [Inject]
-    public TerritoryService(ITerritoryView view, TerritoryConfig config, LevelManager levelManager)
+    public TerritoryService(
+        ITerritoryView view,
+        TerritoryConfig config,
+        LevelManager levelManager,
+        TerritoryDangerCameraFX cameraFX,
+        SignalBus signalBus)
     {
-        this.view    = view;
-        this.config  = config;
-        tracker      = new TerritoryUnitTracker(config, levelManager);
+        this.view      = view;
+        this.config    = config;
+        this.cameraFX  = cameraFX;
+        this.signalBus = signalBus;
+        tracker        = new TerritoryUnitTracker(config, levelManager);
     }
 
     public void Initialize()
     {
         scanTimer = config.UpdateInterval;
+
+        signalBus.Subscribe<StartButtleSignal>(OnBattleStart);
+        signalBus.Subscribe<GameIdleStateSignal>(OnGameIdle);
+        signalBus.Subscribe<LoadNextLevelSignal>(OnLoadNextLevel);
     }
 
     public void Tick()
@@ -29,25 +44,68 @@ public class TerritoryService : IInitializable, ITickable, IDisposable
 
         scanTimer += dt;
         bool scanChanged = false;
+
         if (scanTimer >= config.UpdateInterval)
         {
             scanTimer   = 0f;
             scanChanged = tracker.Scan(out bool levelChanged);
+
             if (levelChanged)
             {
                 view.Clear();
+                ResetCombatAlert();
                 return;
             }
         }
 
         bool positionsChanged = tracker.UpdatePositions(dt);
+
         if (positionsChanged || scanChanged)
             view.Refresh(tracker.SmoothedPositions, config);
     }
 
     public void Dispose()
     {
+        signalBus.Unsubscribe<StartButtleSignal>(OnBattleStart);
+        signalBus.Unsubscribe<GameIdleStateSignal>(OnGameIdle);
+        signalBus.Unsubscribe<LoadNextLevelSignal>(OnLoadNextLevel);
+
         view.Clear();
+        ResetCombatAlert();
         tracker.Reset();
+    }
+
+    private void OnBattleStart()
+    {
+        isAnimating = true;
+        view.SetAnimating(true);
+
+        combatAlertActive = true;
+        view.SetCombatAlert(true);
+        cameraFX.SetDangerState(true);
+    }
+
+    private void OnGameIdle()
+    {
+        isAnimating = false;
+        view.SetAnimating(false);
+        ResetCombatAlert();
+    }
+
+    private void OnLoadNextLevel()
+    {
+        isAnimating = false;
+        view.SetAnimating(false);
+        ResetCombatAlert();
+    }
+
+    private void ResetCombatAlert()
+    {
+        if (!combatAlertActive)
+            return;
+
+        combatAlertActive = false;
+        view.SetCombatAlert(false);
+        cameraFX.SetDangerState(false);
     }
 }

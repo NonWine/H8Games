@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: TerritoryConfig
   m_EditorClassIdentifier: 
   UpdateInterval: 0.15
-  ExpandSmoothSpeed: 20
-  ShrinkSmoothSpeed: 25
+  ExpandDuration: 0.25
+  ShrinkDuration: 0.4
   SnapDistance: 0.05
   MinRadius: 2
   Padding: 1
@@ -26,3 +26,21 @@ MonoBehaviour:
   BorderMaterial: {fileID: 2100000, guid: b60c84163a8c00548bdcaf097d1436d5, type: 2}
   FadeInDuration: 0.35
   FadeOutDuration: 0.6
+  FillAlpha: 0.4
+  StaticFillColor: {r: 1, g: 0.32941177, b: 0, a: 1}
+  PulseColorA: {r: 0.8, g: 0, b: 0, a: 1}
+  PulseColorB: {r: 1, g: 0.33, b: 0, a: 1}
+  PulseFrequency: 2.5
+  BorderParticlesPerSecond: 15
+  BorderParticleSpeed: 1.5
+  BorderParticleLifetime: 0.8
+  BorderParticleSize: 0.12
+  CombatTriggerDistance: 5
+  CombatPulseFrequency: 5
+  CombatBrightnessMult: 1.4
+  CombatBurstCount: 40
+  DangerVignetteIntensity: 0.35
+  DangerChromaticAberration: 0.4
+  CameraShakeAmplitude: 0.02
+  CameraShakeFrequency: 15
+  DangerFXDuration: 0.4
