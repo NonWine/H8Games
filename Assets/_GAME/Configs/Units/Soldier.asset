@@ -16,7 +16,7 @@ MonoBehaviour:
     MaxHealth: 30
     MoveSpeed: 3.5
     AttackCooldownRange: {x: 0.8, y: 1.5}
-    Damage: 3
+    Damage: 8
     ProjectileSpeed: 33
     DeathReward: 5
   targetingData:

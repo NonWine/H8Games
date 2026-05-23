@@ -3,21 +3,31 @@ using UnityEngine;
 
 public class TerritoryMeshBuilder
 {
-    private readonly List<Vector2> sourcePoints = new();
-    private readonly List<Vector2> hull2D       = new();
-    private readonly List<Vector2> boundary2D   = new();
-    private readonly List<Vector3> vertices     = new();
-    private readonly List<int>     triangles    = new();
+    private readonly List<Vector2> sourcePoints      = new();
+    private readonly List<Vector2> hull2D            = new();
+    private readonly List<Vector2> boundary2D        = new();
+    private readonly List<Vector2> alignedBoundary2D = new();
+    private readonly List<Vector3> vertices          = new();
+    private readonly List<int>     triangles         = new();
 
-    public bool TryBuild(
-        Mesh                   mesh,
-        Transform              origin,
+    // ── public API ────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Computes the target boundary polygon in local 2D space, resampled to
+    /// exactly <paramref name="sampleCount"/> evenly-spaced points. The polygon
+    /// is aligned to start from the eastmost vertex so successive calls produce
+    /// consistent point correspondence for interpolation.
+    /// </summary>
+    public bool TryComputeBoundary(
         IReadOnlyList<Vector3> unitPositions,
         TerritoryConfig        config,
-        List<Vector3>          outBorderPoints = null)
+        Transform              origin,
+        int                    sampleCount,
+        List<Vector2>          outBoundary,
+        out Vector2            outCentroid)
     {
-        mesh.Clear();
-        outBorderPoints?.Clear();
+        outCentroid = Vector2.zero;
+        outBoundary.Clear();
 
         if (unitPositions == null || unitPositions.Count == 0)
             return false;
@@ -33,13 +43,12 @@ public class TerritoryMeshBuilder
             centroid += p;
         }
 
-        centroid /= sourcePoints.Count;
-        float meshY = config.GroundY + config.VerticalOffset;
+        centroid   /= sourcePoints.Count;
+        outCentroid = centroid;
 
         if (sourcePoints.Count < 3)
         {
-            BuildCircleMesh(mesh, centroid, config.MinRadius, config.CircleSegments, meshY);
-            FillBorderCircle(outBorderPoints, centroid, config.MinRadius, config.CircleSegments, meshY, origin);
+            BuildCircleBoundary(outBoundary, centroid, config.MinRadius, sampleCount);
             return true;
         }
 
@@ -48,27 +57,100 @@ public class TerritoryMeshBuilder
 
         if (hull2D.Count < 3)
         {
-            BuildCircleMesh(mesh, centroid, config.MinRadius, config.CircleSegments, meshY);
-            FillBorderCircle(outBorderPoints, centroid, config.MinRadius, config.CircleSegments, meshY, origin);
+            BuildCircleBoundary(outBoundary, centroid, config.MinRadius, sampleCount);
             return true;
         }
 
         boundary2D.Clear();
         BuildExpandedBoundary(hull2D, config.Padding, config.CornerSegments, boundary2D);
         EnforceMinRadius(boundary2D, centroid, config.MinRadius);
-        BuildFillMesh(mesh, boundary2D, centroid, meshY);
+
+        // Rotate the polygon to start from the eastmost vertex — ensures
+        // point[i]_old corresponds to point[i]_new when interpolating.
+        int eastIdx = FindEastmostIndex(boundary2D, centroid);
+        alignedBoundary2D.Clear();
+        for (int i = 0; i < boundary2D.Count; i++)
+            alignedBoundary2D.Add(boundary2D[(eastIdx + i) % boundary2D.Count]);
+
+        ResamplePolygon2D(alignedBoundary2D, outBoundary, sampleCount);
+        return true;
+    }
+
+    /// <summary>
+    /// Builds the fill mesh, border ring mesh, and optional border point list
+    /// from a pre-computed (and optionally smoothed) local 2D boundary.
+    /// </summary>
+    public void BuildFromBoundary(
+        Mesh            fillMesh,
+        Mesh            borderMesh,
+        List<Vector2>   boundary,
+        Vector2         centroid,
+        TerritoryConfig config,
+        Transform       origin,
+        List<Vector3>   outBorderPoints)
+    {
+        fillMesh?.Clear();
+        borderMesh?.Clear();
+        outBorderPoints?.Clear();
+
+        if (boundary == null || boundary.Count == 0)
+            return;
+
+        float meshY   = config.GroundY + config.VerticalOffset;
+        float borderY = meshY + config.BorderYOffset;
+
+        if (fillMesh != null)
+            BuildFillMesh(fillMesh, boundary, centroid, meshY);
+
+        if (borderMesh != null)
+            BuildBorderRing(borderMesh, boundary, centroid, borderY, config.BorderWidth);
 
         if (outBorderPoints != null)
         {
-            for (int i = 0; i < boundary2D.Count; i++)
+            for (int i = 0; i < boundary.Count; i++)
             {
-                Vector3 localPt = new Vector3(boundary2D[i].x, meshY, boundary2D[i].y);
-                outBorderPoints.Add(origin.TransformPoint(localPt));
+                Vector3 local = new Vector3(boundary[i].x, meshY, boundary[i].y);
+                outBorderPoints.Add(origin.TransformPoint(local));
             }
         }
-
-        return true;
     }
+
+    // Flat XZ quad-ring — zero z-fighting because Y is explicitly controlled.
+    private void BuildBorderRing(
+        Mesh mesh, List<Vector2> boundary, Vector2 centroid, float y, float width)
+    {
+        int n = boundary.Count;
+        vertices.Clear();
+        triangles.Clear();
+
+        for (int i = 0; i < n; i++)
+        {
+            Vector2 outDir = boundary[i] - centroid;
+            float   len    = outDir.magnitude;
+            if (len > 0.0001f) outDir /= len; else outDir = Vector2.right;
+
+            Vector2 inner = boundary[i];
+            Vector2 outer = boundary[i] + outDir * width;
+
+            vertices.Add(new Vector3(inner.x, y, inner.y));
+            vertices.Add(new Vector3(outer.x, y, outer.y));
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            int i0 = i * 2,           i1 = i * 2 + 1;
+            int i2 = ((i+1) % n) * 2, i3 = ((i+1) % n) * 2 + 1;
+            triangles.Add(i0); triangles.Add(i2); triangles.Add(i1);
+            triangles.Add(i1); triangles.Add(i2); triangles.Add(i3);
+        }
+
+        mesh.SetVertices(vertices);
+        mesh.SetTriangles(triangles, 0);
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+    }
+
+    // ── convex hull ───────────────────────────────────────────────────────────
 
     private void BuildConvexHull(List<Vector2> points, List<Vector2> result)
     {
@@ -85,7 +167,7 @@ public class TerritoryMeshBuilder
         for (int i = 0; i < n; i++)
         {
             while (lower.Count >= 2 &&
-                   Cross(lower[lower.Count - 2], lower[lower.Count - 1], sorted[i]) <= 0f)
+                   Cross(lower[lower.Count - 2], lower[lower.Count - 1], sorted[i]) <= HullEpsilon)
                 lower.RemoveAt(lower.Count - 1);
             lower.Add(sorted[i]);
         }
@@ -94,7 +176,7 @@ public class TerritoryMeshBuilder
         for (int i = n - 1; i >= 0; i--)
         {
             while (upper.Count >= 2 &&
-                   Cross(upper[upper.Count - 2], upper[upper.Count - 1], sorted[i]) <= 0f)
+                   Cross(upper[upper.Count - 2], upper[upper.Count - 1], sorted[i]) <= HullEpsilon)
                 upper.RemoveAt(upper.Count - 1);
             upper.Add(sorted[i]);
         }
@@ -106,8 +188,12 @@ public class TerritoryMeshBuilder
         result.AddRange(upper);
     }
 
+    private const float HullEpsilon = 0.01f;
+
     private static float Cross(Vector2 o, Vector2 a, Vector2 b)
         => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+
+    // ── expanded boundary ─────────────────────────────────────────────────────
 
     private void BuildExpandedBoundary(
         List<Vector2> hull, float padding, int cornerSegments, List<Vector2> result)
@@ -160,6 +246,8 @@ public class TerritoryMeshBuilder
         }
     }
 
+    // ── fill mesh ─────────────────────────────────────────────────────────────
+
     private void BuildFillMesh(Mesh mesh, List<Vector2> boundary, Vector2 centroid, float y)
     {
         int n = boundary.Count;
@@ -167,7 +255,6 @@ public class TerritoryMeshBuilder
         triangles.Clear();
 
         vertices.Add(new Vector3(centroid.x, y, centroid.y));
-
         for (int i = 0; i < n; i++)
             vertices.Add(new Vector3(boundary[i].x, y, boundary[i].y));
 
@@ -184,48 +271,63 @@ public class TerritoryMeshBuilder
         mesh.RecalculateBounds();
     }
 
-    private void BuildCircleMesh(Mesh mesh, Vector2 center, float radius, int segments, float y)
+    // ── helpers ───────────────────────────────────────────────────────────────
+
+    private static void BuildCircleBoundary(List<Vector2> result, Vector2 center, float radius, int count)
     {
-        vertices.Clear();
-        triangles.Clear();
-
-        vertices.Add(new Vector3(center.x, y, center.y));
-
-        for (int i = 0; i < segments; i++)
+        result.Clear();
+        for (int i = 0; i < count; i++)
         {
-            float angle = 2f * Mathf.PI * i / segments;
-            vertices.Add(new Vector3(
-                center.x + Mathf.Cos(angle) * radius,
-                y,
-                center.y + Mathf.Sin(angle) * radius));
+            float angle = 2f * Mathf.PI * i / count;
+            result.Add(center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius);
         }
-
-        for (int i = 0; i < segments; i++)
-        {
-            triangles.Add(0);
-            triangles.Add((i + 1) % segments + 1);
-            triangles.Add(i + 1);
-        }
-
-        mesh.SetVertices(vertices);
-        mesh.SetTriangles(triangles, 0);
-        mesh.RecalculateNormals();
-        mesh.RecalculateBounds();
     }
 
-    private static void FillBorderCircle(
-        List<Vector3> outBorder, Vector2 center, float radius,
-        int segments, float y, Transform origin)
+    // Returns index of the polygon vertex closest to the east direction (angle ≈ 0)
+    // from the centroid. Used to align successive boundaries for interpolation.
+    private static int FindEastmostIndex(List<Vector2> polygon, Vector2 centroid)
     {
-        if (outBorder == null) return;
-        for (int i = 0; i < segments; i++)
+        int   bestIdx      = 0;
+        float minAbsAngle  = float.MaxValue;
+        for (int i = 0; i < polygon.Count; i++)
         {
-            float angle = 2f * Mathf.PI * i / segments;
-            Vector3 local = new Vector3(
-                center.x + Mathf.Cos(angle) * radius,
-                y,
-                center.y + Mathf.Sin(angle) * radius);
-            outBorder.Add(origin.TransformPoint(local));
+            float a = Mathf.Abs(Mathf.Atan2(polygon[i].y - centroid.y, polygon[i].x - centroid.x));
+            if (a < minAbsAngle) { minAbsAngle = a; bestIdx = i; }
+        }
+        return bestIdx;
+    }
+
+    // Resample closed polygon to exactly `count` evenly-spaced points by arc length.
+    private static void ResamplePolygon2D(List<Vector2> source, List<Vector2> result, int count)
+    {
+        result.Clear();
+        if (source.Count == 0 || count <= 0) return;
+        if (source.Count == 1) { for (int i = 0; i < count; i++) result.Add(source[0]); return; }
+
+        float perimeter = 0f;
+        for (int i = 0; i < source.Count; i++)
+            perimeter += Vector2.Distance(source[i], source[(i + 1) % source.Count]);
+
+        if (perimeter < 0.0001f) { for (int i = 0; i < count; i++) result.Add(source[0]); return; }
+
+        float step  = perimeter / count;
+        float accum = 0f;
+        int   src   = 0;
+
+        for (int i = 0; i < count; i++)
+        {
+            float target = i * step;
+            while (src < source.Count - 1)
+            {
+                float len = Vector2.Distance(source[src], source[(src + 1) % source.Count]);
+                if (accum + len >= target) break;
+                accum += len;
+                src++;
+            }
+            int   nxt = (src + 1) % source.Count;
+            float seg = Vector2.Distance(source[src], source[nxt]);
+            float t   = seg > 0.0001f ? (target - accum) / seg : 0f;
+            result.Add(Vector2.Lerp(source[src], source[nxt], t));
         }
     }
 }

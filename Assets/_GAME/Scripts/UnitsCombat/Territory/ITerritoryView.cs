@@ -3,7 +3,7 @@ using UnityEngine;
 
 public interface ITerritoryView
 {
-    void Refresh(IReadOnlyList<Vector3> positions, TerritoryConfig config);
+    void Refresh(IReadOnlyList<Vector3> positions, TerritoryConfig config, float dt);
     void Clear();
     void SetAnimating(bool active);
     void SetCombatAlert(bool active);

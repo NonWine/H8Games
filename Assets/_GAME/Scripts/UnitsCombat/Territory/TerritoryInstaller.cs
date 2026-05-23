@@ -3,9 +3,14 @@ using Zenject;
 
 public class TerritoryInstaller : MonoInstaller
 {
-    [SerializeField] private TerritoryView         view;
-    [SerializeField] private TerritoryConfig        config;
+    [SerializeField] private TerritoryView          view;
+    [SerializeField] private TerritoryConfig         config;
     [SerializeField] private TerritoryDangerCameraFX cameraFX;
+
+    [Header("Flag Anchor")]
+    [Tooltip("Drag the flag/objective Transform here. The territory zone will always include this point " +
+             "and shrink to a circle around it when all enemies are dead.")]
+    [SerializeField] private Transform flagAnchor;
 
     public override void InstallBindings()
     {
@@ -29,6 +34,9 @@ public class TerritoryInstaller : MonoInstaller
 
     private void BindServices()
     {
+        if (flagAnchor != null)
+            Container.BindInstance(flagAnchor).WithId("TerritoryFlagAnchor").AsSingle();
+
         Container.BindInterfacesAndSelfTo<TerritoryService>().AsSingle();
     }
 

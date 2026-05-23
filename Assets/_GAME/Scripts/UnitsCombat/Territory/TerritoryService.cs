@@ -29,6 +29,13 @@ public class TerritoryService : IInitializable, ITickable, IDisposable
         tracker        = new TerritoryUnitTracker(config, levelManager);
     }
 
+    [Inject]
+    private void InjectFlagAnchor(
+        [InjectOptional(Id = "TerritoryFlagAnchor")] Transform flagAnchor)
+    {
+        tracker.SetFlagAnchor(flagAnchor);
+    }
+
     public void Initialize()
     {
         scanTimer = config.UpdateInterval;
@@ -58,10 +65,10 @@ public class TerritoryService : IInitializable, ITickable, IDisposable
             }
         }
 
-        bool positionsChanged = tracker.UpdatePositions(dt);
+        tracker.UpdatePositions(dt);
 
-        if (positionsChanged || scanChanged)
-            view.Refresh(tracker.SmoothedPositions, config);
+        // Always call Refresh every tick so boundary smoothing animates continuously.
+        view.Refresh(tracker.SmoothedPositions, config, dt);
     }
 
     public void Dispose()

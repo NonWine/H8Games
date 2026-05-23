@@ -13,34 +13,35 @@ MonoBehaviour:
   m_Name: TerritoryConfig
   m_EditorClassIdentifier: 
   UpdateInterval: 0.15
-  ExpandDuration: 0.25
-  ShrinkDuration: 0.4
-  SnapDistance: 0.05
-  MinRadius: 2
-  Padding: 1
-  CornerSegments: 5
+  ExpandDuration: 0.8
+  ShrinkDuration: 1.52
+  SnapDistance: 0.1
+  MinRadius: 3
+  Padding: 1.5
+  CornerSegments: 8
   CircleSegments: 40
   GroundY: 0
   VerticalOffset: 0.02
   BorderWidth: 0.15
+  BorderResampleCount: 48
+  BorderYOffset: 0.1
   BorderMaterial: {fileID: 2100000, guid: b60c84163a8c00548bdcaf097d1436d5, type: 2}
-  FadeInDuration: 0.35
-  FadeOutDuration: 0.6
-  FillAlpha: 0.4
+  FadeInDuration: 0.7
+  FadeOutDuration: 1.2
+  FillAlpha: 0.8
   StaticFillColor: {r: 1, g: 0.32941177, b: 0, a: 1}
   PulseColorA: {r: 0.8, g: 0, b: 0, a: 1}
   PulseColorB: {r: 1, g: 0.33, b: 0, a: 1}
-  PulseFrequency: 2.5
+  PulseFrequency: 0.1
   BorderParticlesPerSecond: 15
-  BorderParticleSpeed: 1.5
-  BorderParticleLifetime: 0.8
-  BorderParticleSize: 0.12
-  CombatTriggerDistance: 5
-  CombatPulseFrequency: 5
-  CombatBrightnessMult: 1.4
-  CombatBurstCount: 40
-  DangerVignetteIntensity: 0.35
-  DangerChromaticAberration: 0.4
-  CameraShakeAmplitude: 0.02
-  CameraShakeFrequency: 15
-  DangerFXDuration: 0.4
+  BorderParticleSpeed: 1.4
+  BorderParticleLifetime: 2
+  BorderParticleSize: 0.4
+  CombatPulseFrequency: 0.63
+  CombatBrightnessMult: 1.35
+  CombatBurstCount: 0
+  DangerVignetteIntensity: 0.2
+  DangerChromaticAberration: 0.2
+  CameraShakeAmplitude: 0.1
+  CameraShakeFrequency: 0.3
+  DangerFXDuration: 0.5

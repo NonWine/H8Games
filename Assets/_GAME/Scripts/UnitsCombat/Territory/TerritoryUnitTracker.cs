@@ -5,26 +5,33 @@ public class TerritoryUnitTracker
 {
     private sealed class TrackedUnit
     {
-        public EnemyCombatAgentController Source;
-        public Vector3 Target;
-        public Vector3 Current;
-        public Vector3 Velocity;
+        public Vector3 TargetPosition;
+        public Vector3 SmoothedPosition;
+        public bool    WasSeenThisScan;
     }
 
-    private readonly TerritoryConfig config;
-    private readonly LevelManager levelManager;
-    private readonly List<TrackedUnit> units = new();
-    private readonly List<EnemyCombatAgentController> tempAlive = new();
-    private readonly List<Vector3> smoothedPositions = new();
+    private readonly TerritoryConfig  config;
+    private readonly LevelManager     levelManager;
+    private          Transform        flagAnchor;   // always-present point; can be null
+
+    private readonly Dictionary<EnemyCombatAgentController, TrackedUnit> trackedUnits      = new();
+    private readonly List<EnemyCombatAgentController>                    removalBuffer     = new();
+    private readonly List<Vector3>                                       smoothedPositions = new();
 
     private LevelRuntime activeLevel;
 
     public IReadOnlyList<Vector3> SmoothedPositions => smoothedPositions;
 
-    public TerritoryUnitTracker(TerritoryConfig config, LevelManager levelManager)
+    public TerritoryUnitTracker(TerritoryConfig config, LevelManager levelManager, Transform flagAnchor = null)
     {
-        this.config = config;
+        this.config       = config;
         this.levelManager = levelManager;
+        this.flagAnchor   = flagAnchor;
+    }
+
+    public void SetFlagAnchor(Transform anchor)
+    {
+        flagAnchor = anchor;
     }
 
     public bool Scan(out bool levelChanged)
@@ -42,51 +49,104 @@ public class TerritoryUnitTracker
         if (current == null)
             return false;
 
-        CollectAliveEnemies(current);
+        MarkAllAsNotSeen();
+        ScanLevel(current);
+        RemoveStaleUnits();
 
-        bool changed = tempAlive.Count != CountActiveUnits();
-
-        RemoveDeadUnits();
-        AddNewUnits();
-
-        return changed;
+        return true;
     }
 
     public bool UpdatePositions(float dt)
     {
-        bool changed = false;
-        smoothedPositions.Clear();
-
-        for (int i = 0; i < units.Count; i++)
+        if (trackedUnits.Count == 0)
         {
-            TrackedUnit unit = units[i];
-
-            if (unit.Source != null && unit.Source.IsAlive)
-                unit.Target = unit.Source.Position;
-
-            Vector3 newPos = Vector3.SmoothDamp(
-                unit.Current, unit.Target, ref unit.Velocity,
-                config.ExpandDuration, float.MaxValue, dt);
-
-            if ((newPos - unit.Current).sqrMagnitude > config.SnapDistance * config.SnapDistance)
-                changed = true;
-
-            unit.Current = newPos;
-            smoothedPositions.Add(newPos);
+            // No live units — keep the flag visible if present.
+            smoothedPositions.Clear();
+            if (flagAnchor != null)
+                smoothedPositions.Add(flagAnchor.position);
+            return false;
         }
 
-        return changed;
+        bool    hasChanges  = false;
+        float   snapDistSqr = config.SnapDistance * config.SnapDistance;
+        Vector3 anchor      = ComputeTargetCentroid();
+
+        float expandSpeed = config.ExpandDuration > 0f ? 4f / config.ExpandDuration : 16f;
+        float shrinkSpeed = config.ShrinkDuration > 0f ? 4f / config.ShrinkDuration : 10f;
+
+        foreach (KeyValuePair<EnemyCombatAgentController, TrackedUnit> kvp in trackedUnits)
+        {
+            TrackedUnit unit    = kvp.Value;
+            Vector3     current = unit.SmoothedPosition;
+            Vector3     target  = unit.TargetPosition;
+
+            if (!IsFinite(target))
+                continue;
+
+            if (!IsFinite(current))
+            {
+                unit.SmoothedPosition = target;
+                hasChanges            = true;
+                continue;
+            }
+
+            Vector3 delta = target - current;
+
+            if (delta.sqrMagnitude <= snapDistSqr)
+            {
+                if ((current - target).sqrMagnitude > 1e-6f)
+                {
+                    unit.SmoothedPosition = target;
+                    hasChanges            = true;
+                }
+                continue;
+            }
+
+            float   speed = ResolveSmoothSpeed(unit, anchor, expandSpeed, shrinkSpeed);
+            float   t     = speed <= 0f ? 1f : 1f - Mathf.Exp(-speed * dt);
+            Vector3 next  = Vector3.Lerp(current, target, t);
+
+            if (!IsFinite(next))
+            {
+                unit.SmoothedPosition = target;
+                hasChanges            = true;
+                continue;
+            }
+
+            if ((next - current).sqrMagnitude <= 1e-6f)
+                continue;
+
+            unit.SmoothedPosition = next;
+            hasChanges            = true;
+        }
+
+        // ── rebuild output ────────────────────────────────────────────────────
+        smoothedPositions.Clear();
+
+        if (flagAnchor != null)
+            smoothedPositions.Add(flagAnchor.position);
+
+        foreach (TrackedUnit unit in trackedUnits.Values)
+            smoothedPositions.Add(unit.SmoothedPosition);
+
+        return hasChanges;
     }
 
     public void Reset()
     {
-        units.Clear();
+        trackedUnits.Clear();
         smoothedPositions.Clear();
     }
 
-    private void CollectAliveEnemies(LevelRuntime level)
+    private void MarkAllAsNotSeen()
     {
-        tempAlive.Clear();
+        foreach (TrackedUnit unit in trackedUnits.Values)
+            unit.WasSeenThisScan = false;
+    }
+
+    private void ScanLevel(LevelRuntime level)
+    {
+        Vector3 spawnOrigin = ComputeSpawnOrigin(level);
 
         for (int g = 0; g < level.Groups.Count; g++)
         {
@@ -98,61 +158,105 @@ public class TerritoryUnitTracker
             for (int e = 0; e < enemies.Count; e++)
             {
                 EnemyCombatAgentController enemy = enemies[e];
-                if (enemy != null && enemy.IsAlive)
-                    tempAlive.Add(enemy);
-            }
-        }
-    }
 
-    private void RemoveDeadUnits()
-    {
-        for (int i = units.Count - 1; i >= 0; i--)
-        {
-            bool stillAlive = false;
-            for (int j = 0; j < tempAlive.Count; j++)
-            {
-                if (ReferenceEquals(units[i].Source, tempAlive[j]))
+                if (enemy == null || !enemy.IsAlive)
+                    continue;
+
+                Vector3 pos = enemy.Position;
+                if (!IsFinite(pos))
+                    continue;
+
+                if (trackedUnits.TryGetValue(enemy, out TrackedUnit existing))
                 {
-                    stillAlive = true;
-                    break;
+                    existing.TargetPosition  = pos;
+                    existing.WasSeenThisScan = true;
+                }
+                else
+                {
+                    trackedUnits[enemy] = new TrackedUnit
+                    {
+                        TargetPosition   = pos,
+                        SmoothedPosition = spawnOrigin,
+                        WasSeenThisScan  = true
+                    };
                 }
             }
-
-            if (!stillAlive)
-                units.RemoveAt(i);
         }
     }
 
-    private void AddNewUnits()
+    private void RemoveStaleUnits()
     {
-        for (int i = 0; i < tempAlive.Count; i++)
+        removalBuffer.Clear();
+
+        foreach (KeyValuePair<EnemyCombatAgentController, TrackedUnit> kvp in trackedUnits)
         {
-            bool alreadyTracked = false;
-            for (int j = 0; j < units.Count; j++)
-            {
-                if (ReferenceEquals(units[j].Source, tempAlive[i]))
-                {
-                    alreadyTracked = true;
-                    break;
-                }
-            }
-
-            if (!alreadyTracked)
-            {
-                Vector3 spawnPos = tempAlive[i].Position;
-                units.Add(new TrackedUnit
-                {
-                    Source = tempAlive[i],
-                    Target = spawnPos,
-                    Current = spawnPos,
-                    Velocity = Vector3.zero
-                });
-            }
+            if (!kvp.Value.WasSeenThisScan)
+                removalBuffer.Add(kvp.Key);
         }
+
+        for (int i = 0; i < removalBuffer.Count; i++)
+            trackedUnits.Remove(removalBuffer[i]);
     }
 
-    private int CountActiveUnits()
+    private static float ResolveSmoothSpeed(TrackedUnit unit, Vector3 anchor, float expandSpeed, float shrinkSpeed)
     {
-        return units.Count;
+        Vector3 currentDelta = unit.SmoothedPosition - anchor;
+        Vector3 targetDelta  = unit.TargetPosition   - anchor;
+        currentDelta.y = 0f;
+        targetDelta.y  = 0f;
+
+        return targetDelta.sqrMagnitude >= currentDelta.sqrMagnitude ? expandSpeed : shrinkSpeed;
+    }
+
+    private Vector3 ComputeTargetCentroid()
+    {
+        Vector3 sum = Vector3.zero;
+        foreach (TrackedUnit unit in trackedUnits.Values)
+            sum += unit.TargetPosition;
+        return trackedUnits.Count > 0 ? sum / trackedUnits.Count : Vector3.zero;
+    }
+
+    private Vector3 ComputeSpawnOrigin(LevelRuntime level)
+    {
+        if (trackedUnits.Count > 0)
+        {
+            Vector3 sum = Vector3.zero;
+            foreach (TrackedUnit unit in trackedUnits.Values)
+                sum += unit.SmoothedPosition;
+            return sum / trackedUnits.Count;
+        }
+
+        Vector3 newSum   = Vector3.zero;
+        int     newCount = 0;
+
+        for (int g = 0; g < level.Groups.Count; g++)
+        {
+            EnemyGroupViewController group = level.Groups[g];
+            if (group == null)
+                continue;
+
+            IReadOnlyList<EnemyCombatAgentController> enemies = group.Enemies;
+            for (int e = 0; e < enemies.Count; e++)
+            {
+                EnemyCombatAgentController enemy = enemies[e];
+                if (enemy == null || !enemy.IsAlive)
+                    continue;
+
+                Vector3 pos = enemy.Position;
+                if (!IsFinite(pos))
+                    continue;
+
+                newSum += pos;
+                newCount++;
+            }
+        }
+
+        return newCount > 0 ? newSum / newCount : Vector3.zero;
+    }
+
+    private static bool IsFinite(Vector3 v)
+    {
+        return !float.IsNaN(v.x)      && !float.IsNaN(v.y)      && !float.IsNaN(v.z)
+            && !float.IsInfinity(v.x) && !float.IsInfinity(v.y) && !float.IsInfinity(v.z);
     }
 }

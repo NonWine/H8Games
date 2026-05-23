@@ -20,7 +20,9 @@ public class TerritoryConfig : ScriptableObject
     public float VerticalOffset = 0.02f;
 
     [Header("Border")]
-    public float BorderWidth = 0.15f;
+    public float    BorderWidth        = 0.15f;
+    public int      BorderResampleCount = 48;
+    public float    BorderYOffset      = 0.01f;   // lift above fill mesh to avoid z-fighting
     public Material BorderMaterial;
 
     [Header("Animation")]
@@ -43,7 +45,6 @@ public class TerritoryConfig : ScriptableObject
     public float BorderParticleSize = 0.12f;
 
     [Header("Combat Alert")]
-    public float CombatTriggerDistance = 5f;
     public float CombatPulseFrequency = 5f;
     public float CombatBrightnessMult = 1.4f;
     public int   CombatBurstCount = 40;
