@@ -162,7 +162,7 @@ public class TerritoryUnitTracker
                 if (enemy == null || !enemy.IsAlive)
                     continue;
 
-                Vector3 pos = enemy.Position;
+                Vector3 pos = enemy.Transform.position;
                 if (!IsFinite(pos))
                     continue;
 
@@ -242,7 +242,7 @@ public class TerritoryUnitTracker
                 if (enemy == null || !enemy.IsAlive)
                     continue;
 
-                Vector3 pos = enemy.Position;
+                Vector3 pos = enemy.Transform.position;
                 if (!IsFinite(pos))
                     continue;
 

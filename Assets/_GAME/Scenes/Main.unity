@@ -4655,7 +4655,7 @@ Transform:
   m_GameObject: {fileID: 1522166075}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -5.14, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10881,7 +10881,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8521b32b7fcd7ae41acc48012ada9ec0, type: 2}
+  - {fileID: 2100000, guid: 9fe0a856a63e8634ebc7077bc570ea68, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -11483,6 +11483,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Barrack
       objectReference: {fileID: 0}
+    - target: {fileID: 1754056185622028694, guid: bbca15a5a5cb14a46a55d0993fb8f804, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3847075713955591144, guid: bbca15a5a5cb14a46a55d0993fb8f804, type: 3}
       propertyPath: spawnInterval
       value: 1
@@ -11533,11 +11537,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7147874237398806145, guid: bbca15a5a5cb14a46a55d0993fb8f804, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7147874237398806145, guid: bbca15a5a5cb14a46a55d0993fb8f804, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1.88
+      value: 4.22
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

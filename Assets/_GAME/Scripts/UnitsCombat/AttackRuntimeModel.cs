@@ -13,10 +13,5 @@ public class AttackRuntimeModel
         CooldownRemaining = 0f;
     }
 
-    public float GetRandomizedCooldown()
-    {
-        float cooldown = Random.Range(CooldownRange.x, CooldownRange.y);
-        UnityEngine.Debug.Log($"GetRandomizedCooldown: {cooldown}, Range: ({CooldownRange.x}, {CooldownRange.y})");
-        return cooldown;
-    }
+    public float GetRandomizedCooldown() => Random.Range(CooldownRange.x, CooldownRange.y);
 }

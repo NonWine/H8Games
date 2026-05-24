@@ -89,23 +89,51 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
         }
     }
 
-    public void SyncToCurrentPosition()
+    public void TeleportTo(Vector3 position, Quaternion rotation)
     {
         NavMeshAgent agent = Agent;
 
-        // Force re-init: if the agent was enabled at a stale pool position (e.g. origin),
-        // updatePosition=true would otherwise pull the transform back there after ConfigureAgent().
+        // 1. Detach agent so we can move transform without it fighting us
         agent.enabled = false;
-        agent.enabled = true;
+        combatView.Transform.SetPositionAndRotation(position, rotation);
 
-        if (NavMesh.SamplePosition(combatView.Transform.position, out NavMeshHit hit, NavMeshSampleDistance, agent.areaMask))
+        // 2. Sync the kinematic Rigidbody — without this, Rigidbody interpolation
+        //    pulls the transform back to its cached pool position (usually origin)
+        //    on the next FixedUpdate. THIS WAS THE SPAWN-AT-(0,0,0) BUG.
+        Rigidbody rb = combatView.GetComponent<Rigidbody>();
+        if (rb != null)
         {
-            combatView.Transform.position = hit.position;
-            agent.Warp(hit.position);
+            rb.position = position;
+            rb.rotation = rotation;
         }
 
-        Reset();
-        Stop();
+        // 3. Apply configuration (enables agent at the new transform position).
+        ConfigureAgent();
+
+        // 4. Find a valid spot on the NavMesh and snap there.
+        Vector3 finalPosition = position;
+        if (NavMesh.SamplePosition(position, out NavMeshHit hit, NavMeshSampleDistance, agent.areaMask))
+        {
+            finalPosition = hit.position;
+            combatView.Transform.position = finalPosition;
+            if (rb != null)
+            {
+                rb.position = finalPosition;
+            }
+        }
+
+        // 5. Warp — authoritative position write that updates agent.nextPosition.
+        agent.Warp(finalPosition);
+
+        // 6. Reset path/destination state; stop motion at final position.
+        lastDestination = Vector3.positiveInfinity;
+        nextDestinationRefreshTime = 0f;
+        if (agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+            agent.ResetPath();
+        }
     }
 
     public SoldierFormationState MoveToSlot(Transform squadRoot, Vector3 slotCenter, bool squadRootIsMoving, float deltaTime)

@@ -1,6 +1,3 @@
-using UnityEngine;
-using System.Collections.Generic;
-
 public class EnemyCombatAgentController : BaseCombatAgentController<EnemyRuntimeModel>
 {
     private readonly EnemyStateMachine stateMachine;
@@ -16,23 +13,7 @@ public class EnemyCombatAgentController : BaseCombatAgentController<EnemyRuntime
         this.stateMachine = stateMachine;
     }
 
-    protected override void TickBehaviour()
-    {
-        stateMachine.Tick();
-    }
-    
-    public void ResetRunTimeState()
-    {
-    }
-
-    protected override void ChangeToIdleState()
-    {
-        stateMachine.ChangeState<EnemyIdleState>();
-    }
-
-    protected override void ChangeToDeadState()
-    {
-        stateMachine.ChangeState<EnemyDeadState>();
-    }
-
+    protected override void TickBehaviour() => stateMachine.Tick();
+    protected override void ChangeToIdleState() => stateMachine.ChangeState<EnemyIdleState>();
+    protected override void ChangeToDeadState() => stateMachine.ChangeState<EnemyDeadState>();
 }

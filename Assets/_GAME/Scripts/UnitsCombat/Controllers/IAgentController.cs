@@ -2,6 +2,7 @@ using UnityEngine;
 
 public interface IAgentController
 {
-    void SetIdentity(string unitId);
-    void ResetState();
+    Transform Transform { get; }
+    void Spawn(Vector3 position, Quaternion rotation);
+    void Despawn();
 }

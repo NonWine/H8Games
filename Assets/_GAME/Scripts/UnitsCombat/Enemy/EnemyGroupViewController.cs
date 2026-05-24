@@ -145,7 +145,6 @@ public class EnemyGroupViewController : MonoBehaviour
 
             enemy.Died -= HandleEnemyDied;
             enemy.Died += HandleEnemyDied;
-            enemy.ResetRunTimeState();
         }
     }
 
