@@ -25,8 +25,11 @@ public class SoldierCombatAgentInstaller : CombatAgentInstaller
         Container.Bind<IAliveState>()
             .FromMethod(context => context.Container.Resolve<AgentRuntimeModel>())
             .AsSingle();
-        Container.Bind<SoldierMovingFormationService>()
-            .FromMethod(context => new SoldierMovingFormationService(context.Container.Resolve<SquadFollowSettings>(), CombatView.GetInstanceID()))
+        Container.Bind<ISoldierFormationMover>()
+            .FromMethod(context => new SoldierNavMeshFormationMover(
+                context.Container.Resolve<BaseCombatAgentView>(),
+                context.Container.Resolve<SquadFollowSettings>(),
+                CombatView.GetInstanceID()))
             .AsSingle();
     }
 

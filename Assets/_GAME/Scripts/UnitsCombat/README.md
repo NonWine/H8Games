@@ -111,18 +111,21 @@ public class ShieldModule : IHealthModule, IResetModule, ICombatTickModule
 
 ```
 MemoryPool (parent container)
-    └── Spawn() → CombatUnitPoolableRoot.OnSpawned()
-                      → agentController.ResetState()   resets health, states
-                      → SetPosition / SetIdentity
-                      → gameObject.SetActive(true)
+    └── Spawn() → SetActive(true) → CombatUnitPoolableRoot.OnSpawned()
+                      → agentController.Spawn(position, rotation)
+                          → PlaceAtSpawn (NavMeshAgent-safe via TeleportTo for soldiers)
+                          → targetTracker.Reset / modules.ResetModules
+                          → IsAlive = true (gates Tick)
+                          → ChangeToIdleState
 
     └── Despawn() → CombatUnitPoolableRoot.OnDespawned()
-                      → gameObject.SetActive(false)
+                      → agentController.Despawn()   IsAlive = false, targetTracker.Reset
+                      → SetActive(false)
                       (subcontainer stays alive, modules stay initialized)
 ```
 
 The subcontainer is created **once per pool slot** and reused across spawns.
-`ResetState()` restores the agent to a clean initial state without reinstantiating anything.
+`Spawn()` (re)initializes the agent without reinstantiating anything; `Despawn()` parks it.
 
 ---
 

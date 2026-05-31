@@ -15,11 +15,12 @@ MonoBehaviour:
   unitStats:
     MaxHealth: 30
     MoveSpeed: 3.5
-    DetectionRadius: 8
-    AttackCooldown: 0.75
-    Damage: 7
-    ProjectileSpeed: 44
+    AttackCooldownRange: {x: 0.8, y: 1.5}
+    Damage: 8
+    ProjectileSpeed: 33
     DeathReward: 5
+  targetingData:
+    DetectionRadius: 8
     ReservationPenalty: 3
     RetargetInterval: 0.35
     TargetLockDuration: 0.35

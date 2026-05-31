@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using Zenject;
 
-public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializable, IDisposable, ITargetSelectionCandidate, IAgentController
+public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializable, IDisposable, IAgentController
     where TModel : AgentRuntimeModel
 {
     protected readonly IAgentView agentView;
@@ -12,16 +12,10 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
     private readonly ITargetTrackerHandler targetTracker;
     private readonly ITargetReservationHandler reservationHandlerAttackers;
 
-    public ITargetReservationHandler reservationHandler => reservationHandlerAttackers;
-    public Transform transform => agentView.Transform;
-    public Vector3 Position => agentView.Transform.position;
-    public int ReservationCount => reservationHandlerAttackers.ReservationCount;
-
-    public string UnitId { get; private set; }
+    public Transform Transform => agentView.Transform;
     public bool IsAlive => runtimeModel.IsAlive;
 
     public event Action Died;
-    public event Action<HitData> HitReceived;
 
     protected BaseCombatAgentController(
         TModel runtimeModel,
@@ -43,30 +37,14 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
             return;
         }
 
-        TickTracking();
-        TickModules();
-        TickBehaviour();
-    }
-
-    protected virtual void TickTracking()
-    {
         targetTracker.UpdateTarget();
-        
-        if (targetTracker.IsCurrentTargetValid())
-        {
-            ChangeToAttackState();
-        }
-    }
-
-    protected virtual void TickModules()
-    {
         modules.Tick(Time.deltaTime);
+        TickBehaviour();
     }
 
     public void Initialize()
     {
         modules.Health.Died += OnDied;
-        ChangeToIdleState();
     }
 
     public virtual void TakeDamage(float damage, Vector3 sourceWorldPosition)
@@ -82,27 +60,38 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
             sourceWorldPosition = sourceWorldPosition
         };
 
-        HitReceived?.Invoke(hitData);
+        runtimeModel.LastHitData = hitData;
+        ParticlePool.Instance.PlayHit(agentView.Transform.position);
         modules.Health.ApplyDamage(hitData.damage);
         agentView.PlayHitFeedback();
     }
 
-    public void SetIdentity(string unitId)
+    public virtual void Spawn(Vector3 position, Quaternion rotation)
     {
-        UnitId = unitId;
+        PlaceAtSpawn(position, rotation);
+        targetTracker.Reset();
+        modules.ResetModules();
+        runtimeModel.IsAlive = true;   // flip true LAST so Tick can't fire mid-setup
+        ChangeToIdleState();
     }
 
-    public void ResetState()
+    // Override in subclasses that need agent-safe placement (e.g. NavMeshAgent.Warp).
+    // Default just sets the view transform.
+    protected virtual void PlaceAtSpawn(Vector3 position, Quaternion rotation)
     {
-        runtimeModel.IsAlive = true;
-        modules.ResetModules();
-        ChangeToIdleState();
+        agentView.Transform.SetPositionAndRotation(position, rotation);
+    }
+
+    public virtual void Despawn()
+    {
+        // Stop Tick(), reset target so pooled instance starts clean on next Spawn.
+        runtimeModel.IsAlive = false;
+        targetTracker.Reset();
     }
 
     protected abstract void TickBehaviour();
     protected abstract void ChangeToIdleState();
     protected abstract void ChangeToDeadState();
-    protected abstract void ChangeToAttackState();
 
     protected virtual void OnDied()
     {

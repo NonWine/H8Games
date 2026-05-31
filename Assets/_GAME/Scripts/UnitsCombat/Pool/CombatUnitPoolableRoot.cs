@@ -19,20 +19,18 @@ public class CombatUnitPoolableRoot<TController> : MonoBehaviour, IPoolable<Agen
     public void OnSpawned(AgentSpawnParams spawnParams, IMemoryPool pool)
     {
         this.pool = pool;
-
-        transform.SetPositionAndRotation(spawnParams.Position, spawnParams.Rotation);
-        controller.SetIdentity(spawnParams.UnitId);
-        controller.ResetState();
-
+        // controller.Spawn → TeleportTo handles position via the agent-safe path
+        // (disable agent → set transform → sync Rigidbody → enable agent → Warp).
+        controller.Spawn(spawnParams.Position, spawnParams.Rotation);
     }
 
     public void OnDespawned()
     {
+        // Clear runtime state (IsAlive=false stops Tick) so this pooled instance
+        // doesn't keep running between despawn and next spawn.
+        controller.Despawn();
         pool = null;
     }
 
-    public void Dispose()
-    {
-        pool?.Despawn(this);
-    }
+    public void Dispose() => pool?.Despawn(this);
 }

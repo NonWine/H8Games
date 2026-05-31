@@ -1,17 +1,16 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
 public class SoldierFactory
 {
-    private readonly DiContainer container;
     private readonly Dictionary<string, SoldierCombatUnitPool> pools;
     private readonly Dictionary<SoldierCombatAgentController, SoldierPoolableRoot> activeRoots = new();
+    private readonly Dictionary<SoldierCombatAgentController, Action> diedHandlers = new();
 
     public SoldierFactory(DiContainer container, List<UnitCombatDefinition> definitions)
     {
-        this.container = container;
-
         pools = new Dictionary<string, SoldierCombatUnitPool>(definitions.Count);
 
         foreach (UnitCombatDefinition definition in definitions)
@@ -28,13 +27,23 @@ public class SoldierFactory
             Debug.LogError($"[SoldierFactory] No pool found for unit '{unitId}'");
             return null;
         }
-        Debug.Log(position);
         AgentSpawnParams spawnParams = new AgentSpawnParams(position, rotation, unitId);
         SoldierPoolableRoot root = pool.Spawn(spawnParams);
-        SoldierCombatAgentController controller = root.Controller;
 
+        SoldierCombatAgentController controller = root.Controller;
         activeRoots[controller] = root;
-        controller.Died += () => activeRoots.Remove(controller);
+
+        // Named handler so we can unsubscribe on Release; prevents handler accumulation
+        // across spawn/despawn cycles for the same pooled controller.
+        Action diedHandler = null;
+        diedHandler = () =>
+        {
+            controller.Died -= diedHandler;
+            activeRoots.Remove(controller);
+            diedHandlers.Remove(controller);
+        };
+        diedHandlers[controller] = diedHandler;
+        controller.Died += diedHandler;
 
         return controller;
     }
@@ -44,6 +53,12 @@ public class SoldierFactory
         if (!activeRoots.TryGetValue(soldier, out SoldierPoolableRoot root))
         {
             return;
+        }
+
+        if (diedHandlers.TryGetValue(soldier, out Action handler))
+        {
+            soldier.Died -= handler;
+            diedHandlers.Remove(soldier);
         }
 
         activeRoots.Remove(soldier);

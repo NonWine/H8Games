@@ -14,10 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rootMoveSpeed: 4.5
   rootFollowSmoothness: 12
-  rootOffsetFromHero: {x: 0, y: 0, z: -2}
   columns: 4
-  spacingX: 1.2
-  spacingZ: 1.35
+  spacingX: 1.5
+  spacingZ: 1.5
   soldierMoveSpeed: 5.5
   soldierRotationSpeed: 540
   slotReachThreshold: 0.12
+  movingSlotOffsetRadius: 0.14
+  soldierMoveSpeedMultiplierRange: {x: 0.92, y: 1.08}
+  soldierRotationSpeedMultiplierRange: {x: 0.9, y: 1.1}
+  soldierFollowSmoothTime: 0.14
+  movingFacingToSlotWeight: 0.65
+  movingFacingYawJitter: 7
+  destinationRefreshIntervalRange: {x: 0.08, y: 0.16}
+  avoidancePriorityRange: {x: 30, y: 70}

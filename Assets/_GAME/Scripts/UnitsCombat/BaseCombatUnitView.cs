@@ -6,18 +6,19 @@ public class BaseCombatUnitView : MonoBehaviour, IAgentView
 {
     [field: SerializeField] public SkinnedMeshRenderer[] renderers { get; private set; }
     [SerializeField] private float timeToSetColor = 0.2f;
-    [SerializeField, ColorUsage(true, true)] protected Color emissionHitColor;
+    [SerializeField] private Color emissionHitColor = Color.white;
+    [SerializeField, Range(0f, 100f)] private float hitGlow = 5f;
+    [SerializeField, Range(0f, 1f)] private float hitBlend = 0.5f;
+
     [field: SerializeField] public SimpleProjectileView ProjectilePrefab { get; private set; }
     [field: SerializeField] public Transform AttackPoint { get; private set; }
     [field: SerializeField] public Animator Animator { get; private set; }
     [field: SerializeField] public UnitAttackAnimationEventRelay AttackAnimationEvents { get; private set; }
-    [field: SerializeField, Min(0.01f)] public float AttackAnimationCycleDuration { get; private set; } = 1f;
 
     public Transform Transform => transform;
     public bool IsActive => gameObject.activeInHierarchy;
 
     private Material[] hitFlashMaterials = Array.Empty<Material>();
-    private Color[] baseEmissionColors = Array.Empty<Color>();
 
     private void Awake()
     {
@@ -37,40 +38,33 @@ public class BaseCombatUnitView : MonoBehaviour, IAgentView
     public void SetEmissionHitFlash()
     {
         if (hitFlashMaterials.Length != renderers.Length)
-        {
             CacheHitFlashMaterials();
-        }
 
-        for (int i = 0; i < renderers.Length; i++)
+        for (int i = 0; i < hitFlashMaterials.Length; i++)
         {
             Material material = hitFlashMaterials[i];
-            Color baseEmissionColor = baseEmissionColors[i];
             DOTween.Kill(material);
-            material.EnableKeyword("_EMISSION");
-            material.SetColor("_EmissionColor", baseEmissionColor);
 
-            DOTween.Sequence()
-                .SetTarget(material)
-                .Append(material.DOColor(emissionHitColor, "_EmissionColor", timeToSetColor))
-                .Append(material.DOColor(baseEmissionColor, "_EmissionColor", 0.10f));
+            material.SetColor("_HitColor", emissionHitColor);
+            material.SetFloat("_HitGlow", hitGlow);
+            material.SetFloat("_HitBlend", hitBlend);
+
+            DOTween.To(
+                () => material.GetFloat("_HitBlend"),
+                x => material.SetFloat("_HitBlend", x),
+                0f,
+                timeToSetColor
+            ).SetTarget(material);
         }
     }
 
     private void CacheHitFlashMaterials()
     {
         hitFlashMaterials = new Material[renderers.Length];
-        baseEmissionColors = new Color[renderers.Length];
 
         for (int i = 0; i < renderers.Length; i++)
         {
-            SkinnedMeshRenderer renderer = renderers[i];
-            Material material = renderer.material;
-            hitFlashMaterials[i] = material;
-
-            material.EnableKeyword("_EMISSION");
-            baseEmissionColors[i] = material.HasProperty("_EmissionColor")
-                ? material.GetColor("_EmissionColor")
-                : Color.black;
+            hitFlashMaterials[i] = renderers[i].material;
         }
     }
 }
