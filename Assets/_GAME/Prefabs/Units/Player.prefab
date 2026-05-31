@@ -46,6 +46,7 @@ GameObject:
   - component: {fileID: 8319725729928163691}
   - component: {fileID: 6116504933033149543}
   - component: {fileID: 6603344066788761308}
+  - component: {fileID: 2534477193497831294}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -126,11 +127,12 @@ MonoBehaviour:
   - {fileID: 1160555249913138002}
   timeToSetColor: 0.2
   emissionHitColor: {r: 830.7925, g: 387.9644, b: 387.9644, a: 1}
+  hitGlow: 5
+  hitBlend: 0.5
   <ProjectilePrefab>k__BackingField: {fileID: 4041960524083155756, guid: 4d339c7c02696d14196569d8dae8f7b8, type: 3}
   <AttackPoint>k__BackingField: {fileID: 8805818230395325000}
   <Animator>k__BackingField: {fileID: 1160555248632604028}
   <AttackAnimationEvents>k__BackingField: {fileID: 4046080799973617837}
-  <AttackAnimationCycleDuration>k__BackingField: 1.25
 --- !u!114 &8560893184731196420
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -222,6 +224,19 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: -0.09, z: 0}
   m_TimeToStationary: 0.5
+--- !u!114 &2534477193497831294
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2219294345864612596}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7939dc450ad0ec245bc8af5d487ae135, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  radius: 3
 --- !u!1 &2557301845594492918
 GameObject:
   m_ObjectHideFlags: 0

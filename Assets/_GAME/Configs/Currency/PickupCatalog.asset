@@ -12,4 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d24c90080e983db46a6950ca5b5e8f43, type: 3}
   m_Name: PickupCatalog
   m_EditorClassIdentifier: 
-  entries: []
+  entries:
+  - pickupId: coin
+    prefab: {fileID: 446967435964089420, guid: 05868a6b4e8642c418885d7de8b53af2, type: 3}
+    overrideVisuals: {fileID: 11400000, guid: bff6764412d75aa429886d37c99b821c, type: 2}
