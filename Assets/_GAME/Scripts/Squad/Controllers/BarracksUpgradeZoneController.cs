@@ -15,24 +15,44 @@ public class BarracksUpgradeZoneController : MonoBehaviour
     [SerializeField] private SquadBarracksSpawner barracksSpawner;
     [SerializeField, Min(1)] private int requiredCoins = 99;
 
-    [Header("Coin Throw")]
+    [Header("Sequential Toss")]
+    [SerializeField] private string pickupId = "coin";
     [SerializeField] private Transform coinThrowTarget;
+    [SerializeField, Min(0.01f)] private float tossInterval = 0.08f;
+    [SerializeField, Min(0.01f)] private float minTossInterval = 0.03f;
+    [SerializeField, Min(0f)] private float acceleratePerToss = 0.004f;
+    [SerializeField, Min(1)] private int maxConcurrentInFlight = 6;
 
-    [Header("Animation")]
+    [Header("Panel Animation")]
     [SerializeField, Min(0f)] private float showDuration = 0.18f;
     [SerializeField, Min(0f)] private float fillDuration = 0.2f;
     [SerializeField, Min(0f)] private float hideDuration = 0.2f;
 
+    [Header("Juice")]
+    [SerializeField] private ParticleSystem arrivalBurst;
+    [SerializeField] private AudioSource tossAudioSource;
+    [SerializeField] private AudioClip tossClip;
+    [SerializeField, Min(0.1f)] private float baseTossPitch = 1f;
+    [SerializeField, Min(0f)] private float tossPitchStep = 0.03f;
+    [SerializeField, Min(0.1f)] private float maxTossPitch = 1.6f;
+    [SerializeField, Min(0f)] private float labelPunch = 0.18f;
+    [SerializeField] private Transform completionShakeTarget;
+    [SerializeField, Min(0f)] private float completionShakeStrength = 0.4f;
+    [SerializeField, Min(0f)] private float completionShakeDuration = 0.3f;
 
     private CurrencyService currencyService;
     private IPickupService pickupService;
+    private IPickupCarryAnchorProvider carryAnchorProvider;
     private Tween fillTween;
     private Tween panelTween;
-    private bool isActive;
+
+    private bool isPlayerInside;
     private bool isCompleted;
-    private bool isConsuming;
-    private bool needsRecheck;
     private int spentCoins;
+    private int inFlightCount;
+    private int tossStreakForPitch;
+    private float currentInterval;
+    private float tossTimer;
 
     [Inject]
     public void Construct(CurrencyService currencyService, IPickupService pickupService)
@@ -43,23 +63,41 @@ public class BarracksUpgradeZoneController : MonoBehaviour
 
     private void Awake()
     {
+        currentInterval = tossInterval;
         RefreshVisualState(animate: false);
     }
 
     private void OnDestroy()
     {
-        UnsubscribeFromCurrency();
-
         fillTween?.Kill();
         panelTween?.Kill();
     }
 
+    private void Update()
+    {
+        if (!isPlayerInside || isCompleted)
+            return;
+
+        if (!CanLaunchToss())
+            return;
+
+        tossTimer += Time.deltaTime;
+
+        if (tossTimer < currentInterval)
+            return;
+
+        tossTimer -= currentInterval;
+        LaunchToss();
+    }
+
     private void OnTriggerEnter(Collider other)
     {
-        if (other.GetComponentInParent<PlayerView>() == null)
+        PlayerView player = other.GetComponentInParent<PlayerView>();
+
+        if (player == null)
             return;
-        
-        BeginSession();
+
+        BeginSession(player);
     }
 
     private void OnTriggerExit(Collider other)
@@ -67,96 +105,73 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         if (other.GetComponentInParent<PlayerView>() == null)
             return;
 
-        if (!isCompleted)
-            EndSession();
-        panelRoot.transform.DOScale(1f, showDuration).SetEase(Ease.Linear);
-
+        EndSession();
     }
 
-    private void BeginSession()
+    private void BeginSession(PlayerView player)
     {
-        if (isCompleted || isActive)
+        if (isCompleted || isPlayerInside)
             return;
 
-        isActive = true;
+        carryAnchorProvider = player;
+        isPlayerInside = true;
+        currentInterval = tossInterval;
+        tossTimer = 0f;
+        tossStreakForPitch = 0;
+
         panelRoot.transform.DOScale(1.2f, showDuration).SetEase(Ease.OutBack);
-        SubscribeToCurrency();
-        TryConsumeAvailableCurrency();
     }
 
     private void EndSession()
     {
-        if (!isActive)
+        if (!isPlayerInside)
             return;
 
-        isActive = false;
-        UnsubscribeFromCurrency();
+        isPlayerInside = false;
+        carryAnchorProvider = null;
 
-        fillTween?.Kill();
-        RefreshVisualState(animate: false);
+        if (!isCompleted)
+            panelRoot.transform.DOScale(1f, showDuration).SetEase(Ease.Linear);
     }
 
-    private void SubscribeToCurrency()
+    private bool CanLaunchToss()
     {
-        currencyService.AmountChanged -= HandleCurrencyChanged;
-        currencyService.AmountChanged += HandleCurrencyChanged;
+        int remaining = requiredCoins - spentCoins - inFlightCount;
+        int affordable = currencyService.Amount - inFlightCount;
+
+        return remaining > 0 && affordable > 0 && inFlightCount < maxConcurrentInFlight;
     }
 
-    private void UnsubscribeFromCurrency()
+    private void LaunchToss()
     {
-        currencyService.AmountChanged -= HandleCurrencyChanged;
+        Vector3 origin = carryAnchorProvider != null && carryAnchorProvider.TryGetAnchor(out Transform anchor)
+            ? anchor.position
+            : transform.position;
+
+        Transform target = coinThrowTarget != null ? coinThrowTarget : transform;
+
+        inFlightCount++;
+        pickupService.TossDeposit(pickupId, origin, target, OnUnitArrived);
+
+        PlayTossSfx();
+        currentInterval = Mathf.Max(minTossInterval, currentInterval - acceleratePerToss);
     }
 
-    private void HandleCurrencyChanged(int amount)
+    private void OnUnitArrived()
     {
-        if (!isActive || isCompleted)
-            return;
+        inFlightCount = Mathf.Max(0, inFlightCount - 1);
 
-        if (isConsuming)
-        {
-            needsRecheck = true;
-            return;
-        }
-
-        isConsuming = true;
-
-        do
-        {
-            needsRecheck = false;
-            TryConsumeAvailableCurrency();
-        }
-        while (needsRecheck && !isCompleted);
-
-        isConsuming = false;
-    }
-
-    private void TryConsumeAvailableCurrency()
-    {
         if (isCompleted)
             return;
 
-        int remaining = requiredCoins - spentCoins;
-        if (remaining <= 0)
-        {
-            CompleteUpgrade(animate: true);
-            return;
-        }
-
-        int spendAmount = Mathf.Min(currencyService.Amount, remaining);
-        if (spendAmount <= 0)
+        if (!currencyService.TrySpend(1))
         {
             RefreshVisualState(animate: true);
             return;
         }
 
-        if (!currencyService.TrySpend(spendAmount))
-        {
-            RefreshVisualState(animate: true);
-            return;
-        }
-
-        spentCoins += spendAmount;
-        pickupService.SpendCarried(spendAmount, coinThrowTarget != null ? coinThrowTarget : transform);
+        spentCoins++;
+        PlayArrivalJuice();
 
         if (spentCoins >= requiredCoins)
         {
@@ -173,10 +188,11 @@ public class BarracksUpgradeZoneController : MonoBehaviour
             return;
 
         isCompleted = true;
-        isActive = false;
-        UnsubscribeFromCurrency();
+        isPlayerInside = false;
         priceLabel.text = "0";
         fillTween?.Kill();
+
+        PlayCompletionShake();
 
         if (animate)
         {
@@ -194,7 +210,7 @@ public class BarracksUpgradeZoneController : MonoBehaviour
     private void FinishCompletion()
     {
         barracksSpawner?.UpgradeLevel();
-        SetPanelVisible();
+        HidePanel();
     }
 
     private void RefreshVisualState(bool animate)
@@ -215,9 +231,42 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         priceLabel.text = Mathf.Max(0, requiredCoins - spentCoins).ToString();
     }
 
-    private void SetPanelVisible()
+    private void PlayArrivalJuice()
     {
-        
-        panelTween =  panelRoot.transform.DOScale(Vector3.zero, hideDuration).SetEase(Ease.Linear).OnComplete(() => panelRoot.SetActive(false));
+        if (arrivalBurst != null)
+            arrivalBurst.Play();
+
+        if (labelPunch <= 0f)
+            return;
+
+        RectTransform labelTransform = priceLabel.rectTransform;
+        labelTransform.DOComplete();
+        labelTransform.DOPunchScale(Vector3.one * labelPunch, fillDuration, 1, 0.75f).SetLink(priceLabel.gameObject);
+    }
+
+    private void PlayTossSfx()
+    {
+        if (tossAudioSource == null || tossClip == null)
+            return;
+
+        tossStreakForPitch++;
+        tossAudioSource.pitch = Mathf.Min(maxTossPitch, baseTossPitch + tossPitchStep * tossStreakForPitch);
+        tossAudioSource.PlayOneShot(tossClip);
+    }
+
+    private void PlayCompletionShake()
+    {
+        if (completionShakeTarget == null || completionShakeStrength <= 0f)
+            return;
+
+        completionShakeTarget.DOShakePosition(completionShakeDuration, completionShakeStrength);
+    }
+
+    private void HidePanel()
+    {
+        panelTween = panelRoot.transform
+            .DOScale(Vector3.zero, hideDuration)
+            .SetEase(Ease.Linear)
+            .OnComplete(() => panelRoot.SetActive(false));
     }
 }

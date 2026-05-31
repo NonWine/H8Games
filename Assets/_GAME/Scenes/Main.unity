@@ -12254,6 +12254,7 @@ MonoBehaviour:
   priceLabel: {fileID: 856138871}
   barracksSpawner: {fileID: 891669438}
   requiredCoins: 60
+  coinThrowTarget: {fileID: 8185783433197009951}
   showDuration: 0.18
   fillDuration: 1
   hideDuration: 0.2

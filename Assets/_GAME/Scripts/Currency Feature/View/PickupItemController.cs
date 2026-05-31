@@ -38,6 +38,7 @@ public sealed class PickupItemController
     private float          MoveToSlotDuration => visualConfig != null ? visualConfig.MoveToSlotDuration : 0.15f;
     private float          SpendDuration      => visualConfig != null ? visualConfig.SpendDuration      : 0.35f;
     private float          JumpPower          => visualConfig != null ? visualConfig.JumpPower          : 1.2f;
+    private float          SpendSpinSpeed     => visualConfig != null ? visualConfig.SpendSpinSpeed     : 540f;
     private AnimationCurve SpendCurve         => visualConfig != null ? visualConfig.SpendCurve         : DefaultSpendCurve;
     private bool           UseGravity         => visualConfig != null && visualConfig.UseGravity;
     private float          MinHorizSpeed      => visualConfig != null ? visualConfig.MinHorizSpeed      : 1.25f;
@@ -121,6 +122,17 @@ public sealed class PickupItemController
         view.Physics.ApplyScatterVelocity(scatterDirection, MinHorizSpeed, MaxHorizSpeed, MinVertSpeed, MaxVertSpeed, MaxAngularSpeed);
     }
 
+    public void InitializeAsSpendProjectile(string pickupId, Vector3 origin)
+    {
+        PickupId = pickupId;
+        Amount   = 1;
+        state    = PickupState.None;
+
+        view.SetActivePose(null);
+        view.Transform.SetParent(null, true);
+        view.Physics.PlaceAt(origin, Quaternion.identity);
+    }
+
     public void PlaySpendAnimation(Transform target, Action onCompleted)
     {
         state = PickupState.Spending;
@@ -128,7 +140,7 @@ public sealed class PickupItemController
         view.Animation.BeginSpend(target, onCompleted);
         view.Transform.SetParent(null, true);
         view.Physics.EnableCarryPhysics();
-        view.SetActivePose(() => view.Animation.ApplySpendPose(SpendDuration, JumpPower, SpendCurve));
+        view.SetActivePose(() => view.Animation.ApplySpendPose(SpendDuration, JumpPower, SpendSpinSpeed, SpendCurve));
     }
 
     public void TickWorld(float deltaTime)

@@ -23,9 +23,10 @@ public sealed class PickupVisualConfig : ScriptableObject
     [SerializeField] private float moveToSlotDuration = 0.15f;
 
     [Header("Spend")]
-    [SerializeField] private float          spendDuration = 0.35f;
-    [SerializeField] private float          jumpPower     = 1.2f;
-    [SerializeField] private AnimationCurve spendCurve   = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    [SerializeField] private float          spendDuration  = 0.35f;
+    [SerializeField] private float          jumpPower      = 1.2f;
+    [SerializeField] private float          spendSpinSpeed = 540f;
+    [SerializeField] private AnimationCurve spendCurve    = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     public float          MinHorizSpeed      => minHorizSpeed;
     public float          MaxHorizSpeed      => maxHorizSpeed;
@@ -40,5 +41,6 @@ public sealed class PickupVisualConfig : ScriptableObject
     public float          MoveToSlotDuration => moveToSlotDuration;
     public float          SpendDuration      => spendDuration;
     public float          JumpPower          => jumpPower;
+    public float          SpendSpinSpeed     => spendSpinSpeed;
     public AnimationCurve SpendCurve         => spendCurve;
 }

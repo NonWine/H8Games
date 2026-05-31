@@ -10,6 +10,6 @@ public interface IPickupService
 
     UniTask SpawnAsync(PickupSpawnRequest request, CancellationToken ct = default);
     void    Return(PickupItemController controller);
-    void    SpendCarried(int count, Transform target);
+    void    TossDeposit(string pickupId, Vector3 origin, Transform target, Action onArrived);
     void    Clear();
 }

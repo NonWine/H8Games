@@ -39,6 +39,7 @@ public sealed class PickupAnimationHandler
 
     private Transform  spendTarget;
     private Vector3    spendStartPos;
+    private Quaternion spendStartRot;
     private float      spendElapsed;
     private Action     spendCompleted;
 
@@ -143,6 +144,7 @@ public sealed class PickupAnimationHandler
     {
         spendTarget    = target;
         spendStartPos  = transform.position;
+        spendStartRot  = transform.rotation;
         spendElapsed   = 0f;
         spendCompleted = onCompleted;
     }
@@ -153,7 +155,7 @@ public sealed class PickupAnimationHandler
         return spendElapsed >= Mathf.Max(0.0001f, duration);
     }
 
-    public void ApplySpendPose(float duration, float jumpPower, AnimationCurve curve)
+    public void ApplySpendPose(float duration, float jumpPower, float spinSpeed, AnimationCurve curve)
     {
         var t      = Mathf.Clamp01(spendElapsed / Mathf.Max(0.0001f, duration));
         var eased  = curve.Evaluate(t);
@@ -163,6 +165,10 @@ public sealed class PickupAnimationHandler
         pos.y += 4f * jumpPower * t * (1f - t);
 
         transform.position = pos;
+
+        if (spinSpeed != 0f)
+            transform.rotation = Quaternion.AngleAxis(spinSpeed * spendElapsed, Vector3.up) * spendStartRot;
+
         SyncKinematicRigidbody();
     }
 
@@ -196,6 +202,7 @@ public sealed class PickupAnimationHandler
 
         spendTarget    = null;
         spendStartPos  = Vector3.zero;
+        spendStartRot  = Quaternion.identity;
         spendElapsed   = 0f;
         spendCompleted = null;
     }

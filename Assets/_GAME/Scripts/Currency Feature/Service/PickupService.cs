@@ -70,15 +70,28 @@ public sealed class PickupService : IPickupService, ITickable, IDisposable
         DespawnView(controller);
     }
 
-    public void SpendCarried(int count, Transform target)
+    public void TossDeposit(string pickupId, Vector3 origin, Transform target, Action onArrived)
     {
-        for (var i = 0; i < count; i++)
+        // Prefer melting the visible back stack so the carry pile visibly shrinks. When the player
+        // carries more currency than the capped visual stack holds, fall back to a fresh pooled
+        // projectile launched from the back point so the toss stream keeps flowing 1:1 with currency.
+        if (carrySink.TryDetachNewest(out var carried))
         {
-            if (!carrySink.TryDetachNewest(out var controller))
-                break;
-
-            controller.PlaySpendAnimation(target, () => OnSpendComplete(controller));
+            carried.PlaySpendAnimation(target, () => OnDepositArrived(carried, onArrived));
+            return;
         }
+
+        if (!catalog.TryGet(pickupId, out _, out var overrideVisuals))
+            return;
+
+        var pool       = container.ResolveId<PickupItemViewPool>(pickupId);
+        var view       = pool.Spawn();
+        var controller = new PickupItemController(view);
+
+        controller.SetVisualConfig(overrideVisuals ?? defaultVisuals);
+        controller.InitializeAsSpendProjectile(pickupId, origin);
+        controller.PlaySpendAnimation(target, () => OnDepositArrived(controller, onArrived));
+        activeAnimatingItems.Add(controller);
     }
 
     public void Clear()
@@ -221,8 +234,10 @@ public sealed class PickupService : IPickupService, ITickable, IDisposable
         DespawnView(controller);
     }
 
-    private void OnSpendComplete(PickupItemController controller)
+    private void OnDepositArrived(PickupItemController controller, Action onArrived)
     {
+        onArrived?.Invoke();
+
         activeAnimatingItems.Remove(controller);
         DespawnView(controller);
     }
