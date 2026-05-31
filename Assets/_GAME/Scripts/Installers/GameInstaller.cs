@@ -14,6 +14,7 @@ public class GameInstaller : MonoInstaller
     public override void InstallBindings()
     {
         BindSignals();
+        Container.BindInterfacesTo<PickupCurrencyBridge>().AsSingle().NonLazy();
         Container.BindInterfacesAndSelfTo<LevelManager>().AsSingle().WithArguments(levels, startingLevelIndex);
         Container.BindInstance(joystick).AsSingle();
         Container.Bind<TargetReservationHandler>().AsTransient();
@@ -38,5 +39,14 @@ public class GameInstaller : MonoInstaller
         Container.BindInstance(ground).WithId("Ground");
         var spawnedHero = Container.InstantiatePrefabForComponent<PlayerView>(heroPrefab, heroSpawnPoint.position, heroSpawnPoint.rotation, null);
         Container.Bind<PlayerView>().FromInstance(spawnedHero).AsSingle();
+        IPickupMagnetProvider magnetProvider = spawnedHero.GetComponentInChildren<IPickupMagnetProvider>();
+        if (magnetProvider != null)
+        {
+            Container.BindInstance(magnetProvider).AsSingle();
+        }
+        else
+        {
+            Debug.LogWarning("Magnet provider not found");
+        }
     }
 }

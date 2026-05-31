@@ -10,8 +10,9 @@ public class UnitStats
     [Min(0f)] public float Damage = 5f;
     [Min(0f)] public float ProjectileSpeed = 12f;
     [Min(0f)] public int DeathReward = 5;
+    public string DeathPickupId = "coin";
 
-   
+
 
     public UnitStats()
     {
@@ -28,6 +29,7 @@ public class UnitStats
         Damage = source.Damage;
         ProjectileSpeed = source.ProjectileSpeed;
         DeathReward = source.DeathReward;
+        DeathPickupId = source.DeathPickupId;
     }
 
     public UnitStats Clone()

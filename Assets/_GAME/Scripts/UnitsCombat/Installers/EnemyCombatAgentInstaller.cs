@@ -10,6 +10,7 @@ public class EnemyCombatAgentInstaller : CombatAgentInstaller
             .AsSingle()
             .WithArguments(
                 CombatView.gameObject,
+                CombatView.unitConfig.AuthoringStats.DeathPickupId,
                 CombatView.unitConfig.AuthoringStats.DeathReward);
     }
 

@@ -1,26 +1,38 @@
 using System;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 public sealed class RewardOnDeathService : IDisposable
 {
-    private readonly UnitHealthHandler _unitHealthHandler;
-    private readonly CurrencyService currencyService;
+    private readonly UnitHealthHandler unitHealthHandler;
+    private readonly IPickupService pickupService;
+    private readonly Transform owner;
+    private readonly string pickupId;
     private readonly int reward;
 
-    public RewardOnDeathService(UnitHealthHandler unitHealthHandler, CurrencyService currencyService, int reward)
+    public RewardOnDeathService(
+        UnitHealthHandler unitHealthHandler,
+        IPickupService pickupService,
+        Transform owner,
+        string pickupId,
+        int reward)
     {
-        this._unitHealthHandler = unitHealthHandler;
-        this.currencyService = currencyService;
-        this.reward = reward;
-        this._unitHealthHandler.Died += HandleDeath;
+        this.unitHealthHandler = unitHealthHandler;
+        this.pickupService     = pickupService;
+        this.owner             = owner;
+        this.pickupId          = pickupId;
+        this.reward            = reward;
+
+        this.unitHealthHandler.Died += HandleDeath;
     }
 
     public void Dispose()
     {
-        _unitHealthHandler.Died -= HandleDeath;
+        unitHealthHandler.Died -= HandleDeath;
     }
 
     private void HandleDeath()
     {
-        currencyService?.Add(reward);
+        pickupService.SpawnAsync(new PickupSpawnRequest(pickupId, reward, owner.position)).Forget();
     }
 }

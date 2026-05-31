@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using Zenject;
 
-public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializable, IDisposable, IAgentController
+public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializable, IDisposable, IAgentController , ITargetSelectionCandidate
     where TModel : AgentRuntimeModel
 {
     protected readonly IAgentView agentView;
@@ -13,7 +13,10 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
     private readonly ITargetReservationHandler reservationHandlerAttackers;
 
     public Transform Transform => agentView.Transform;
+    public Vector3 Position { get; }
     public bool IsAlive => runtimeModel.IsAlive;
+    public int ReservationCount { get; }
+    public Transform transform => agentView.Transform;
 
     public event Action Died;
 
