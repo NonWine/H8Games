@@ -13,7 +13,6 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _ALBEDOVERTEXCOLORMODE_REPLACE
-  - _ALPHA_CUTOFF_ON
   - _CAST_SHADOWS_ON
   - _COLORRAMPLIGHTINGSTAGE_BEFORELIGHTING
   - _GREYSCALESTAGE_BEFORELIGHTING
@@ -193,7 +192,7 @@ Material:
     - _AlbedoVertexColorMode: 1
     - _AlbedoVertexColorOn: 0
     - _AlphaClip: 0
-    - _AlphaCutoffOn: 1
+    - _AlphaCutoffOn: 0
     - _AlphaCutoffValue: 0.25
     - _AlphaRoundOn: 0
     - _AlphaToMask: 0
@@ -364,7 +363,7 @@ Material:
     - _Shininess: 16
     - _Smoothness: 0.2
     - _SmoothnessTextureChannel: 0
-    - _SpecularAtten: 0.5
+    - _SpecularAtten: 0.142
     - _SpecularHighlights: 1
     - _SpecularModel: 0
     - _SpecularToonCutoff: 0.35

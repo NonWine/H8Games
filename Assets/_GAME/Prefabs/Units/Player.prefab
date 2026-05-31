@@ -70,6 +70,7 @@ Transform:
   - {fileID: 8053813438429543557}
   - {fileID: 4336257952065069858}
   - {fileID: 3707676204388540313}
+  - {fileID: 7322730919446662416}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2909014775975443010
@@ -167,6 +168,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackPoint: {fileID: 8805818230395325000}
   cameraAnchor: {fileID: 3707676204388540313}
+  carryAnchor: {fileID: 7322730919446662416}
   healthBarView: {fileID: 5908764474789611670}
   projectilePrefab: {fileID: 4041960524083155756, guid: 4d339c7c02696d14196569d8dae8f7b8, type: 3}
   characterController: {fileID: 6116504933033149543}
@@ -412,6 +414,37 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &4801031479272185276
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7322730919446662416}
+  m_Layer: 6
+  m_Name: CarryAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 2974397684917235467, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7322730919446662416
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4801031479272185276}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.475, z: -0.35}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7015833431241976852}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &269058835138375513
 PrefabInstance:
   m_ObjectHideFlags: 0
