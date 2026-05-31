@@ -13,6 +13,14 @@ public class EnemyCombatAgentController : BaseCombatAgentController<EnemyRuntime
         this.stateMachine = stateMachine;
     }
 
+    // Enemies are scene-placed and never go through the pool's Spawn() path,
+    // so enter the initial state here to start the state machine.
+    public override void Initialize()
+    {
+        base.Initialize();
+        ChangeToIdleState();
+    }
+
     protected override void TickBehaviour() => stateMachine.Tick();
     protected override void ChangeToIdleState() => stateMachine.ChangeState<EnemyIdleState>();
     protected override void ChangeToDeadState() => stateMachine.ChangeState<EnemyDeadState>();

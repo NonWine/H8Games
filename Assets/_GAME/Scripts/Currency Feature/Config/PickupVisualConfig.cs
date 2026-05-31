@@ -11,6 +11,9 @@ public sealed class PickupVisualConfig : ScriptableObject
     [SerializeField] private float maxAngularSpeed = 10f;
     [SerializeField] private bool  useGravity      = true;
 
+    [Header("Settle")]
+    [SerializeField] private float settleDelay = 0.7f;
+
     [Header("Collect Arc")]
     [SerializeField] private float          collectDuration = 0.45f;
     [SerializeField] private float          arcHeight       = 1.5f;
@@ -30,6 +33,7 @@ public sealed class PickupVisualConfig : ScriptableObject
     public float          MaxVertSpeed       => maxVertSpeed;
     public float          MaxAngularSpeed    => maxAngularSpeed;
     public bool           UseGravity         => useGravity;
+    public float          SettleDelay        => settleDelay;
     public float          CollectDuration    => collectDuration;
     public float          ArcHeight          => arcHeight;
     public AnimationCurve CollectCurve       => collectCurve;

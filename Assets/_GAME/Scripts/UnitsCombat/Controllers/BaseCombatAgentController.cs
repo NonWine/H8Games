@@ -45,7 +45,7 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
         TickBehaviour();
     }
 
-    public void Initialize()
+    public virtual void Initialize()
     {
         modules.Health.Died += OnDied;
     }

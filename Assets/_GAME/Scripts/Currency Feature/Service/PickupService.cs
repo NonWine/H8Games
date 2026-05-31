@@ -36,6 +36,8 @@ public sealed class PickupService : IPickupService, ITickable, IDisposable
         this.magnetProvider   = magnetProvider;
         this.acceptanceFilter = acceptanceFilter;
         this.carrySink        = carrySink;
+
+        this.carrySink.Evicted += OnCarryEvicted;
     }
 
     public async UniTask SpawnAsync(PickupSpawnRequest request, CancellationToken ct = default)
@@ -79,10 +81,12 @@ public sealed class PickupService : IPickupService, ITickable, IDisposable
             DespawnView(activeAnimatingItems[i]);
 
         activeAnimatingItems.Clear();
+        carrySink.Clear();
     }
 
     public void Dispose()
     {
+        carrySink.Evicted -= OnCarryEvicted;
         Clear();
     }
 
@@ -90,6 +94,7 @@ public sealed class PickupService : IPickupService, ITickable, IDisposable
     {
         CleanupStaleItems();
         TickActiveItemAnimations();
+        TickWorldItemSettling();
 
         if (!magnetProvider.TryGetMagnet(out var magnet))
             return;
@@ -138,6 +143,14 @@ public sealed class PickupService : IPickupService, ITickable, IDisposable
 
             activeWorldItems.RemoveAt(i);
         }
+    }
+
+    private void TickWorldItemSettling()
+    {
+        var deltaTime = Time.deltaTime;
+
+        for (var i = activeWorldItems.Count - 1; i >= 0; i--)
+            activeWorldItems[i].TickWorld(deltaTime);
     }
 
     private void TickActiveItemAnimations()

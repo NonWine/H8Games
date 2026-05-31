@@ -19,6 +19,8 @@ public sealed class PickupItemController
 
     private PickupVisualConfig visualConfig;
     private PickupState        state;
+    private float              worldAge;
+    private bool               isSettled;
 
     public string PickupId      { get; private set; }
     public int    Amount        { get; private set; }
@@ -43,6 +45,7 @@ public sealed class PickupItemController
     private float          MinVertSpeed       => visualConfig != null ? visualConfig.MinVertSpeed       : 1.75f;
     private float          MaxVertSpeed       => visualConfig != null ? visualConfig.MaxVertSpeed       : 3.25f;
     private float          MaxAngularSpeed    => visualConfig != null ? visualConfig.MaxAngularSpeed    : 10f;
+    private float          SettleDelay        => visualConfig != null ? visualConfig.SettleDelay        : 0.7f;
 
     public PickupItemController(PickupItemView view)
     {
@@ -56,9 +59,11 @@ public sealed class PickupItemController
 
     public void InitializeAsWorldItem(string pickupId, int amount, Vector3 position, Vector3 scatterDirection)
     {
-        PickupId = pickupId;
-        Amount   = amount;
-        state    = PickupState.World;
+        PickupId  = pickupId;
+        Amount    = amount;
+        state     = PickupState.World;
+        worldAge  = 0f;
+        isSettled = false;
 
         view.SetActivePose(null);
         view.Transform.SetParent(null, true);
@@ -106,7 +111,9 @@ public sealed class PickupItemController
 
     public void DropToWorld(Vector3 scatterDirection)
     {
-        state = PickupState.World;
+        state     = PickupState.World;
+        worldAge  = 0f;
+        isSettled = false;
 
         view.SetActivePose(null);
         view.Transform.SetParent(null, true);
@@ -122,6 +129,17 @@ public sealed class PickupItemController
         view.Transform.SetParent(null, true);
         view.Physics.EnableCarryPhysics();
         view.SetActivePose(() => view.Animation.ApplySpendPose(SpendDuration, JumpPower, SpendCurve));
+    }
+
+    public void TickWorld(float deltaTime)
+    {
+        if (state != PickupState.World || isSettled)
+            return;
+
+        worldAge += deltaTime;
+
+        if (worldAge >= SettleDelay)
+            SettleInWorld();
     }
 
     public void Tick(float deltaTime)
@@ -156,5 +174,11 @@ public sealed class PickupItemController
                 }
                 break;
         }
+    }
+
+    private void SettleInWorld()
+    {
+        isSettled = true;
+        view.Physics.RestOnGround();
     }
 }

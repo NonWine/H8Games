@@ -56,6 +56,14 @@ public sealed class PickupPhysicsHandler
         rb.Sleep();
     }
 
+    public void RestOnGround()
+    {
+        rb.linearVelocity  = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        rb.isKinematic     = true;
+        rb.Sleep();
+    }
+
     public void RestoreDefaults()
     {
         EnableColliders();
