@@ -16,7 +16,7 @@ public sealed class PickupInstaller : MonoInstaller
         BindPools();
 
         Container.Bind<IPickupAcceptanceFilter>().To<NullPickupAcceptanceFilter>().AsSingle();
-        Container.Bind<IPickupCarrySink>().To<NullPickupCarrySink>().AsSingle();
+        Container.Bind<IPickupCarrySink>().To<StackPickupCarrySink>().AsSingle();
 
         Container.BindInterfacesAndSelfTo<PickupService>().AsSingle();
     }

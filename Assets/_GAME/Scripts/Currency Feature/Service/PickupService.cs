@@ -201,6 +201,12 @@ public sealed class PickupService : IPickupService, ITickable, IDisposable
         DespawnView(controller);
     }
 
+    private void OnCarryEvicted(PickupItemController controller)
+    {
+        activeAnimatingItems.Remove(controller);
+        DespawnView(controller);
+    }
+
     private void DespawnView(PickupItemController controller)
     {
         container.ResolveId<PickupItemViewPool>(controller.PickupId).Despawn(controller.View);

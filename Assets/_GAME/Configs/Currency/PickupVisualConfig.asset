@@ -12,12 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9108a2ac80830224f81388e4d6dc224e, type: 3}
   m_Name: PickupVisualConfig
   m_EditorClassIdentifier: 
-  minHorizSpeed: 1.25
-  maxHorizSpeed: 2.5
-  minVertSpeed: 1.75
-  maxVertSpeed: 3.25
-  maxAngularSpeed: 10
+  minHorizSpeed: 3.75
+  maxHorizSpeed: 6.25
+  minVertSpeed: 1.25
+  maxVertSpeed: 2.5
+  maxAngularSpeed: 12.5
   useGravity: 1
+  settleDelay: 0.7
   collectDuration: 0.45
   arcHeight: 1.5
   collectCurve:

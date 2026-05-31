@@ -1,7 +1,14 @@
+using System;
 using UnityEngine;
 
 public sealed class NullPickupCarrySink : IPickupCarrySink
 {
+    public event Action<PickupItemController> Evicted
+    {
+        add { }
+        remove { }
+    }
+
     public bool TryAttach(PickupItemController controller, out Transform anchor, out Vector3 localPos, out Quaternion localRot)
     {
         anchor   = null;
@@ -12,4 +19,6 @@ public sealed class NullPickupCarrySink : IPickupCarrySink
     }
 
     public void Detach(PickupItemController controller) { }
+
+    public void Clear() { }
 }

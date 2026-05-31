@@ -39,6 +39,7 @@ public class GameInstaller : MonoInstaller
         Container.BindInstance(ground).WithId("Ground");
         var spawnedHero = Container.InstantiatePrefabForComponent<PlayerView>(heroPrefab, heroSpawnPoint.position, heroSpawnPoint.rotation, null);
         Container.Bind<PlayerView>().FromInstance(spawnedHero).AsSingle();
+        Container.Bind<IPickupCarryAnchorProvider>().FromInstance(spawnedHero).AsSingle();
         IPickupMagnetProvider magnetProvider = spawnedHero.GetComponentInChildren<IPickupMagnetProvider>();
         if (magnetProvider != null)
         {

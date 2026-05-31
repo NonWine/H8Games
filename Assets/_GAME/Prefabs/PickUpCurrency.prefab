@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8767890042826290998}
   - component: {fileID: 3595630984855302592}
   - component: {fileID: 2082488912796473804}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: PickUpCurrency
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -49,7 +49,7 @@ MonoBehaviour:
   visualRoot: {fileID: 8767890042826290998}
   rb: {fileID: 2082488912796473804}
   colliders:
-  - {fileID: 4423389741340625713}
+  - {fileID: 4935948671249613977}
 --- !u!54 &2082488912796473804
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -88,8 +88,8 @@ GameObject:
   - component: {fileID: 5974233367437098032}
   - component: {fileID: 3961328420747044706}
   - component: {fileID: 8852391516889321081}
-  - component: {fileID: 4423389741340625713}
-  m_Layer: 0
+  - component: {fileID: 4935948671249613977}
+  m_Layer: 8
   m_Name: Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -106,7 +106,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.726, y: 0.726, z: 0.726}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8767890042826290998}
@@ -142,7 +142,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 6bf6950d48ea9b3419f3ef09813c9606, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -164,14 +164,14 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!135 &4423389741340625713
-SphereCollider:
+--- !u!65 &4935948671249613977
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8642624267202385397}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 3d905099957ad5643893d7c55b781768, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -183,5 +183,5 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.5
+  m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}

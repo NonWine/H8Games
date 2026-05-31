@@ -133,13 +133,13 @@ public sealed class PickupItemController
 
     public void TickWorld(float deltaTime)
     {
-        if (state != PickupState.World || isSettled)
-            return;
-
-        worldAge += deltaTime;
-
-        if (worldAge >= SettleDelay)
-            SettleInWorld();
+        // if (state != PickupState.World || isSettled)
+        //     return;
+        //
+        // worldAge += deltaTime;
+        //
+        // if (worldAge >= SettleDelay)
+        //     SettleInWorld();
     }
 
     public void Tick(float deltaTime)
