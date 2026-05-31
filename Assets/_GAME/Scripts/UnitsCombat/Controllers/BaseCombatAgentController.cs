@@ -13,9 +13,9 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
     private readonly ITargetReservationHandler reservationHandlerAttackers;
 
     public Transform Transform => agentView.Transform;
-    public Vector3 Position { get; }
+    public Vector3 Position => agentView.Transform.position;
     public bool IsAlive => runtimeModel.IsAlive;
-    public int ReservationCount { get; }
+    public int ReservationCount => reservationHandlerAttackers.ReservationCount;
     public Transform transform => agentView.Transform;
 
     public event Action Died;
