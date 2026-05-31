@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 public interface IPickupService
 {
@@ -9,5 +10,6 @@ public interface IPickupService
 
     UniTask SpawnAsync(PickupSpawnRequest request, CancellationToken ct = default);
     void    Return(PickupItemController controller);
+    void    SpendCarried(int count, Transform target);
     void    Clear();
 }

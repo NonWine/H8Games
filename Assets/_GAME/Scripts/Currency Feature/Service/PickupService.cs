@@ -70,6 +70,17 @@ public sealed class PickupService : IPickupService, ITickable, IDisposable
         DespawnView(controller);
     }
 
+    public void SpendCarried(int count, Transform target)
+    {
+        for (var i = 0; i < count; i++)
+        {
+            if (!carrySink.TryDetachNewest(out var controller))
+                break;
+
+            controller.PlaySpendAnimation(target, () => OnSpendComplete(controller));
+        }
+    }
+
     public void Clear()
     {
         for (var i = activeWorldItems.Count - 1; i >= 0; i--)
@@ -182,6 +193,11 @@ public sealed class PickupService : IPickupService, ITickable, IDisposable
     {
         var hasSink = carrySink.TryAttach(controller, out var anchor, out var lp, out var lr);
 
+        // Credit immediately on collect: the collect arc and the carry stack are cosmetic, and an
+        // in-flight coin can be evicted before its arc completes. Crediting here keeps currency
+        // correct regardless of the visual lifetime (especially during pickup bursts).
+        Collected?.Invoke(new PickupCollectedEvent(controller.PickupId, controller.Amount, controller.View.Transform.position));
+
         if (hasSink)
             controller.PlayCollectAnimation(anchor, lp, lr, () => OnCollectComplete(controller, true));
         else
@@ -192,8 +208,6 @@ public sealed class PickupService : IPickupService, ITickable, IDisposable
 
     private void OnCollectComplete(PickupItemController controller, bool hasSink)
     {
-        Collected?.Invoke(new PickupCollectedEvent(controller.PickupId, controller.Amount, controller.View.Transform.position));
-
         if (hasSink)
             return;
 
@@ -202,6 +216,12 @@ public sealed class PickupService : IPickupService, ITickable, IDisposable
     }
 
     private void OnCarryEvicted(PickupItemController controller)
+    {
+        activeAnimatingItems.Remove(controller);
+        DespawnView(controller);
+    }
+
+    private void OnSpendComplete(PickupItemController controller)
     {
         activeAnimatingItems.Remove(controller);
         DespawnView(controller);

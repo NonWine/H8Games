@@ -45,6 +45,24 @@ public sealed class StackPickupCarrySink : IPickupCarrySink
             ReslotCarriedItems(anchor, null);
     }
 
+    public bool TryDetachNewest(out PickupItemController controller)
+    {
+        controller = null;
+
+        if (stack.Count == 0)
+            return false;
+
+        var lastIndex = stack.Count - 1;
+
+        controller = stack[lastIndex];
+        stack.RemoveAt(lastIndex);
+
+        if (anchorProvider.TryGetAnchor(out var anchor))
+            ReslotCarriedItems(anchor, null);
+
+        return true;
+    }
+
     public void Clear()
     {
         stack.Clear();

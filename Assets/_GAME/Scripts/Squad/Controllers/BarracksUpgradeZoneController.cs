@@ -15,6 +15,9 @@ public class BarracksUpgradeZoneController : MonoBehaviour
     [SerializeField] private SquadBarracksSpawner barracksSpawner;
     [SerializeField, Min(1)] private int requiredCoins = 99;
 
+    [Header("Coin Throw")]
+    [SerializeField] private Transform coinThrowTarget;
+
     [Header("Animation")]
     [SerializeField, Min(0f)] private float showDuration = 0.18f;
     [SerializeField, Min(0f)] private float fillDuration = 0.2f;
@@ -22,6 +25,7 @@ public class BarracksUpgradeZoneController : MonoBehaviour
 
 
     private CurrencyService currencyService;
+    private IPickupService pickupService;
     private Tween fillTween;
     private Tween panelTween;
     private bool isActive;
@@ -31,9 +35,10 @@ public class BarracksUpgradeZoneController : MonoBehaviour
     private int spentCoins;
 
     [Inject]
-    public void Construct(CurrencyService currencyService)
+    public void Construct(CurrencyService currencyService, IPickupService pickupService)
     {
         this.currencyService = currencyService;
+        this.pickupService = pickupService;
     }
 
     private void Awake()
@@ -151,6 +156,7 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         }
 
         spentCoins += spendAmount;
+        pickupService.SpendCarried(spendAmount, coinThrowTarget != null ? coinThrowTarget : transform);
 
         if (spentCoins >= requiredCoins)
         {

@@ -20,5 +20,12 @@ public sealed class NullPickupCarrySink : IPickupCarrySink
 
     public void Detach(PickupItemController controller) { }
 
+    public bool TryDetachNewest(out PickupItemController controller)
+    {
+        controller = null;
+
+        return false;
+    }
+
     public void Clear() { }
 }
