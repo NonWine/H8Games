@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public sealed class NullPickupCarrySink : IPickupCarrySink
+public class NullPickupCarrySink : IPickupCarrySink
 {
     public event Action<PickupItemController> Evicted
     {

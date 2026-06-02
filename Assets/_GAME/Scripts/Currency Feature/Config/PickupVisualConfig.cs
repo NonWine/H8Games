@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "PickupVisualConfig", menuName = "Configs/Pickup Visual Config")]
-public sealed class PickupVisualConfig : ScriptableObject
+public class PickupVisualConfig : ScriptableObject
 {
     [Header("Scatter")]
     [SerializeField] private float minHorizSpeed   = 1.25f;

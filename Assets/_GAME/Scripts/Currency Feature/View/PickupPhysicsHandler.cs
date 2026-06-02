@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public sealed class PickupPhysicsHandler
+public class PickupPhysicsHandler
 {
     private readonly Transform             transform;
     private readonly Rigidbody             rb;

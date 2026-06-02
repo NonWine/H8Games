@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public sealed class PickupServiceConfig
+public class PickupServiceConfig
 {
     [SerializeField] private float pickupRadius     = 3f;
     [SerializeField] private int   collectsPerFrame = 4;

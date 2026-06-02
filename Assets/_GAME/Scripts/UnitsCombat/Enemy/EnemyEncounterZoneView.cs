@@ -1,7 +1,6 @@
 using UnityEngine;
 
-//View for future improvements
-public sealed class EnemyEncounterZoneView : MonoBehaviour
+public class EnemyEncounterZoneView : MonoBehaviour
 {
     [SerializeField] private EnemyGroupViewController enemyGroup;
 

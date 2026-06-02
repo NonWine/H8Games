@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed class UnitRagdollView : MonoBehaviour
+public class UnitRagdollView : MonoBehaviour
 {
         [Serializable]
-        private sealed class BoneEntry
+        private class BoneEntry
         {
             [SerializeField] private Transform transform;
             [SerializeField] private Rigidbody rigidbody;
@@ -24,7 +24,7 @@ public sealed class UnitRagdollView : MonoBehaviour
         }
 
         [Serializable]
-        private sealed class DroppedWeaponEntry
+        private class DroppedWeaponEntry
         {
             [SerializeField] private Transform transform;
             [SerializeField] private Rigidbody rigidbody;

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "PickupCatalog", menuName = "Configs/Pickup Catalog")]
-public sealed class PickupCatalog : ScriptableObject
+public class PickupCatalog : ScriptableObject
 {
     [Serializable]
-    private sealed class Entry
+    private class Entry
     {
         [SerializeField] private string             pickupId;
         [SerializeField] private GameObject         prefab;

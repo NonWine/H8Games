@@ -12,7 +12,6 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
     private readonly ITargetTrackerHandler targetTracker;
     private readonly ITargetReservationHandler reservationHandlerAttackers;
 
-    public Transform Transform => agentView.Transform;
     public Vector3 Position => agentView.Transform.position;
     public bool IsAlive => runtimeModel.IsAlive;
     public int ReservationCount => reservationHandlerAttackers.ReservationCount;
@@ -71,23 +70,16 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
 
     public virtual void Spawn(Vector3 position, Quaternion rotation)
     {
-        PlaceAtSpawn(position, rotation);
+        transform.transform.rotation = rotation;
+        agentView.NavMeshAgent.Warp(position);
         targetTracker.Reset();
         modules.ResetModules();
-        runtimeModel.IsAlive = true;   // flip true LAST so Tick can't fire mid-setup
+        runtimeModel.IsAlive = true; 
         ChangeToIdleState();
-    }
-
-    // Override in subclasses that need agent-safe placement (e.g. NavMeshAgent.Warp).
-    // Default just sets the view transform.
-    protected virtual void PlaceAtSpawn(Vector3 position, Quaternion rotation)
-    {
-        agentView.Transform.SetPositionAndRotation(position, rotation);
     }
 
     public virtual void Despawn()
     {
-        // Stop Tick(), reset target so pooled instance starts clean on next Spawn.
         runtimeModel.IsAlive = false;
         targetTracker.Reset();
     }

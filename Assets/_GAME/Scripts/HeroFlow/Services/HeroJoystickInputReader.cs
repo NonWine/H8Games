@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public sealed class HeroJoystickInputReader : IHeroInputReader
+public class HeroJoystickInputReader : IHeroInputReader
 {
     private readonly PlayerView heroView;
 

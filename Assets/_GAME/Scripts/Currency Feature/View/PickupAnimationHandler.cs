@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public sealed class PickupAnimationHandler
+public class PickupAnimationHandler
 {
     private readonly Transform transform;
     private readonly Rigidbody rb;

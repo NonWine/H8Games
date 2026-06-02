@@ -1,7 +1,7 @@
 using System;
 using Zenject;
 
-public sealed class PickupCurrencyBridge : IInitializable, IDisposable
+public class PickupCurrencyBridge : IInitializable, IDisposable
 {
     private readonly IPickupService pickupService;
     private readonly CurrencyService currencyService;

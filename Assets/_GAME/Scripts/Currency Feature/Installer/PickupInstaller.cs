@@ -1,7 +1,7 @@
 using UnityEngine;
 using Zenject;
 
-public sealed class PickupInstaller : MonoInstaller
+public class PickupInstaller : MonoInstaller
 {
     [SerializeField] private PickupCatalog       catalog;
     [SerializeField] private PickupVisualConfig  defaultVisuals;

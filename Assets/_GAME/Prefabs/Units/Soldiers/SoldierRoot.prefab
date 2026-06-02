@@ -72,10 +72,6 @@ PrefabInstance:
       propertyPath: m_Interpolate
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4296184366157949911, guid: 01ced4803ad69094da1641053a107106, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 7097182484632356940, guid: 01ced4803ad69094da1641053a107106, type: 3}
       propertyPath: m_IsActive
       value: 0

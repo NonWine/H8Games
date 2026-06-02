@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public sealed class SpawnService<T> where T : class
+public class SpawnService<T> where T : class
 {
     private readonly Func<T> spawnFactory;
     private readonly Func<T, bool> alivePredicate;

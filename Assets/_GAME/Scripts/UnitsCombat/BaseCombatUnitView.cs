@@ -1,6 +1,7 @@
 using System;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class BaseCombatUnitView : MonoBehaviour, IAgentView
 {
@@ -14,9 +15,8 @@ public class BaseCombatUnitView : MonoBehaviour, IAgentView
     [field: SerializeField] public Transform AttackPoint { get; private set; }
     [field: SerializeField] public Animator Animator { get; private set; }
     [field: SerializeField] public UnitAttackAnimationEventRelay AttackAnimationEvents { get; private set; }
-
+    [field: SerializeField] public NavMeshAgent  NavMeshAgent { get; protected set; }
     public Transform Transform => transform;
-    public bool IsActive => gameObject.activeInHierarchy;
 
     private Material[] hitFlashMaterials = Array.Empty<Material>();
 

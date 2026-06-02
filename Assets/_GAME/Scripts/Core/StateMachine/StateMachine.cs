@@ -10,8 +10,6 @@ public abstract class StateMachine<TState> : IDisposable, IStateMachine<TState>
 
     public TState CurrentState { get; private set; }
 
-
-    //using DI
     protected StateMachine(List<TState> allStates)
     {
         foreach (var state in allStates)

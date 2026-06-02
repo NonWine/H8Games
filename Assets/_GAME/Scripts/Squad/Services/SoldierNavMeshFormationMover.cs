@@ -89,53 +89,6 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
         }
     }
 
-    public void TeleportTo(Vector3 position, Quaternion rotation)
-    {
-        NavMeshAgent agent = Agent;
-
-        // 1. Detach agent so we can move transform without it fighting us
-        agent.enabled = false;
-        combatView.Transform.SetPositionAndRotation(position, rotation);
-
-        // 2. Sync the kinematic Rigidbody — without this, Rigidbody interpolation
-        //    pulls the transform back to its cached pool position (usually origin)
-        //    on the next FixedUpdate. THIS WAS THE SPAWN-AT-(0,0,0) BUG.
-        Rigidbody rb = combatView.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.position = position;
-            rb.rotation = rotation;
-        }
-
-        // 3. Apply configuration (enables agent at the new transform position).
-        ConfigureAgent();
-
-        // 4. Find a valid spot on the NavMesh and snap there.
-        Vector3 finalPosition = position;
-        if (NavMesh.SamplePosition(position, out NavMeshHit hit, NavMeshSampleDistance, agent.areaMask))
-        {
-            finalPosition = hit.position;
-            combatView.Transform.position = finalPosition;
-            if (rb != null)
-            {
-                rb.position = finalPosition;
-            }
-        }
-
-        // 5. Warp — authoritative position write that updates agent.nextPosition.
-        agent.Warp(finalPosition);
-
-        // 6. Reset path/destination state; stop motion at final position.
-        lastDestination = Vector3.positiveInfinity;
-        nextDestinationRefreshTime = 0f;
-        if (agent.isOnNavMesh)
-        {
-            agent.isStopped = true;
-            agent.velocity = Vector3.zero;
-            agent.ResetPath();
-        }
-    }
-
     public SoldierFormationState MoveToSlot(Transform squadRoot, Vector3 slotCenter, bool squadRootIsMoving, float deltaTime)
     {
         NavMeshAgent agent = Agent;

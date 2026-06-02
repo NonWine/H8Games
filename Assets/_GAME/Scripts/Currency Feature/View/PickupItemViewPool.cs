@@ -1,6 +1,6 @@
 using Zenject;
 
-public sealed class PickupItemViewPool : MemoryPool<PickupItemView>
+public class PickupItemViewPool : MemoryPool<PickupItemView>
 {
     protected override void OnSpawned(PickupItemView item)
     {

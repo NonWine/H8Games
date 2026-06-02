@@ -5,7 +5,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Zenject;
 
-public sealed class PickupService : IPickupService, ITickable, IDisposable
+public class PickupService : IPickupService, ITickable, IDisposable
 {
     private readonly PickupCatalog              catalog;
     private readonly PickupVisualConfig         defaultVisuals;
@@ -118,7 +118,6 @@ public sealed class PickupService : IPickupService, ITickable, IDisposable
     {
         CleanupStaleItems();
         TickActiveItemAnimations();
-        TickWorldItemSettling();
 
         if (!magnetProvider.TryGetMagnet(out var magnet))
             return;
@@ -167,14 +166,6 @@ public sealed class PickupService : IPickupService, ITickable, IDisposable
 
             activeWorldItems.RemoveAt(i);
         }
-    }
-
-    private void TickWorldItemSettling()
-    {
-        var deltaTime = Time.deltaTime;
-
-        for (var i = activeWorldItems.Count - 1; i >= 0; i--)
-            activeWorldItems[i].TickWorld(deltaTime);
     }
 
     private void TickActiveItemAnimations()

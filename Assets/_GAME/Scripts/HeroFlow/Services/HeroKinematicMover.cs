@@ -1,7 +1,7 @@
 using UnityEngine;
 using Zenject;
 
-public sealed class HeroKinematicMover : IHeroMover
+public class HeroKinematicMover : IHeroMover
 {
     private readonly PlayerView heroView;
     private readonly Transform plane;

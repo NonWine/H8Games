@@ -3,7 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-public sealed class SimplePickupPool : IPickupPool
+public class SimplePickupPool : IPickupPool
 {
     private readonly Dictionary<GameObject, Stack<PickupItemView>> stacks   = new();
     private readonly Dictionary<PickupItemView, GameObject>        prefabOf = new();

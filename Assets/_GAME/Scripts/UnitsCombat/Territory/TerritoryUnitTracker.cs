@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class TerritoryUnitTracker
 {
-    private sealed class TrackedUnit
+    private class TrackedUnit
     {
         public Vector3 TargetPosition;
         public Vector3 SmoothedPosition;
@@ -12,7 +12,7 @@ public class TerritoryUnitTracker
 
     private readonly TerritoryConfig  config;
     private readonly LevelManager     levelManager;
-    private          Transform        flagAnchor;   // always-present point; can be null
+    private          Transform        flagAnchor;
 
     private readonly Dictionary<EnemyCombatAgentController, TrackedUnit> trackedUnits      = new();
     private readonly List<EnemyCombatAgentController>                    removalBuffer     = new();
@@ -120,7 +120,6 @@ public class TerritoryUnitTracker
             hasChanges            = true;
         }
 
-        // ── rebuild output ────────────────────────────────────────────────────
         smoothedPositions.Clear();
 
         if (flagAnchor != null)
@@ -162,7 +161,7 @@ public class TerritoryUnitTracker
                 if (enemy == null || !enemy.IsAlive)
                     continue;
 
-                Vector3 pos = enemy.Transform.position;
+                Vector3 pos = enemy.Position;
                 if (!IsFinite(pos))
                     continue;
 
@@ -242,7 +241,7 @@ public class TerritoryUnitTracker
                 if (enemy == null || !enemy.IsAlive)
                     continue;
 
-                Vector3 pos = enemy.Transform.position;
+                Vector3 pos = enemy.Position;
                 if (!IsFinite(pos))
                     continue;
 

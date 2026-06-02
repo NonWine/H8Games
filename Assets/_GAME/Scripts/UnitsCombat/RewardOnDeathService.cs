@@ -2,7 +2,7 @@ using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-public sealed class RewardOnDeathService : IDisposable
+public class RewardOnDeathService : IDisposable
 {
     private readonly UnitHealthHandler unitHealthHandler;
     private readonly IPickupService pickupService;

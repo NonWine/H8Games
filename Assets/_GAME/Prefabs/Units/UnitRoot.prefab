@@ -294,8 +294,8 @@ MonoBehaviour:
   <AttackPoint>k__BackingField: {fileID: 599491131084117077}
   <Animator>k__BackingField: {fileID: 7097182484956019553}
   <AttackAnimationEvents>k__BackingField: {fileID: 5351347331032673968}
-  <unitConfig>k__BackingField: {fileID: 11400000, guid: 5a8894bdb65a914448e84ca5c6ded748, type: 2}
   <NavMeshAgent>k__BackingField: {fileID: 4296184366157949911}
+  <unitConfig>k__BackingField: {fileID: 11400000, guid: 5a8894bdb65a914448e84ca5c6ded748, type: 2}
   <RagdollView>k__BackingField: {fileID: 1976025304984227630}
 --- !u!195 &4296184366157949911
 NavMeshAgent:

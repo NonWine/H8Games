@@ -2,7 +2,7 @@ using System;
 using DG.Tweening;
 using UnityEngine;
 
-public sealed class PickupItemView : MonoBehaviour
+public class PickupItemView : MonoBehaviour
 {
     [Header("Components")]
     [SerializeField] private Transform  visualRoot;

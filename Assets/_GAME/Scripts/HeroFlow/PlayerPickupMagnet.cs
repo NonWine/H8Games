@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public sealed class PlayerPickupMagnet : MonoBehaviour, IPickupMagnetProvider
+public class PlayerPickupMagnet : MonoBehaviour, IPickupMagnetProvider
 {
     [SerializeField] private float radius = 3f;
 

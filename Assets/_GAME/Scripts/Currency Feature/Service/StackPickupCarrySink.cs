@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed class StackPickupCarrySink : IPickupCarrySink
+public class StackPickupCarrySink : IPickupCarrySink
 {
     private readonly IPickupCarryAnchorProvider anchorProvider;
     private readonly PickupServiceConfig        config;

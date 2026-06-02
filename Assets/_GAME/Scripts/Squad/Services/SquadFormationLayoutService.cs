@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed class SquadFormationLayoutService
+public class SquadFormationLayoutService
 {
     private readonly SquadFollowSettings settings;
 

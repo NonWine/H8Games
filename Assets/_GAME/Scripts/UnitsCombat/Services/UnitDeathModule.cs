@@ -17,7 +17,5 @@ public class UnitDeathModule : IDeathModule
     public virtual async UniTask HandleDeathAsync(Action beforeDisable = null)
     {
         beforeDisable?.Invoke();
-       // await UniTask.Delay(disableDelayMs);
-        //if(ownerObject != null) ownerObject.transform.DOMoveY(-3f, 5f).OnComplete(() => ownerObject.gameObject.SetActive(false));
     }
 }

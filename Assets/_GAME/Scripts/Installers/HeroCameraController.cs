@@ -1,7 +1,7 @@
 using Unity.Cinemachine;
 using Zenject;
 
-public sealed class HeroCameraController : IInitializable
+public class HeroCameraController : IInitializable
 {
     private readonly PlayerView hero;
     private readonly CinemachineCamera followCamera;

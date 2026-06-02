@@ -1,4 +1,3 @@
-// EnemyIdleState is implemented in AgentIdleState.cs with the shared idle state definitions.
 
 public class EnemyIdleState : EnemyStateBase
 {

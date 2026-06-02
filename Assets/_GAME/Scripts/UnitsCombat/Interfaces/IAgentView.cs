@@ -1,9 +1,9 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public interface IAgentView
 {
     Transform Transform { get; }
-    bool IsActive { get; }
-
     void PlayHitFeedback();
+    NavMeshAgent NavMeshAgent { get; }
 }
