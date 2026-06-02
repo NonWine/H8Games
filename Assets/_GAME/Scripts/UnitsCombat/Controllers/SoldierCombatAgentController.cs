@@ -15,6 +15,14 @@ public class SoldierCombatAgentController : BaseCombatAgentController<SoldierRun
         this.stateMachine = stateMachine;
     }
 
+    public override void Spawn(Vector3 position, Quaternion rotation)
+    {
+        var view = (BaseCombatAgentView)runtimeModel.View;
+        view.RagdollView.ResetStateImmediate();
+        view.NavMeshAgent.enabled = true;
+        base.Spawn(position, rotation);
+    }
+
     protected override void TickBehaviour() => stateMachine.Tick();
 
     public void AssignSquad(SquadRootView squadRootView) => runtimeModel.AssignSquad(squadRootView);

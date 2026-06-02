@@ -343,10 +343,37 @@ public class UnitRagdollView : MonoBehaviour
 
             ResetDroppedWeapons();
 
-            if (animator != null && animator.isActiveAndEnabled)
+            if (animator != null)
             {
+                animator.enabled = true;
                 animator.Rebind();
                 animator.Update(0f);
+            }
+        }
+
+        public void FreezeInPlace()
+        {
+            isRagdollActive = false;
+            stillTimer = 0f;
+
+            if (bones == null || bones.Length == 0)
+            {
+                return;
+            }
+
+            for (var i = 0; i < bones.Length; i++)
+            {
+                var rigidbodyComponent = bones[i]?.Rigidbody;
+
+                if (rigidbodyComponent == null)
+                {
+                    continue;
+                }
+
+                rigidbodyComponent.linearVelocity = Vector3.zero;
+                rigidbodyComponent.angularVelocity = Vector3.zero;
+                rigidbodyComponent.isKinematic = true;
+                rigidbodyComponent.detectCollisions = false;
             }
         }
 
