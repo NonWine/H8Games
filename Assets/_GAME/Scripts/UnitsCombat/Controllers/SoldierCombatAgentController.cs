@@ -15,12 +15,16 @@ public class SoldierCombatAgentController : BaseCombatAgentController<SoldierRun
         this.stateMachine = stateMachine;
     }
 
-    public override void Spawn(Vector3 position, Quaternion rotation)
+    protected override void ResetView()
     {
         var view = (BaseCombatAgentView)runtimeModel.View;
         view.RagdollView.ResetStateImmediate();
         view.NavMeshAgent.enabled = true;
-        base.Spawn(position, rotation);
+    }
+
+    protected override void TeardownView()
+    {
+        runtimeModel.View.NavMeshAgent.enabled = false;
     }
 
     protected override void TickBehaviour() => stateMachine.Tick();

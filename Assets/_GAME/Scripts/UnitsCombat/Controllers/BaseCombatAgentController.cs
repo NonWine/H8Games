@@ -68,25 +68,35 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
         agentView.PlayHitFeedback();
     }
 
-    public virtual void Spawn(Vector3 position, Quaternion rotation)
+    public void Spawn(Vector3 position, Quaternion rotation)
     {
-        transform.transform.rotation = rotation;
+        ResetView();
+        transform.rotation = rotation;
         agentView.NavMeshAgent.Warp(position);
         targetTracker.Reset();
         modules.ResetModules();
-        runtimeModel.IsAlive = true; 
+        runtimeModel.IsAlive = true;
         ChangeToIdleState();
     }
 
-    public virtual void Despawn()
+    public void Despawn()
     {
         runtimeModel.IsAlive = false;
         targetTracker.Reset();
+        TeardownView();
     }
 
     protected abstract void TickBehaviour();
     protected abstract void ChangeToIdleState();
     protected abstract void ChangeToDeadState();
+
+    protected virtual void ResetView()
+    {
+    }
+
+    protected virtual void TeardownView()
+    {
+    }
 
     protected virtual void OnDied()
     {

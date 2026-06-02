@@ -15,9 +15,16 @@ public class PickupInstaller : MonoInstaller
 
         BindPools();
 
+        Container.BindFactory<PickupItemView, PickupVisualConfig, PickupItemController, PickupItemController.Factory>();
+
         Container.Bind<IPickupAcceptanceFilter>().To<NullPickupAcceptanceFilter>().AsSingle();
         Container.Bind<IPickupCarrySink>().To<StackPickupCarrySink>().AsSingle();
 
+        Container.Bind<PickupViewPools>().AsSingle();
+        Container.BindInterfacesAndSelfTo<PickupRuntimeRegistry>().AsSingle();
+        Container.BindInterfacesAndSelfTo<PickupSpawner>().AsSingle();
+        Container.BindInterfacesAndSelfTo<PickupDepositer>().AsSingle();
+        Container.BindInterfacesAndSelfTo<PickupCollector>().AsSingle();
         Container.BindInterfacesAndSelfTo<PickupService>().AsSingle();
     }
 
