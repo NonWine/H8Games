@@ -263,7 +263,6 @@ public sealed class PickupAnimationHandler
 
         visualRoot.localPosition = initVisualLocalPos + secondaryCurrentPosOffset;
         visualRoot.localRotation = initVisualLocalRot * Quaternion.Euler(secondaryCurrentEuler);
-        visualRoot.localScale    = initVisualLocalScale;
     }
 
     private void SyncKinematicRigidbody()

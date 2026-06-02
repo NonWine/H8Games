@@ -225,13 +225,13 @@ public sealed class PickupService : IPickupService, ITickable, IDisposable
             return;
 
         activeAnimatingItems.Remove(controller);
-        DespawnView(controller);
+        DespawnViewAnimated(controller);
     }
 
     private void OnCarryEvicted(PickupItemController controller)
     {
         activeAnimatingItems.Remove(controller);
-        DespawnView(controller);
+        DespawnViewAnimated(controller);
     }
 
     private void OnDepositArrived(PickupItemController controller, Action onArrived)
@@ -239,12 +239,20 @@ public sealed class PickupService : IPickupService, ITickable, IDisposable
         onArrived?.Invoke();
 
         activeAnimatingItems.Remove(controller);
-        DespawnView(controller);
+        DespawnViewAnimated(controller);
     }
 
     private void DespawnView(PickupItemController controller)
     {
         container.ResolveId<PickupItemViewPool>(controller.PickupId).Despawn(controller.View);
+    }
+
+    private void DespawnViewAnimated(PickupItemController controller)
+    {
+        var view = controller.View;
+        var pool = container.ResolveId<PickupItemViewPool>(controller.PickupId);
+
+        view.PlayDespawnScale(() => pool.Despawn(view));
     }
 
     private static Vector3 GetRandomScatterDirection()

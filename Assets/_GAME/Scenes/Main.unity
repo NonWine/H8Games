@@ -320,7 +320,7 @@ GameObject:
   - component: {fileID: 144728471}
   - component: {fileID: 144728473}
   - component: {fileID: 144728472}
-  m_Layer: 5
+  m_Layer: 9
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -423,15 +423,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 713060840115388511, guid: 07b6a520a92fbc74592b60aebf3abfd2, type: 3}
       propertyPath: m_Color.b
-      value: 0.4788626
+      value: 0.8509804
       objectReference: {fileID: 0}
     - target: {fileID: 713060840115388511, guid: 07b6a520a92fbc74592b60aebf3abfd2, type: 3}
       propertyPath: m_Color.g
-      value: 0.4788626
+      value: 0.5647059
       objectReference: {fileID: 0}
     - target: {fileID: 713060840115388511, guid: 07b6a520a92fbc74592b60aebf3abfd2, type: 3}
       propertyPath: m_Color.r
-      value: 0.4811321
+      value: 0.2901961
       objectReference: {fileID: 0}
     - target: {fileID: 902147076677630652, guid: 07b6a520a92fbc74592b60aebf3abfd2, type: 3}
       propertyPath: m_Size.x
@@ -519,15 +519,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4346874878384126919, guid: 07b6a520a92fbc74592b60aebf3abfd2, type: 3}
       propertyPath: m_EffectColor.b
-      value: 0.2535155
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4346874878384126919, guid: 07b6a520a92fbc74592b60aebf3abfd2, type: 3}
       propertyPath: m_EffectColor.g
-      value: 0.2535155
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4346874878384126919, guid: 07b6a520a92fbc74592b60aebf3abfd2, type: 3}
       propertyPath: m_EffectColor.r
-      value: 0.254717
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4346874878384126919, guid: 07b6a520a92fbc74592b60aebf3abfd2, type: 3}
       propertyPath: m_EffectDistance.x
@@ -563,7 +563,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6693068936004997111, guid: 07b6a520a92fbc74592b60aebf3abfd2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6693068936004997111, guid: 07b6a520a92fbc74592b60aebf3abfd2, type: 3}
       propertyPath: m_LocalPosition.y
@@ -629,6 +629,10 @@ PrefabInstance:
       propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
       value: 1801810542
       objectReference: {fileID: 0}
+    - target: {fileID: 8610699754307002649, guid: 07b6a520a92fbc74592b60aebf3abfd2, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9022834452803161538, guid: 07b6a520a92fbc74592b60aebf3abfd2, type: 3}
       propertyPath: m_fontAsset
       value: 
@@ -662,7 +666,7 @@ GameObject:
   m_Component:
   - component: {fileID: 258977099}
   - component: {fileID: 258977100}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: iconGroup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2469,7 +2473,7 @@ Transform:
   m_GameObject: {fileID: 778534936}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -3}
+  m_LocalPosition: {x: 1, y: 0, z: -3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2488,7 +2492,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 291a1d356f9dc4d4db459c7515e3902c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <InitialCapacity>k__BackingField: 9
+  <InitialCapacity>k__BackingField: 8
   <TargetReachThreshold>k__BackingField: 1.41
 --- !u!135 &778534939
 SphereCollider:
@@ -2703,7 +2707,7 @@ GameObject:
   - component: {fileID: 856138870}
   - component: {fileID: 856138872}
   - component: {fileID: 856138871}
-  m_Layer: 5
+  m_Layer: 9
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3078,7 +3082,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.18516374, g: 0.47161087, b: 0.6886792, a: 1}
+  m_Color: {r: 0.30588236, g: 0.8039216, b: 0.76862746, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4152,7 +4156,7 @@ Transform:
   m_GameObject: {fileID: 1323672081}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.77, y: 0.1, z: -4.5}
+  m_LocalPosition: {x: 0.86, y: 0.1, z: -4.98}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -11294,8 +11298,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1.7553, y: 0}
-  m_SizeDelta: {x: 6.1906, y: 3.56}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 7, y: 3.56}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1979714080
 MonoBehaviour:
@@ -11442,7 +11446,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9fe0a856a63e8634ebc7077bc570ea68, type: 2}
+  - {fileID: 2100000, guid: dfc08c90188302847afb04f628582097, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -11737,7 +11741,7 @@ GameObject:
   - component: {fileID: 1184832596633825286}
   - component: {fileID: 3662743698728674878}
   - component: {fileID: 5174248831994297560}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: CanvasTriggerZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -11779,7 +11783,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_EffectColor: {r: 0.254717, g: 0.2535155, b: 0.2535155, a: 1}
+  m_EffectColor: {r: 1, g: 1, b: 1, a: 1}
   m_EffectDistance: {x: 0.05, y: 0.05}
   m_UseGraphicAlpha: 1
 --- !u!1001 &1275886606048084232
@@ -11862,7 +11866,7 @@ GameObject:
   - component: {fileID: 8185783433197009951}
   - component: {fileID: 2449432533637351764}
   - component: {fileID: 8185783433197009952}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: BarrackUpgradeView
   m_TagString: Untagged
   m_Icon: {fileID: -964228994112308473, guid: 0000000000000000d000000000000000, type: 0}
@@ -11882,7 +11886,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.37254903, g: 0.5686275, b: 0.9803922, a: 1}
+  m_Color: {r: 0.42352942, g: 0.3882353, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -11933,7 +11937,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.48235297, g: 0.4784314, b: 0.4784314, a: 1}
+  m_Color: {r: 0.2901961, g: 0.2901961, b: 0.2901961, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -12119,7 +12123,7 @@ GameObject:
   - component: {fileID: 5825559096342472336}
   - component: {fileID: 2638683989596599223}
   - component: {fileID: 1236242213317117999}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: shape
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -12137,7 +12141,7 @@ GameObject:
   - component: {fileID: 3603694966268697639}
   - component: {fileID: 4070203087043968784}
   - component: {fileID: 2066957048657151400}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -12230,7 +12234,7 @@ Transform:
   m_GameObject: {fileID: 2038044859245149666}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.41, y: 0.1, z: -4.5}
+  m_LocalPosition: {x: -4.41, y: 0.1, z: -5.03}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -12254,10 +12258,25 @@ MonoBehaviour:
   priceLabel: {fileID: 856138871}
   barracksSpawner: {fileID: 891669438}
   requiredCoins: 60
+  pickupId: coin
   coinThrowTarget: {fileID: 8185783433197009951}
+  tossInterval: 0.08
+  minTossInterval: 0.03
+  acceleratePerToss: 0.004
+  maxConcurrentInFlight: 6
   showDuration: 0.18
   fillDuration: 1
   hideDuration: 0.2
+  arrivalBurst: {fileID: 0}
+  tossAudioSource: {fileID: 0}
+  tossClip: {fileID: 0}
+  baseTossPitch: 1
+  tossPitchStep: 0.03
+  maxTossPitch: 1.6
+  labelPunch: 0.18
+  completionShakeTarget: {fileID: 0}
+  completionShakeStrength: 0.4
+  completionShakeDuration: 0.3
 --- !u!224 &8353463421298806626
 RectTransform:
   m_ObjectHideFlags: 0

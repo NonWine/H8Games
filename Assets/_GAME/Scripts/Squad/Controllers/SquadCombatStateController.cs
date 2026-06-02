@@ -37,7 +37,6 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
         if (State != CombatFlowState.MovingToZone || CurrentTargetGroup == null)
             return;
 
-        CurrentTargetGroup.Cleared += HandleCombatClearedZone;
         squadMovementFacade.Stop();
         CurrentTargetGroup.Activate();
         State = CombatFlowState.FightingZone;
@@ -45,18 +44,13 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
 
     private void HandleCombatClearedZone(EnemyGroupViewController enemyGroup)
     {
-        if(CurrentTargetGroup != null) CurrentTargetGroup.Cleared -= HandleCombatClearedZone;
-      
-        CurrentTargetGroup = null;
-        CurrentTargetGroup = enemyGroupDetector.FindNearestValidGroup(levelManager.CurrentLevel);
-        if (CurrentTargetGroup == null)
+        if (!TryTargetNearestGroup())
         {
             StartRegroup();
             return;
         }
 
         State = CombatFlowState.MovingToZone;
-        enemyDestinationContex.Set(CurrentTargetGroup.transform.position);
         squadMovementFacade.MoveToEnemy();
     }
 
@@ -65,13 +59,36 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
         if (State != CombatFlowState.IdleInPreparation || !squadFormationFacade.HasAlly)
             return;
 
-        CurrentTargetGroup = enemyGroupDetector.FindNearestValidGroup(levelManager.CurrentLevel);
-        if (CurrentTargetGroup == null)
+        if (!TryTargetNearestGroup())
             return;
+
         signalBus.Fire<StartButtleSignal>();
-        enemyDestinationContex.Set(CurrentTargetGroup.transform.position);
         State = CombatFlowState.MovingToZone;
         squadMovementFacade.MoveToEnemy();
+    }
+
+    // Subscribe to Cleared the moment the group becomes the target, not when the
+    // squad physically reaches it. Ranged soldiers start firing as soon as
+    // CurrentTargetGroup is set, so a group can be wiped during the march; if we
+    // only subscribed on arrival, that Cleared event would be lost and the squad
+    // would get stuck on an already-dead group instead of advancing.
+    private bool TryTargetNearestGroup()
+    {
+        UnsubscribeCurrentGroup();
+
+        CurrentTargetGroup = enemyGroupDetector.FindNearestValidGroup(levelManager.CurrentLevel);
+        if (CurrentTargetGroup == null)
+            return false;
+
+        CurrentTargetGroup.Cleared += HandleCombatClearedZone;
+        enemyDestinationContex.Set(CurrentTargetGroup.transform.position);
+        return true;
+    }
+
+    private void UnsubscribeCurrentGroup()
+    {
+        if (CurrentTargetGroup != null)
+            CurrentTargetGroup.Cleared -= HandleCombatClearedZone;
     }
     
     private async void SetDefeated()
@@ -90,7 +107,7 @@ public class SquadCombatStateController : IInitializable, IDisposable, IEnemyGro
         if (CurrentTargetGroup == null)
             return;
 
-        CurrentTargetGroup.Cleared -= HandleCombatClearedZone;
+        UnsubscribeCurrentGroup();
         CurrentTargetGroup.ResetRuntimeState();
         CurrentTargetGroup = null;
     }

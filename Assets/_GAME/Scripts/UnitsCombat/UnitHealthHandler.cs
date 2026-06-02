@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class UnitHealthHandler : IHealthModule
+public class UnitHealthHandler : IHealthModule, IResetModule
 {
     private readonly IAliveState aliveState;
 
@@ -51,4 +51,9 @@ public class UnitHealthHandler : IHealthModule
         aliveState.IsAlive = true;
         HealthChanged?.Invoke(CurrentHealth, MaxHealth);
     }
+
+    // Called by CombatUnitModules.ResetModules() on pool respawn so a reused
+    // instance starts at full health and alive instead of the dead state it
+    // was despawned in.
+    public void Reset() => RestoreFull();
 }

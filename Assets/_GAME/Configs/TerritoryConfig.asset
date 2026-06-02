@@ -29,9 +29,9 @@ MonoBehaviour:
   FadeInDuration: 0.7
   FadeOutDuration: 1.2
   FillAlpha: 0.8
-  StaticFillColor: {r: 1, g: 0.32941177, b: 0, a: 1}
-  PulseColorA: {r: 0.8, g: 0, b: 0, a: 1}
-  PulseColorB: {r: 1, g: 0.33, b: 0, a: 1}
+  StaticFillColor: {r: 0.9098039, g: 0.627451, b: 0.5647059, a: 1}
+  PulseColorA: {r: 1, g: 0.41960785, b: 0.41960785, a: 1}
+  PulseColorB: {r: 0.9098039, g: 0.627451, b: 0.5647059, a: 1}
   PulseFrequency: 0.1
   BorderParticlesPerSecond: 15
   BorderParticleSpeed: 1.4

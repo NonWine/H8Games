@@ -1,4 +1,5 @@
 using System;
+using DG.Tweening;
 using UnityEngine;
 
 public sealed class PickupItemView : MonoBehaviour
@@ -8,6 +9,10 @@ public sealed class PickupItemView : MonoBehaviour
     [SerializeField] private Rigidbody  rb;
     [SerializeField] private Collider[] colliders;
 
+    [Header("Scale Juice")]
+    [SerializeField, Min(0f)] private float spawnScaleDuration   = 0.2f;
+    [SerializeField, Min(0f)] private float despawnScaleDuration = 0.15f;
+
     public bool IsRented { get; private set; }
 
     public Transform             Transform { get; private set; }
@@ -15,6 +20,7 @@ public sealed class PickupItemView : MonoBehaviour
     public PickupAnimationHandler Animation { get; private set; }
 
     private Action activePose;
+    private Tween  scaleTween;
 
     private void Awake()
     {
@@ -44,6 +50,8 @@ public sealed class PickupItemView : MonoBehaviour
     {
         IsRented   = true;
         activePose = null;
+
+        PlaySpawnScale();
     }
 
     public void Cleanup()
@@ -51,9 +59,39 @@ public sealed class PickupItemView : MonoBehaviour
         IsRented   = false;
         activePose = null;
 
+        scaleTween?.Kill();
+        scaleTween = null;
+
         Animation.ResetAnimationState();
         Animation.ResetVisualState();
         Physics.RestoreDefaults();
         Transform.SetParent(null, true);
+    }
+
+    public void PlayDespawnScale(Action onComplete)
+    {
+        scaleTween?.Kill();
+        scaleTween = visualRoot
+            .DOScale(Vector3.zero, despawnScaleDuration)
+            .SetEase(Ease.InBack)
+            .SetLink(gameObject)
+            .OnComplete(() =>
+            {
+                scaleTween = null;
+                onComplete?.Invoke();
+            });
+    }
+
+    private void PlaySpawnScale()
+    {
+        scaleTween?.Kill();
+
+        Vector3 baseScale = visualRoot.localScale;
+
+        visualRoot.localScale = Vector3.zero;
+        scaleTween = visualRoot
+            .DOScale(baseScale, spawnScaleDuration)
+            .SetEase(Ease.OutBack)
+            .SetLink(gameObject);
     }
 }
