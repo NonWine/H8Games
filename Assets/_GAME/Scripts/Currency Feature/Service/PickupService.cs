@@ -44,6 +44,21 @@ public class PickupService : IPickupService, ITickable, IDisposable
         registry.Despawn(controller);
     }
 
+    // Scatters everything the player is currently carrying instead of despawning
+    // it: the coins stay visible on the ground (Discarded, not World, so the
+    // magnet won't re-collect them) until Clear() destroys them on restart.
+    public void DiscardCarried()
+    {
+        var carried = carrySink.Carried;
+
+        for (var i = 0; i < carried.Count; i++)
+        {
+            carried[i].DiscardFromCarry(PickupSpawner.GetRandomScatterDirection());
+        }
+
+        carrySink.Clear();
+    }
+
     public void Clear()
     {
         registry.Clear();

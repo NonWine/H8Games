@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-public class SoldierFactory
+public class SoldierFactory : ISoldierDespawner
 {
     private readonly Dictionary<string, SoldierCombatUnitPool> pools;
     private readonly Dictionary<SoldierCombatAgentController, SoldierPoolableRoot> activeRoots = new();

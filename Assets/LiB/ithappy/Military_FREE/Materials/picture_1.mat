@@ -16,6 +16,7 @@ Material:
   - _ALPHA_CUTOFF_ON
   - _CAST_SHADOWS_ON
   - _COLORRAMPLIGHTINGSTAGE_BEFORELIGHTING
+  - _CUSTOM_AMBIENT_LIGHT_ON
   - _GREYSCALESTAGE_BEFORELIGHTING
   - _HEIGHTGRADIENTPOSITIONSPACE_LOCAL
   - _LIGHTMODEL_TOON
@@ -26,7 +27,7 @@ Material:
   - _REFLECTIONS_NONE
   - _RIMLIGHTINGSTAGE_BEFORELIGHTING
   - _SHADINGMODEL_BASIC
-  - _SPECULARMODEL_TOON
+  - _SPECULARMODEL_NONE
   - _TEXTUREBLENDINGMODE_RGB
   - _TEXTUREBLENDINGSOURCE_VERTEXCOLOR
   - _TRIPLANARNORMALSPACE_WORLD
@@ -225,7 +226,7 @@ Material:
     - _ContrastLM: 1
     - _Cull: 2
     - _CullingMode: 2
-    - _CustomAmbientLightOn: 0
+    - _CustomAmbientLightOn: 1
     - _CustomShadowColorOn: 0
     - _Cutoff: 0.5
     - _DepthColoringOn: 0
@@ -364,7 +365,7 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularAtten: 0.5
     - _SpecularHighlights: 1
-    - _SpecularModel: 2
+    - _SpecularModel: 0
     - _SpecularToonCutoff: 0.35
     - _SpecularToonSmoothness: 0
     - _SpherizeNormals: 0
@@ -380,9 +381,9 @@ Material:
     - _TextureBlendingMode: 0
     - _TextureBlendingSource: 0
     - _TimingSeed: 0
-    - _ToonCutoff: 0.5
+    - _ToonCutoff: 0.305
     - _ToonFactor: 0
-    - _ToonSmoothness: 0.5
+    - _ToonSmoothness: 0.573
     - _TopNormalStrength: 1
     - _TriplanarMappingOn: 0
     - _TriplanarNormalSpace: 1

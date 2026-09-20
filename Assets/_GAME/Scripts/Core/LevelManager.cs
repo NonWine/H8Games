@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Zenject;
 
 public class LevelManager : IInitializable, IDisposable
@@ -61,10 +60,36 @@ public class LevelManager : IInitializable, IDisposable
             return;
         }
 
+        RestartCampaign();
+    }
+
+    // Looping back to level 0 used to reload the whole scene - the only scene
+    // reload in the project, and a visible hitch for something that only needs
+    // to re-arm every level's own enemy groups, same as a defeat already does
+    // for one level via ResetRuntimeState().
+    //
+    // Each level is briefly activated for its own reset rather than reset while
+    // inactive: EnemyCombatAgentController.Spawn() warps a dead enemy's
+    // NavMeshAgent back to its spawn pose, and Warp() is a no-op on an agent
+    // that isn't currently enabled in the hierarchy.
+    private void RestartCampaign()
+    {
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
+
+        for (int i = 0; i < levels.Count; i++)
+        {
+            LevelRuntime level = levels[i];
+            if (level == null)
+                continue;
+
+            level.gameObject.SetActive(true);
+            level.ResetRuntimeState();
+        }
+
         CurrentLevelIndex = 0;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        ApplyLevelActivation();
+        signalBus.Fire<LevelRestartedSignal>();
     }
 
     private void ApplyLevelActivation()

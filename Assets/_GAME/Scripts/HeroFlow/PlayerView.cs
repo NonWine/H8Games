@@ -24,6 +24,7 @@ public class PlayerView : MonoBehaviour, IPickupCarryAnchorProvider
     public Joystick MovementJoystick => movementJoystick;
     public CharacterController CharacterController => characterController;
     public Animator Animator => animator;
+    public WorldHealthBarView HealthBarView => healthBarView;
 
     public bool TryGetAnchor(out Transform anchor)
     {

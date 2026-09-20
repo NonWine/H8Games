@@ -1,3 +1,4 @@
+using UnityEngine;
 using Zenject;
 
 public class SoldierCombatAgentInstaller : CombatAgentInstaller
@@ -10,10 +11,22 @@ public class SoldierCombatAgentInstaller : CombatAgentInstaller
         BindController();
     }
 
+    // Each soldier picks the nearest enemy inside his own DetectionRadius rather
+    // than sharing one squad-wide target group. The squad still decides where the
+    // formation marches - it just no longer decides who each man shoots.
+    //
+    // Sensing is gated on the encounter phase all the same: between fights a man
+    // walking home to his slot must not lock onto a bystander and stall there.
     private void BindTargeting()
     {
-        Container.Bind<ICombatTargetProvider>().To<EnemyGroupCombatTargetProvider>().AsSingle();
-        Container.Rebind<ICombatTargetValidator>().To<EnemyGroupCombatTargetValidator>().AsSingle();
+        Container.Bind<ICombatTargetProvider>()
+            .FromMethod(context => new CombatPhaseGatedTargetProvider(
+                new NearestEnemyCombatTargetProvider(
+                    context.Container.Resolve<Transform>(),
+                    context.Container.Resolve<TargetingData>(),
+                    context.Container.Resolve<IEnemyCandidateSource>()),
+                context.Container.Resolve<ICombatStateProvider>()))
+            .AsSingle();
     }
 
     private void BindRuntime()

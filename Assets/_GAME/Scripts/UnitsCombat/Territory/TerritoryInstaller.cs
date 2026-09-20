@@ -35,7 +35,7 @@ public class TerritoryInstaller : MonoInstaller
     private void BindServices()
     {
         if (flagAnchor != null)
-            Container.BindInstance(flagAnchor).WithId("TerritoryFlagAnchor").AsSingle();
+            Container.BindInstance(flagAnchor).WithId("TerritoryFlagAnchor").AsCached();
 
         Container.BindInterfacesAndSelfTo<TerritoryService>().AsSingle();
     }

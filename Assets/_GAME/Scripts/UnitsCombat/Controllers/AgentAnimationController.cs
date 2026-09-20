@@ -3,13 +3,24 @@ using UnityEngine;
 
 public class AgentAnimationController
 {
+    private const float MinPlaybackSpeedMultiplier = 0.88f;
+    private const float MaxPlaybackSpeedMultiplier = 1.12f;
 
     private readonly Animator animator;
+    private readonly float playbackSpeedMultiplier;
 
     public AgentAnimationController(Animator animator)
     {
-       this.animator = animator;
+        this.animator = animator;
 
+        // Per-unit playback speed: identical walk cycles running at exactly the
+        // same rate is what makes a squad read as marching robots.
+        playbackSpeedMultiplier = Mathf.Lerp(
+            MinPlaybackSpeedMultiplier,
+            MaxPlaybackSpeedMultiplier,
+            DeterministicHashUtility.Hash01(animator.GetInstanceID()));
+
+        animator.speed = playbackSpeedMultiplier;
     }
 
     public void SetAnimationState(UnitState state)
@@ -41,7 +52,7 @@ public class AgentAnimationController
     
     public void Reset()
     {
-        animator.speed = 1f;
+        animator.speed = playbackSpeedMultiplier;
         animator.SetBool("IsAttacking", false);
         animator.SetInteger("State", 0);
     }

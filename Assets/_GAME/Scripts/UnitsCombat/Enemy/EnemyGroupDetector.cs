@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
@@ -28,7 +28,15 @@ public class EnemyGroupDetector
         for (int i = 0; i < groupFacades.Count; i++)
         {
             EnemyGroupViewController group = groupFacades[i];
-            if (group.State == EnemyGroupState.Cleared)
+            if (group == null || group.State == EnemyGroupState.Cleared)
+                continue;
+
+            // A group only counts as a destination while someone in it is still
+            // standing. Cleared alone is not enough: the flag is raised by the
+            // death event, so a group emptied any other way - reset, an authored
+            // group with no enemies - would otherwise be handed back forever and
+            // the squad would re-target it every frame.
+            if (!group.HasAliveMembers)
                 continue;
 
             Vector3 delta = group.EngagePointPosition - squadPosition;

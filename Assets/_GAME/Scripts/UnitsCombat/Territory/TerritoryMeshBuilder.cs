@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class TerritoryMeshBuilder
@@ -8,7 +8,11 @@ public class TerritoryMeshBuilder
     private readonly List<Vector2> boundary2D        = new();
     private readonly List<Vector2> alignedBoundary2D = new();
     private readonly List<Vector3> vertices          = new();
+    private readonly List<Vector2> uvs               = new();
     private readonly List<int>     triangles         = new();
+
+    private const float MinDashTileLength = 0.01f;
+    private const float DirectionEpsilon  = 0.0001f;
 
     // ── public API ────────────────────────────────────────────────────────────
 
@@ -103,7 +107,9 @@ public class TerritoryMeshBuilder
             BuildFillMesh(fillMesh, boundary, centroid, meshY);
 
         if (borderMesh != null)
-            BuildBorderRing(borderMesh, boundary, centroid, borderY, config.BorderWidth);
+            BuildBorderRing(
+                borderMesh, boundary, centroid, borderY,
+                config.BorderWidth, config.DashTileLength);
 
         if (outBorderPoints != null)
         {
@@ -115,39 +121,70 @@ public class TerritoryMeshBuilder
         }
     }
 
-    // Flat XZ quad-ring — zero z-fighting because Y is explicitly controlled.
+    // Flat XZ quad-ring centred on the boundary — zero z-fighting because Y is
+    // explicitly controlled. UVs run along the perimeter (U) and across the ribbon (V)
+    // so a tiling dash texture paints the border without any per-dash geometry.
     private void BuildBorderRing(
-        Mesh mesh, List<Vector2> boundary, Vector2 centroid, float y, float width)
+        Mesh mesh, List<Vector2> boundary, Vector2 centroid, float y, float width, float tileLength)
     {
         int n = boundary.Count;
         vertices.Clear();
+        uvs.Clear();
         triangles.Clear();
 
-        for (int i = 0; i < n; i++)
-        {
-            Vector2 outDir = boundary[i] - centroid;
-            float   len    = outDir.magnitude;
-            if (len > 0.0001f) outDir /= len; else outDir = Vector2.right;
+        float perimeter = Perimeter(boundary);
 
-            Vector2 inner = boundary[i];
-            Vector2 outer = boundary[i] + outDir * width;
+        // Snapping to a whole number of dash cycles is what keeps the loop seamless:
+        // the texture meets itself at the closing quad instead of showing a cut dash.
+        // The price is that each cycle stretches by at most half a tile.
+        int   tileCount = Mathf.Max(1, Mathf.RoundToInt(perimeter / Mathf.Max(tileLength, MinDashTileLength)));
+        float halfWidth = width * 0.5f;
+        float traveled  = 0f;
+
+        // n + 1 vertex pairs: the last pair duplicates the first boundary point but
+        // carries U = tileCount, which is what makes the wrap-around quad line up.
+        for (int i = 0; i <= n; i++)
+        {
+            Vector2 point = boundary[i % n];
+
+            if (i > 0)
+                traveled += Vector2.Distance(boundary[(i - 1) % n], point);
+
+            Vector2 outDir = point - centroid;
+            float   len    = outDir.magnitude;
+            if (len > DirectionEpsilon) outDir /= len; else outDir = Vector2.right;
+
+            Vector2 inner = point - outDir * halfWidth;
+            Vector2 outer = point + outDir * halfWidth;
+            float   u     = perimeter > DirectionEpsilon ? traveled / perimeter * tileCount : 0f;
 
             vertices.Add(new Vector3(inner.x, y, inner.y));
             vertices.Add(new Vector3(outer.x, y, outer.y));
+            uvs.Add(new Vector2(u, 0f));
+            uvs.Add(new Vector2(u, 1f));
         }
 
         for (int i = 0; i < n; i++)
         {
-            int i0 = i * 2,           i1 = i * 2 + 1;
-            int i2 = ((i+1) % n) * 2, i3 = ((i+1) % n) * 2 + 1;
+            int i0 = i * 2,       i1 = i * 2 + 1;
+            int i2 = (i + 1) * 2, i3 = (i + 1) * 2 + 1;
             triangles.Add(i0); triangles.Add(i2); triangles.Add(i1);
             triangles.Add(i1); triangles.Add(i2); triangles.Add(i3);
         }
 
         mesh.SetVertices(vertices);
+        mesh.SetUVs(0, uvs);
         mesh.SetTriangles(triangles, 0);
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
+    }
+
+    private static float Perimeter(List<Vector2> boundary)
+    {
+        float total = 0f;
+        for (int i = 0; i < boundary.Count; i++)
+            total += Vector2.Distance(boundary[i], boundary[(i + 1) % boundary.Count]);
+        return total;
     }
 
     // ── convex hull ───────────────────────────────────────────────────────────

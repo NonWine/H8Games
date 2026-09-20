@@ -22,10 +22,13 @@ MonoBehaviour:
   CircleSegments: 40
   GroundY: 0
   VerticalOffset: 0.02
-  BorderWidth: 0.15
+  BorderWidth: 0.35
   BorderResampleCount: 48
   BorderYOffset: 0.1
-  BorderMaterial: {fileID: 2100000, guid: b60c84163a8c00548bdcaf097d1436d5, type: 2}
+  BorderMaterial: {fileID: 2100000, guid: 422fd73e150746d5bb7fbbfe42be6bc3, type: 2}
+  BorderColor: {r: 1, g: 1, b: 1, a: 1}
+  DashTileLength: 1.2
+  DashScrollSpeed: 0
   FadeInDuration: 0.7
   FadeOutDuration: 1.2
   FillAlpha: 0.8

@@ -67,6 +67,19 @@ public class PickupItemController
         view.Animation.MoveToCarrySlot(anchor, localPos, localRot);
     }
 
+    // Ejected from the carry stack on hero death: the same scatter physics a
+    // freshly spawned world item gets, but state lands on Discarded instead of
+    // World so PickupCollector's magnet (which only scans IsWorldPickup items)
+    // never sucks it back in while the player is dead.
+    public void DiscardFromCarry(Vector3 scatterDirection)
+    {
+        state = PickupState.Discarded;
+        view.SetActivePose(null);
+        view.Transform.SetParent(null, true);
+        view.Physics.EnableWorldPhysics(visualConfig.UseGravity);
+        view.Physics.ApplyScatterVelocity(scatterDirection, visualConfig.MinHorizSpeed, visualConfig.MaxHorizSpeed, visualConfig.MinVertSpeed, visualConfig.MaxVertSpeed, visualConfig.MaxAngularSpeed);
+    }
+
     public void InitializeAsSpendProjectile(string pickupId, Vector3 origin)
     {
         PickupId = pickupId;

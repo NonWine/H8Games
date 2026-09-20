@@ -31,7 +31,7 @@ public class SoldierMoveState : SoldierStateBase
 
     public override void Tick()
     {
-        if (Soldier.HasValidTarget)
+        if (ShouldEngageTarget())
         {
             ChangeState<SoldierAttackState>();
             return;
@@ -66,6 +66,30 @@ public class SoldierMoveState : SoldierStateBase
 
     public override void Exit()
     {
+    }
+
+    // While the squad root is still marching, hold the formation slot unless the
+    // enemy is genuinely in range. Engaging on first target acquisition froze
+    // soldiers mid-approach wherever they happened to stand, so the formation
+    // spacing never applied and their meshes ended up overlapping.
+    private bool ShouldEngageTarget()
+    {
+        if (!Soldier.HasValidTarget)
+        {
+            return false;
+        }
+
+        if (!movementStateReader.IsMoving)
+        {
+            return true;
+        }
+
+        Vector3 toTarget = Soldier.CurrentTarget.transform.position - Soldier.Transform.position;
+        toTarget.y = 0f;
+
+        float engageRange = squadFollowSettings.EngageRange;
+
+        return toTarget.sqrMagnitude <= engageRange * engageRange;
     }
 
     private void UpdateIdleSlotMovement(Vector3 slotCenter)

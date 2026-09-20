@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "TerritoryConfig", menuName = "Config/TerritoryConfig")]
 public class TerritoryConfig : ScriptableObject
@@ -20,10 +20,23 @@ public class TerritoryConfig : ScriptableObject
     public float VerticalOffset = 0.02f;
 
     [Header("Border")]
-    public float    BorderWidth        = 0.15f;
+    [Tooltip("Thickness of the border ribbon in world units. The dash texture is stretched across it, " +
+             "so this also scales how thick the painted dash looks.")]
+    public float    BorderWidth        = 0.35f;
     public int      BorderResampleCount = 48;
     public float    BorderYOffset      = 0.01f;   // lift above fill mesh to avoid z-fighting
     public Material BorderMaterial;
+
+    [Header("Border Dashes")]
+    [Tooltip("Tint applied to the dash texture.")]
+    public Color BorderColor = Color.white;
+
+    [Tooltip("World length of one dash + gap cycle. The real length is stretched slightly so a whole " +
+             "number of cycles fits the perimeter, which keeps the loop seamless.")]
+    public float DashTileLength = 1.2f;
+
+    [Tooltip("Dash cycles scrolled per second along the border. 0 keeps the dashes static.")]
+    public float DashScrollSpeed = 0f;
 
     [Header("Animation")]
     public float FadeInDuration  = 0.35f;

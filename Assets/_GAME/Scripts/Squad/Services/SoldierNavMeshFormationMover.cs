@@ -9,6 +9,7 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
     private const float AgentStoppingDistance = 0.03f;
     private const float AgentAccelerationMultiplier = 6f;
     private const float AgentAngularSpeed = 720f;
+    private const float FullCircleRadians = Mathf.PI * 2f;
 
     private readonly BaseCombatAgentView combatView;
     private readonly SquadFollowSettings settings;
@@ -17,6 +18,8 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
     private readonly float rotationSpeedMultiplier;
     private readonly float movingYawOffset;
     private readonly float destinationRefreshInterval;
+    private readonly float swayFrequency;
+    private readonly float swayPhase;
     private readonly int avoidancePriority;
 
     private Vector3 lastDestination;
@@ -30,38 +33,45 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
         moveSpeedMultiplier = Mathf.Lerp(
             settings.SoldierMoveSpeedMultiplierMin,
             settings.SoldierMoveSpeedMultiplierMax,
-            Hash01(seed * 17 + 3));
+            DeterministicHashUtility.Hash01(seed * 17 + 3));
 
         rotationSpeedMultiplier = Mathf.Lerp(
             settings.SoldierRotationSpeedMultiplierMin,
             settings.SoldierRotationSpeedMultiplierMax,
-            Hash01(seed * 31 + 7));
+            DeterministicHashUtility.Hash01(seed * 31 + 7));
 
         float offsetX = Mathf.Lerp(
             -settings.MovingSlotOffsetRadius,
             settings.MovingSlotOffsetRadius,
-            Hash01(seed * 47 + 11));
+            DeterministicHashUtility.Hash01(seed * 47 + 11));
 
         float offsetZ = Mathf.Lerp(
             -settings.MovingSlotOffsetRadius,
             settings.MovingSlotOffsetRadius,
-            Hash01(seed * 59 + 13));
+            DeterministicHashUtility.Hash01(seed * 59 + 13));
 
         movingLocalOffset = new Vector2(offsetX, offsetZ);
         movingYawOffset = Mathf.Lerp(
             -settings.MovingFacingYawJitter,
             settings.MovingFacingYawJitter,
-            Hash01(seed * 71 + 17));
+            DeterministicHashUtility.Hash01(seed * 71 + 17));
 
         destinationRefreshInterval = Mathf.Lerp(
             settings.DestinationRefreshIntervalMin,
             settings.DestinationRefreshIntervalMax,
-            Hash01(seed * 83 + 19));
+            DeterministicHashUtility.Hash01(seed * 83 + 19));
+
+        swayFrequency = Mathf.Lerp(
+            settings.MovingSwayFrequencyMin,
+            settings.MovingSwayFrequencyMax,
+            DeterministicHashUtility.Hash01(seed * 103 + 29));
+
+        swayPhase = DeterministicHashUtility.Hash01(seed * 113 + 31) * FullCircleRadians;
 
         avoidancePriority = Mathf.RoundToInt(Mathf.Lerp(
             settings.AvoidancePriorityMin,
             settings.AvoidancePriorityMax,
-            Hash01(seed * 97 + 23)));
+            DeterministicHashUtility.Hash01(seed * 97 + 23)));
     }
 
     public void Reset()
@@ -152,6 +162,11 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
         agent.updateRotation = false;
         agent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
         agent.avoidancePriority = Mathf.Clamp(avoidancePriority, 0, 99);
+
+        // Drives local avoidance only (the baked NavMesh uses the agent type's
+        // radius), so it can be widened to match the visual footprint and keep
+        // soldiers from clipping into each other when they bunch up.
+        agent.radius = settings.SoldierAvoidanceRadius;
     }
 
     private bool IsAgentReady(NavMeshAgent agent)
@@ -196,7 +211,10 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
 
     private Vector3 GetMovingWorldOffset(Transform squadRoot)
     {
-        return squadRoot.right * movingLocalOffset.x
+        float sway = Mathf.Sin(Time.time * swayFrequency * FullCircleRadians + swayPhase)
+                     * settings.MovingSwayAmplitude;
+
+        return squadRoot.right * (movingLocalOffset.x + sway)
                + squadRoot.forward * movingLocalOffset.y;
     }
 
@@ -250,20 +268,5 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
                && !float.IsInfinity(value.x)
                && !float.IsInfinity(value.y)
                && !float.IsInfinity(value.z);
-    }
-
-    private static float Hash01(int value)
-    {
-        unchecked
-        {
-            uint x = (uint)(Mathf.Abs(value) + 1);
-            x ^= 2747636419u;
-            x *= 2654435769u;
-            x ^= x >> 16;
-            x *= 2654435769u;
-            x ^= x >> 16;
-            x *= 2654435769u;
-            return (x & 0x00FFFFFFu) / 16777215f;
-        }
     }
 }

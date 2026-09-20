@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 using Zenject;
@@ -22,7 +22,10 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
     private int                   borderColorId;
     private Color                 borderBaseColor;
     private float                 borderAlpha;
+    private float                 dashScrollOffset;
     private Tween                 borderFadeTween;
+
+    private static readonly int BorderMapStId = Shader.PropertyToID("_BaseMap_ST");
 
     private bool isVisible;
 
@@ -58,6 +61,8 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
 
     public void Refresh(IReadOnlyList<Vector3> unitPositions, TerritoryConfig config, float dt)
     {
+        AdvanceDashScroll(config, dt);
+
         if (unitPositions == null || unitPositions.Count == 0)
         {
             CollapseAndFade(config);
@@ -129,6 +134,7 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
 
         isVisible           = false;
         borderAlpha         = 0f;
+        dashScrollOffset    = 0f;
         boundaryInitialized = false;
 
         smoothedBoundary2D.Clear();
@@ -154,23 +160,20 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
         borderMeshRenderer = go.AddComponent<MeshRenderer>();
         borderMpb          = new MaterialPropertyBlock();
 
+        int urp    = Shader.PropertyToID("_BaseColor");
+        int legacy = Shader.PropertyToID("_Color");
+
         if (config.BorderMaterial != null)
         {
             borderMeshRenderer.sharedMaterial = config.BorderMaterial;
-
-            int urp    = Shader.PropertyToID("_BaseColor");
-            int legacy = Shader.PropertyToID("_Color");
-            borderColorId   = config.BorderMaterial.HasProperty(urp) ? urp : legacy;
-            borderBaseColor = config.BorderMaterial.HasProperty(borderColorId)
-                ? config.BorderMaterial.GetColor(borderColorId)
-                : Color.white;
+            borderColorId = config.BorderMaterial.HasProperty(urp) ? urp : legacy;
         }
         else
         {
-            borderColorId   = Shader.PropertyToID("_BaseColor");
-            borderBaseColor = Color.white;
+            borderColorId = urp;
         }
 
+        borderBaseColor            = config.BorderColor;
         borderBaseColor.a          = 0f;
         borderMeshRenderer.enabled = false;
     }
@@ -190,8 +193,12 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
 
         zoneAnimator.FadeIn(config.FillAlpha, config.FadeInDuration);
 
+        // Push the block before the tween's first update so frame one cannot show
+        // the material's own colour / UV offset.
+        ApplyBorderProperties();
+
         borderFadeTween = DOTween
-            .To(() => borderAlpha, a => { borderAlpha = a; ApplyBorderAlpha(); },
+            .To(() => borderAlpha, a => { borderAlpha = a; ApplyBorderProperties(); },
                 1f, config.FadeInDuration)
             .SetEase(Ease.OutQuad)
             .SetLink(gameObject);
@@ -229,7 +236,7 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
             .SetLink(gameObject);
 
         borderFadeTween = DOTween
-            .To(() => borderAlpha, a => { borderAlpha = a; ApplyBorderAlpha(); },
+            .To(() => borderAlpha, a => { borderAlpha = a; ApplyBorderProperties(); },
                 0f, config.FadeOutDuration)
             .SetEase(Ease.InQuad)
             .SetLink(gameObject);
@@ -259,14 +266,28 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
         zoneAnimator.UpdateBorderPoints(resampledBorderPoints);
     }
 
-    private void ApplyBorderAlpha()
+    private void AdvanceDashScroll(TerritoryConfig config, float dt)
+    {
+        if (config.DashScrollSpeed == 0f)
+            return;
+
+        dashScrollOffset = Mathf.Repeat(dashScrollOffset + config.DashScrollSpeed * dt, 1f);
+        ApplyBorderProperties();
+    }
+
+    private void ApplyBorderProperties()
     {
         if (borderMeshRenderer == null)
             return;
 
         Color c = borderBaseColor;
         c.a = borderAlpha;
+
         borderMpb.SetColor(borderColorId, c);
+
+        // UVs already carry the tile count, so only the offset is animated here.
+        borderMpb.SetVector(BorderMapStId, new Vector4(1f, 1f, dashScrollOffset, 0f));
+
         borderMeshRenderer.SetPropertyBlock(borderMpb);
     }
 

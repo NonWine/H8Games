@@ -55,6 +55,11 @@ public class CombatAgentInstaller : MonoInstaller
     private void BindSharedServices()
     {
         Container.Bind<ICombatTargetValidator>().To<DefaultCombatTargetValidator>().AsSingle();
+
+        // Every agent holds a target only while it stays inside that agent's own
+        // DetectionRadius. Without it a unit keeps firing at whatever it locked
+        // onto until the next retarget window happens to come round.
+        Container.Bind<ICombatTargetValidator>().To<RangeCombatTargetValidator>().AsSingle();
         Container.Bind<ITargetReservationHandler>().To<TargetReservationHandler>().AsSingle();
         Container.Bind<ITargetTrackerHandler>().To<CombatTargetTracker>().AsSingle();
         Container.Bind<UnitRotatorService>().AsSingle();

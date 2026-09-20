@@ -6,10 +6,27 @@ using Zenject;
 
 public class EnemyGroupViewController : MonoBehaviour
 {
+    // Where each enemy was authored, captured the first time the group resolves its
+    // controllers - before anything can move or kill them. A reset warps them back
+    // here, so an enemy that chased the squad across the level does not respawn at
+    // the spot it happened to die on.
+    private readonly struct EnemySpawnPose
+    {
+        public EnemySpawnPose(Vector3 position, Quaternion rotation)
+        {
+            Position = position;
+            Rotation = rotation;
+        }
+
+        public Vector3 Position { get; }
+        public Quaternion Rotation { get; }
+    }
+
     [SerializeField] private Transform engagePoint;
     [SerializeField] private List<BaseCombatAgentView> enemyViews = new();
 
     private readonly List<EnemyCombatAgentController> enemyControllers = new();
+    private readonly List<EnemySpawnPose> enemySpawnPoses = new();
 
     public event Action<EnemyGroupViewController> Cleared;
 
@@ -68,10 +85,14 @@ public class EnemyGroupViewController : MonoBehaviour
         return false;
     }
 
+    // Flipping State back to Idle is not enough on its own: the squad only marches
+    // at a group that still has someone standing, so a group whose members stayed
+    // dead was skipped forever and the Start button silently did nothing.
     public void ResetRuntimeState()
     {
         State = EnemyGroupState.Idle;
         RefreshEnemies();
+        RespawnEnemies();
     }
 
     private bool HasLivingEnemies()
@@ -97,6 +118,7 @@ public class EnemyGroupViewController : MonoBehaviour
         }
 
         enemyControllers.Clear();
+        enemySpawnPoses.Clear();
 
         for (int i = 0; i < enemyViews.Count; i++)
         {
@@ -121,8 +143,13 @@ public class EnemyGroupViewController : MonoBehaviour
                     continue;
                 }
 
+                // A view that never resolves keeps the counts apart, so this method
+                // re-runs on every call. Drop the old handler before re-adding it or
+                // the survivors collect one extra Cleared trigger per pass.
+                enemyController.Died -= HandleEnemyDied;
                 enemyController.Died += HandleEnemyDied;
                 enemyControllers.Add(enemyController);
+                enemySpawnPoses.Add(new EnemySpawnPose(enemyView.transform.position, enemyView.transform.rotation));
             }
             catch (Exception exception)
             {
@@ -145,6 +172,23 @@ public class EnemyGroupViewController : MonoBehaviour
 
             enemy.Died -= HandleEnemyDied;
             enemy.Died += HandleEnemyDied;
+        }
+    }
+
+    // Only the fallen are rebuilt. Survivors keep the damage they took, so a retry
+    // does not quietly heal the half-cleared group the player just lost to.
+    private void RespawnEnemies()
+    {
+        for (int i = 0; i < enemyControllers.Count; i++)
+        {
+            EnemyCombatAgentController enemy = enemyControllers[i];
+            if (enemy == null || enemy.IsAlive || i >= enemySpawnPoses.Count)
+            {
+                continue;
+            }
+
+            EnemySpawnPose pose = enemySpawnPoses[i];
+            enemy.Spawn(pose.Position, pose.Rotation);
         }
     }
 

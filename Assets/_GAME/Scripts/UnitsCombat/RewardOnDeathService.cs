@@ -33,6 +33,6 @@ public class RewardOnDeathService : IDisposable
 
     private void HandleDeath()
     {
-        pickupService.SpawnAsync(new PickupSpawnRequest(pickupId, reward, owner.position)).Forget();
+        pickupService.SpawnAsync(new PickupSpawnRequest(pickupId, reward, owner.position + Vector3.up)).Forget();
     }
 }

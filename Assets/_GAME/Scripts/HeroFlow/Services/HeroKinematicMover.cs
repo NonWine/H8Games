@@ -50,6 +50,17 @@ public class HeroKinematicMover : IHeroMover
         }
     }
 
+    // CharacterController writes the transform itself every step, so it has to be
+    // switched off for a reposition to survive past the same frame.
+    public void Teleport(Vector3 position)
+    {
+        CharacterController characterController = heroView.CharacterController;
+
+        characterController.enabled = false;
+        heroView.transform.position = position;
+        characterController.enabled = true;
+    }
+
     public void FaceDirection(Vector3 direction)
     {
         Vector3 flatDirection = direction;

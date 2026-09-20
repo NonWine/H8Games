@@ -10,6 +10,8 @@ public class StackPickupCarrySink : IPickupCarrySink
 
     public event Action<PickupItemController> Evicted;
 
+    public IReadOnlyList<PickupItemController> Carried => stack;
+
     public StackPickupCarrySink(IPickupCarryAnchorProvider anchorProvider, PickupServiceConfig config)
     {
         this.anchorProvider = anchorProvider;

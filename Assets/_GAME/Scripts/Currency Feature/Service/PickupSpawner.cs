@@ -27,6 +27,18 @@ public class PickupSpawner : IPickupSpawner
         this.registry          = registry;
     }
 
+    public static Vector3 GetRandomScatterDirection()
+    {
+        var dir2D = UnityEngine.Random.insideUnitCircle;
+
+        if (dir2D.sqrMagnitude <= 0.0001f)
+            dir2D = Vector2.right;
+        else
+            dir2D.Normalize();
+
+        return new Vector3(dir2D.x, 0f, dir2D.y);
+    }
+
     public async UniTask SpawnAsync(PickupSpawnRequest request, CancellationToken ct = default)
     {
         if (!catalog.TryGet(request.PickupId, out _, out var overrideVisuals))
@@ -47,17 +59,5 @@ public class PickupSpawner : IPickupSpawner
         }
 
         Spawned?.Invoke(new PickupSpawnedEvent(request.PickupId, request.Amount, request.Position));
-    }
-
-    private static Vector3 GetRandomScatterDirection()
-    {
-        var dir2D = UnityEngine.Random.insideUnitCircle;
-
-        if (dir2D.sqrMagnitude <= 0.0001f)
-            dir2D = Vector2.right;
-        else
-            dir2D.Normalize();
-
-        return new Vector3(dir2D.x, 0f, dir2D.y);
     }
 }

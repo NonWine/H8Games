@@ -24,7 +24,7 @@ public class UnitFactoryInstaller : MonoInstaller
         }
 
         Container.BindInstance(validDefinitions).WhenInjectedInto<SoldierFactory>();
-        Container.Bind<SoldierFactory>().AsSingle();
+        Container.BindInterfacesAndSelfTo<SoldierFactory>().AsSingle();
     }
 
     private bool IsValid(UnitCombatDefinition definition)

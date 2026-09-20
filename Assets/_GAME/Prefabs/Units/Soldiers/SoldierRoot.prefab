@@ -60,6 +60,10 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2603992716814855634, guid: 01ced4803ad69094da1641053a107106, type: 3}
+      propertyPath: m_Radius
+      value: 0.3
+      objectReference: {fileID: 0}
     - target: {fileID: 3328288774996239104, guid: 01ced4803ad69094da1641053a107106, type: 3}
       propertyPath: _monoInstallers.Array.size
       value: 1

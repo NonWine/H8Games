@@ -9,6 +9,9 @@ public class PickupItemView : MonoBehaviour
     [SerializeField] private Rigidbody  rb;
     [SerializeField] private Collider[] colliders;
 
+    [Header("FX")]
+    [SerializeField] private ParticleSystem impactFx;
+
     [Header("Scale Juice")]
     [SerializeField, Min(0f)] private float spawnScaleDuration   = 0.2f;
     [SerializeField, Min(0f)] private float despawnScaleDuration = 0.15f;
@@ -61,6 +64,11 @@ public class PickupItemView : MonoBehaviour
 
         scaleTween?.Kill();
         scaleTween = null;
+
+        // Scene teardown destroys pooled views before PickupService disposes and
+        // drains the registry, so the pool can hand back an already-destroyed view.
+        if (this == null)
+            return;
 
         Animation.ResetAnimationState();
         Animation.ResetVisualState();

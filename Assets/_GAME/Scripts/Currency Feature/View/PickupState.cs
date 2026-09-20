@@ -4,5 +4,6 @@
     World      = 1,
     Collecting = 2,
     Carried    = 3,
-    Spending   = 4
+    Spending   = 4,
+    Discarded  = 5
 }

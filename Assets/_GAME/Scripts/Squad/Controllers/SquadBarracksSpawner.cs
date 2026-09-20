@@ -1,4 +1,3 @@
-using System;
 using DG.Tweening;
 using UnityEngine;
 using Zenject;
@@ -60,26 +59,15 @@ public class SquadBarracksSpawner : MonoBehaviour
         Transform origin = spawnPoint != null ? spawnPoint : transform;
         SoldierCombatAgentController soldier = soldierFactory.Create(barracksStats.Unit.UnitID, origin.position, origin.rotation);
 
+        // The squad owns the soldier's lifetime once it holds a slot: it subscribes to
+        // Died and releases the slot itself, so nothing here can free a slot twice.
         if (squadFormationFacade.RegisterSoldier(soldier))
         {
-            Action diedHandler = null;
-            diedHandler = () =>
-            {
-                soldier.Died -= diedHandler;
-                UnRegisterSoldier(soldier);
-            };
-
-            soldier.Died += diedHandler;
             return soldier;
         }
 
         soldierFactory.Release(soldier);
         return null;
-    }
-
-    private void UnRegisterSoldier(SoldierCombatAgentController soldier)
-    {
-        squadFormationFacade?.UnregisterSoldier(soldier);
     }
 
     public void UpgradeLevel()

@@ -11,7 +11,7 @@ public class PlayerInstaller : MonoInstaller
         
         Container.Bind<PlayerView>().FromInstance(heroView).AsSingle();
         Container.Bind<IHeroInputReader>().To<HeroJoystickInputReader>().AsSingle();
-        Container.Bind<IHeroMover>().To<HeroKinematicMover>().AsSingle();
+        Container.Bind<IHeroMover>().To<HeroNavMeshMover>().AsSingle();
         Container.BindInterfacesAndSelfTo<PlayerController>().AsSingle();
     }
 }

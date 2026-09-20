@@ -3,9 +3,9 @@ using System;
 public class SquadMovementFacade
 {
     private readonly SquadRootStateMachine stateMachine;
-    private readonly SquadMoveProvider squadMoveProvider;
+    private readonly IMoveProvider squadMoveProvider;
 
-    public SquadMovementFacade(SquadRootStateMachine stateMachine, SquadMoveProvider squadMoveProvider)
+    public SquadMovementFacade(SquadRootStateMachine stateMachine, IMoveProvider squadMoveProvider)
     {
         this.stateMachine = stateMachine;
         this.squadMoveProvider = squadMoveProvider;
