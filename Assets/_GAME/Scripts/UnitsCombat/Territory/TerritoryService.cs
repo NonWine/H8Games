@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using Zenject;
 
-public class TerritoryService : IInitializable, ITickable, IDisposable
+public class TerritoryService : IInitializable, ITickable, IDisposable, ITerritoryCaptureFocusProvider
 {
     private readonly ITerritoryView          view;
     private readonly TerritoryConfig         config;
@@ -11,8 +11,7 @@ public class TerritoryService : IInitializable, ITickable, IDisposable
     private readonly SignalBus               signalBus;
 
     private float scanTimer;
-    private bool  combatAlertActive;
-    private bool  isAnimating;
+    private bool  combatEffectsActive;
 
     [Inject]
     public TerritoryService(
@@ -29,20 +28,22 @@ public class TerritoryService : IInitializable, ITickable, IDisposable
         tracker        = new TerritoryUnitTracker(config, levelManager);
     }
 
-    [Inject]
-    private void InjectFlagAnchor(
-        [InjectOptional(Id = "TerritoryFlagAnchor")] Transform flagAnchor)
-    {
-        tracker.SetFlagAnchor(flagAnchor);
-    }
-
     public void Initialize()
     {
         scanTimer = config.UpdateInterval;
 
         signalBus.Subscribe<StartButtleSignal>(OnBattleStart);
-        signalBus.Subscribe<GameIdleStateSignal>(OnGameIdle);
-        signalBus.Subscribe<LoadNextLevelSignal>(OnLoadNextLevel);
+        signalBus.Subscribe<GameIdleStateSignal>(OnBattleEnded);
+
+        // Every way a battle can end, not just the idle state that trails a
+        // defeat by two seconds: the pulse, the border sparks and the danger
+        // post FX used to keep running through the whole capture phase.
+        signalBus.Subscribe<SquadDefeatedSignal>(OnBattleEnded);
+        signalBus.Subscribe<HeroDefeatedSignal>(OnBattleEnded);
+        signalBus.Subscribe<LevelCompletedSignal>(OnLevelCompleted);
+
+        signalBus.Subscribe<LoadNextLevelSignal>(OnLevelSwapped);
+        signalBus.Subscribe<LevelRestartedSignal>(OnLevelSwapped);
     }
 
     public void Tick()
@@ -50,17 +51,16 @@ public class TerritoryService : IInitializable, ITickable, IDisposable
         float dt = Time.deltaTime;
 
         scanTimer += dt;
-        bool scanChanged = false;
 
         if (scanTimer >= config.UpdateInterval)
         {
-            scanTimer   = 0f;
-            scanChanged = tracker.Scan(out bool levelChanged);
+            scanTimer = 0f;
+            tracker.Scan(out bool levelChanged);
 
             if (levelChanged)
             {
                 view.Clear();
-                ResetCombatAlert();
+                SetCombatEffects(false);
                 return;
             }
         }
@@ -74,45 +74,68 @@ public class TerritoryService : IInitializable, ITickable, IDisposable
     public void Dispose()
     {
         signalBus.Unsubscribe<StartButtleSignal>(OnBattleStart);
-        signalBus.Unsubscribe<GameIdleStateSignal>(OnGameIdle);
-        signalBus.Unsubscribe<LoadNextLevelSignal>(OnLoadNextLevel);
+        signalBus.Unsubscribe<GameIdleStateSignal>(OnBattleEnded);
+        signalBus.Unsubscribe<SquadDefeatedSignal>(OnBattleEnded);
+        signalBus.Unsubscribe<HeroDefeatedSignal>(OnBattleEnded);
+        signalBus.Unsubscribe<LevelCompletedSignal>(OnLevelCompleted);
+        signalBus.Unsubscribe<LoadNextLevelSignal>(OnLevelSwapped);
+        signalBus.Unsubscribe<LevelRestartedSignal>(OnLevelSwapped);
 
         view.Clear();
-        ResetCombatAlert();
+        SetCombatEffects(false);
         tracker.Reset();
     }
 
+    // ── ITerritoryCaptureFocusProvider ────────────────────────────────────────
+
+    public bool TryGetCaptureFocus(out Vector3 worldPosition)
+    {
+        return tracker.TryGetCaptureFocus(out worldPosition);
+    }
+
+    // ── signal handlers ───────────────────────────────────────────────────────
+
     private void OnBattleStart()
     {
-        isAnimating = true;
-        view.SetAnimating(true);
-
-        combatAlertActive = true;
-        view.SetCombatAlert(true);
-        cameraFX.SetDangerState(true);
+        tracker.ExitCaptureFocus();
+        SetCombatEffects(true);
     }
 
-    private void OnGameIdle()
+    private void OnBattleEnded()
     {
-        isAnimating = false;
-        view.SetAnimating(false);
-        ResetCombatAlert();
+        SetCombatEffects(false);
     }
 
-    private void OnLoadNextLevel()
+    // The last enemy is down. Instead of letting the zone collapse, freeze it on
+    // the spot they fell: the existing shrink smoothing then walks the boundary
+    // that is already on screen down into a MinRadius circle there, so the capture
+    // ring grows out of the territory rather than popping in from nothing.
+    private void OnLevelCompleted()
     {
-        isAnimating = false;
-        view.SetAnimating(false);
-        ResetCombatAlert();
+        SetCombatEffects(false);
+        tracker.EnterCaptureFocus();
     }
 
-    private void ResetCombatAlert()
+    // Dropping the tracked units here rather than waiting for the next scan matters:
+    // for up to one UpdateInterval they still hold the outgoing level's positions,
+    // which is long enough to flash the old shape over the new level.
+    private void OnLevelSwapped()
     {
-        if (!combatAlertActive)
+        SetCombatEffects(false);
+        tracker.Reset();
+        view.Clear();
+        scanTimer = config.UpdateInterval;
+    }
+
+    private void SetCombatEffects(bool active)
+    {
+        if (combatEffectsActive == active)
             return;
 
-        combatAlertActive = false;
-        view.SetCombatAlert(false);
-        cameraFX.SetDangerState(false);
+        combatEffectsActive = active;
+
+        view.SetAnimating(active);
+        view.SetCombatAlert(active);
+        cameraFX.SetDangerState(active);
     }
 }

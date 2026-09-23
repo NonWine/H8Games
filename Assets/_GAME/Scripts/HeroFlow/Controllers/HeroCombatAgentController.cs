@@ -16,6 +16,8 @@ public class HeroCombatAgentController : IInitializable, ITickable, IDisposable,
 
     public Vector3 Position => runtimeModel.Transform.position;
     public bool IsAlive => runtimeModel.IsAlive;
+    public bool HasCombatTarget => runtimeModel.IsAlive && targetTracker.IsCurrentTargetValid();
+    public Transform CombatTargetTransform => HasCombatTarget ? targetTracker.CurrentTarget.transform : null;
     public int ReservationCount => targetReservationHandler.ReservationCount;
     public Transform transform => runtimeModel.Transform;
 
@@ -44,10 +46,8 @@ public class HeroCombatAgentController : IInitializable, ITickable, IDisposable,
     public void Initialize()
     {
         health.Died += OnDied;
-        health.HealthChanged += OnHealthChanged;
         signalBus.Subscribe<GameIdleStateSignal>(HandleGameIdle);
 
-        OnHealthChanged(health.CurrentHealth, health.MaxHealth);
         logger.LogConfiguration();
         stateMachine.ChangeState<HeroIdleState>();
     }
@@ -71,8 +71,28 @@ public class HeroCombatAgentController : IInitializable, ITickable, IDisposable,
         }
 
         ParticlePool.Instance.PlayHit(runtimeModel.Transform.position);
+
+        // Same ordering rule the other agents use: the hit is announced before
+        // the damage is applied, so it can never arrive after the death it
+        // caused. HeroDefeatedSignal, not UnitDiedSignal, is what reports that
+        // death - firing both would double every reaction to it.
+        signalBus.Fire(new UnitDamagedSignal(
+            runtimeModel.Transform.position,
+            damage,
+            CombatSide.Ally,
+            health.CurrentHealth - damage <= 0f));
+
         health.ApplyDamage(damage);
         runtimeModel.View.PlayHitFeedback();
+
+        // Fired after ApplyDamage so listeners see the post-hit health, and as a
+        // signal rather than a direct call because the hero lives in its own
+        // sub-container while the camera feedback lives at scene scope.
+        signalBus.Fire(new HeroDamagedSignal(
+            runtimeModel.Transform.position,
+            sourceWorldPosition,
+            damage,
+            health.CurrentHealth / health.MaxHealth));
     }
 
     // Level-transition teleport only repositions the hero: unlike RestartAtSpawn,
@@ -96,18 +116,12 @@ public class HeroCombatAgentController : IInitializable, ITickable, IDisposable,
     public void Dispose()
     {
         health.Died -= OnDied;
-        health.HealthChanged -= OnHealthChanged;
         signalBus.Unsubscribe<GameIdleStateSignal>(HandleGameIdle);
     }
 
     private void OnDied()
     {
         stateMachine.ChangeState<HeroDeadState>();
-    }
-
-    private void OnHealthChanged(float current, float max)
-    {
-        heroView.HealthBarView.SetHealth(current, max);
     }
 
     // Fires for both a squad-only wipe and a hero death. Only the squad-only case

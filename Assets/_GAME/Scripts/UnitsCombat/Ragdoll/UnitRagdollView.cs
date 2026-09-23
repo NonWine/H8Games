@@ -154,6 +154,10 @@ public class UnitRagdollView : MonoBehaviour
         [Min(0f)] [SerializeField] private float additionalUpwardImpulse = 1.5f;
         [Min(0f)] [SerializeField] private float randomTorqueForce = 1.5f;
 
+        [Header("Death Knockback")]
+        [Min(0f)] [SerializeField] private float deathKnockbackForceMin = 4f;
+        [Min(0f)] [SerializeField] private float deathKnockbackForceMax = 10f;
+
         [Header("Settling")]
         [Min(0f)] [SerializeField] private float startLinearDamping = 0.05f;
         [Min(0f)] [SerializeField] private float startAngularDamping = 0.05f;
@@ -204,6 +208,11 @@ public class UnitRagdollView : MonoBehaviour
         }
 
         public void EnableRagdoll(UnitDamageData damageData)
+        {
+            EnableRagdoll(damageData, false);
+        }
+
+        public void EnableRagdoll(UnitDamageData damageData, bool applyDeathKnockback)
         {
             CaptureInitialPose();
 
@@ -269,6 +278,11 @@ public class UnitRagdollView : MonoBehaviour
 
             PrepareDroppedWeapons();
             ApplyImpact(damageData);
+
+            if (applyDeathKnockback)
+            {
+                ApplyDeathKnockback(damageData);
+            }
         }
 
         public void ResetStateImmediate()
@@ -860,6 +874,34 @@ public class UnitRagdollView : MonoBehaviour
             {
                 targetRigidbody.AddTorque(UnityEngine.Random.insideUnitSphere * randomTorqueForce, ForceMode.Impulse);
             }
+        }
+
+        private void ApplyDeathKnockback(UnitDamageData damageData)
+        {
+            if (damageData.HasImpact == false)
+            {
+                return;
+            }
+
+            var targetRigidbody = ResolveImpactRigidbody(damageData.ImpactPoint);
+
+            if (targetRigidbody == null)
+            {
+                return;
+            }
+
+            var impulseDirection = damageData.ImpactDirection;
+
+            if (upwardDirectionFactor > 0f)
+            {
+                impulseDirection = (impulseDirection + Vector3.up * upwardDirectionFactor).normalized;
+            }
+
+            var minForce = Mathf.Min(deathKnockbackForceMin, deathKnockbackForceMax);
+            var maxForce = Mathf.Max(deathKnockbackForceMin, deathKnockbackForceMax);
+            var impulseForce = UnityEngine.Random.Range(minForce, maxForce);
+
+            targetRigidbody.AddForce(impulseDirection * impulseForce, ForceMode.Impulse);
         }
 
         private void ApplyWeaponImpact(Rigidbody weaponRigidbody)

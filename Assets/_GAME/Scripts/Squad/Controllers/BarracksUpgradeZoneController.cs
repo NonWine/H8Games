@@ -8,7 +8,7 @@ public class BarracksUpgradeZoneController : MonoBehaviour
 {
     [Header("UI")]
     [SerializeField] private GameObject panelRoot;
-    [SerializeField] private Image fillImage;
+    [SerializeField] private Slider slider;
     [SerializeField] private TextMeshProUGUI priceLabel;
 
     [Header("Upgrade")]
@@ -30,21 +30,30 @@ public class BarracksUpgradeZoneController : MonoBehaviour
 
     [Header("Juice")]
     [SerializeField] private ParticleSystem arrivalBurst;
-    [SerializeField] private AudioSource tossAudioSource;
-    [SerializeField] private AudioClip tossClip;
     [SerializeField, Min(0.1f)] private float baseTossPitch = 1f;
     [SerializeField, Min(0f)] private float tossPitchStep = 0.03f;
     [SerializeField, Min(0.1f)] private float maxTossPitch = 1.6f;
     [SerializeField, Min(0f)] private float labelPunch = 0.18f;
+    [SerializeField, Min(0f)] private float arrivalAccentInterval = 0.09f;
+    [SerializeField, Min(0f)] private float labelPunchDuration = 0.12f;
+    [SerializeField, Min(1)] private int arrivalParticleCount = 1;
+    [SerializeField, Min(1f)] private float finalArrivalMultiplier = 1.6f;
     [SerializeField] private Transform completionShakeTarget;
     [SerializeField, Min(0f)] private float completionShakeStrength = 0.4f;
     [SerializeField, Min(0f)] private float completionShakeDuration = 0.3f;
 
     private CurrencyService currencyService;
     private IPickupService pickupService;
+    private IAudioService audioService;
     private IPickupCarryAnchorProvider carryAnchorProvider;
     private Tween fillTween;
     private Tween panelTween;
+    private Tween labelTween;
+    private Tween completionShakeTween;
+    private Vector3 authoredLabelScale;
+    private Vector3 completionShakeOrigin;
+    private float nextArrivalAccentTime;
+    private bool hasPresentationPose;
 
     private bool isPlayerInside;
     private bool isCompleted;
@@ -55,22 +64,34 @@ public class BarracksUpgradeZoneController : MonoBehaviour
     private float tossTimer;
 
     [Inject]
-    public void Construct(CurrencyService currencyService, IPickupService pickupService)
+    public void Construct(
+        CurrencyService currencyService,
+        IPickupService pickupService,
+        IAudioService audioService)
     {
         this.currencyService = currencyService;
         this.pickupService = pickupService;
+        this.audioService = audioService;
     }
 
     private void Awake()
     {
+        authoredLabelScale = priceLabel.rectTransform.localScale;
+        hasPresentationPose = true;
         currentInterval = tossInterval;
         RefreshVisualState(animate: false);
     }
 
     private void OnDestroy()
     {
+        ResetArrivalPresentation();
         fillTween?.Kill();
         panelTween?.Kill();
+    }
+
+    private void OnDisable()
+    {
+        ResetArrivalPresentation();
     }
 
     private void Update()
@@ -153,7 +174,6 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         inFlightCount++;
         pickupService.TossDeposit(pickupId, origin, target, OnUnitArrived);
 
-        PlayTossSfx();
         currentInterval = Mathf.Max(minTossInterval, currentInterval - acceleratePerToss);
     }
 
@@ -171,7 +191,7 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         }
 
         spentCoins++;
-        PlayArrivalJuice();
+        PlayArrivalJuice(spentCoins >= requiredCoins);
 
         if (spentCoins >= requiredCoins)
         {
@@ -193,17 +213,22 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         fillTween?.Kill();
 
         PlayCompletionShake();
+        audioService.Play(SfxId.UpgradePurchase);
 
-        if (animate)
+        if (animate && slider != null)
         {
-            fillTween = fillImage
-                .DOFillAmount(1f, fillDuration)
+            fillTween = slider
+                .DOValue(1f, fillDuration)
                 .SetEase(Ease.OutBack)
                 .OnComplete(FinishCompletion);
             return;
         }
 
-        fillImage.fillAmount = 1f;
+        if (slider != null)
+        {
+            slider.value = 1f;
+        }
+
         FinishCompletion();
     }
 
@@ -219,39 +244,61 @@ public class BarracksUpgradeZoneController : MonoBehaviour
 
         fillTween?.Kill();
 
-        if (animate)
+        if (slider != null)
         {
-            fillTween = fillImage.DOFillAmount(fillValue, fillDuration).SetEase(Ease.OutBack);
-        }
-        else
-        {
-            fillImage.fillAmount = fillValue;
+            if (animate)
+            {
+                fillTween = slider.DOValue(fillValue, fillDuration).SetEase(Ease.OutBack);
+            }
+            else
+            {
+                slider.value = fillValue;
+            }
         }
 
         priceLabel.text = Mathf.Max(0, requiredCoins - spentCoins).ToString();
     }
 
-    private void PlayArrivalJuice()
+    private void PlayArrivalJuice(bool isFinal)
     {
+        tossStreakForPitch++;
+        if (!isFinal && Time.unscaledTime < nextArrivalAccentTime)
+            return;
+
+        nextArrivalAccentTime = Time.unscaledTime + arrivalAccentInterval;
+        float multiplier = isFinal ? finalArrivalMultiplier : 1f;
+
         if (arrivalBurst != null)
-            arrivalBurst.Play();
+        {
+            Transform target = coinThrowTarget != null ? coinThrowTarget : transform;
+            arrivalBurst.transform.position = target.position;
+            if (!arrivalBurst.isPlaying)
+                arrivalBurst.Play();
+            arrivalBurst.Emit(Mathf.CeilToInt(arrivalParticleCount * multiplier));
+        }
+
+        if (!isFinal)
+            PlayArrivalSfx();
 
         if (labelPunch <= 0f)
             return;
 
         RectTransform labelTransform = priceLabel.rectTransform;
-        labelTransform.DOComplete();
-        labelTransform.DOPunchScale(Vector3.one * labelPunch, fillDuration, 1, 0.75f).SetLink(priceLabel.gameObject);
+        labelTween?.Kill();
+        labelTransform.localScale = authoredLabelScale;
+        labelTween = labelTransform
+            .DOPunchScale(authoredLabelScale * (labelPunch * multiplier), labelPunchDuration, 1, 0.75f)
+            .SetLink(priceLabel.gameObject);
     }
 
-    private void PlayTossSfx()
+    // Goes through the shared audio service rather than a local AudioSource: the
+    // clip, volume and variation then live in the same catalog as every other
+    // sound, and this zone keeps only the thing that is specific to it - the
+    // pitch that climbs with the length of the deposit run.
+    private void PlayArrivalSfx()
     {
-        if (tossAudioSource == null || tossClip == null)
-            return;
-
-        tossStreakForPitch++;
-        tossAudioSource.pitch = Mathf.Min(maxTossPitch, baseTossPitch + tossPitchStep * tossStreakForPitch);
-        tossAudioSource.PlayOneShot(tossClip);
+        float pitch = Mathf.Min(maxTossPitch, baseTossPitch + tossPitchStep * tossStreakForPitch);
+        audioService.Play(SfxId.CoinDeposit, pitch);
     }
 
     private void PlayCompletionShake()
@@ -259,7 +306,30 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         if (completionShakeTarget == null || completionShakeStrength <= 0f)
             return;
 
-        completionShakeTarget.DOShakePosition(completionShakeDuration, completionShakeStrength);
+        completionShakeOrigin = completionShakeTarget.localPosition;
+        completionShakeTween = completionShakeTarget
+            .DOShakePosition(completionShakeDuration, completionShakeStrength)
+            .SetLink(completionShakeTarget.gameObject)
+            .OnComplete(() => completionShakeTween = null);
+    }
+
+    private void ResetArrivalPresentation()
+    {
+        labelTween?.Kill();
+        labelTween = null;
+        if (hasPresentationPose && priceLabel != null)
+            priceLabel.rectTransform.localScale = authoredLabelScale;
+
+        if (completionShakeTween != null)
+        {
+            completionShakeTween.Kill();
+            completionShakeTween = null;
+            if (completionShakeTarget != null)
+                completionShakeTarget.localPosition = completionShakeOrigin;
+        }
+
+        if (arrivalBurst != null)
+            arrivalBurst.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
     }
 
     private void HidePanel()

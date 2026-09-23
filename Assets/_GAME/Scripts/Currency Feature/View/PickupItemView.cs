@@ -11,6 +11,7 @@ public class PickupItemView : MonoBehaviour
 
     [Header("FX")]
     [SerializeField] private ParticleSystem impactFx;
+    [SerializeField] private ParticleSystem idleShineFx;
 
     [Header("Scale Juice")]
     [SerializeField, Min(0f)] private float spawnScaleDuration   = 0.2f;
@@ -18,9 +19,11 @@ public class PickupItemView : MonoBehaviour
 
     public bool IsRented { get; private set; }
 
-    public Transform             Transform { get; private set; }
+    public Transform              Transform { get; private set; }
     public PickupPhysicsHandler   Physics   { get; private set; }
     public PickupAnimationHandler Animation { get; private set; }
+    public PickupImpactFxHandler  Impact    { get; private set; }
+    public PickupIdleHandler Idle { get; private set; }
 
     private Action activePose;
     private Tween  scaleTween;
@@ -30,6 +33,10 @@ public class PickupItemView : MonoBehaviour
         Transform = transform;
         Physics   = new PickupPhysicsHandler(transform, rb, colliders);
         Animation = new PickupAnimationHandler(transform, rb, visualRoot);
+        Impact    = new PickupImpactFxHandler(impactFx);
+        if (visualRoot == transform || !visualRoot.IsChildOf(transform))
+            throw new InvalidOperationException("Pickup visualRoot must be a separate visual child.");
+        Idle = new PickupIdleHandler(visualRoot, Physics, idleShineFx);
     }
 
     private void Reset()
@@ -39,9 +46,36 @@ public class PickupItemView : MonoBehaviour
         colliders  = GetComponentsInChildren<Collider>(true);
     }
 
+    private void FixedUpdate()
+    {
+        Physics.ApplyExtraGravity();
+    }
+
     private void LateUpdate()
     {
         activePose?.Invoke();
+        Idle.Tick(Time.deltaTime);
+    }
+
+    private void OnDisable()
+    {
+        Idle?.Stop();
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Physics.TrackSupport(collision);
+        Impact.HandleCollision(collision);
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        Physics.TrackSupport(collision);
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        Physics.RemoveSupport(collision);
     }
 
     public void SetActivePose(Action pose)
@@ -51,6 +85,7 @@ public class PickupItemView : MonoBehaviour
 
     public void Rent()
     {
+        Idle.Stop();
         IsRented   = true;
         activePose = null;
 
@@ -62,6 +97,8 @@ public class PickupItemView : MonoBehaviour
         IsRented   = false;
         activePose = null;
 
+        Impact.Disable();
+
         scaleTween?.Kill();
         scaleTween = null;
 
@@ -70,6 +107,7 @@ public class PickupItemView : MonoBehaviour
         if (this == null)
             return;
 
+        Idle.Stop();
         Animation.ResetAnimationState();
         Animation.ResetVisualState();
         Physics.RestoreDefaults();
@@ -78,6 +116,7 @@ public class PickupItemView : MonoBehaviour
 
     public void PlayDespawnScale(Action onComplete)
     {
+        Idle.Stop();
         scaleTween?.Kill();
         scaleTween = visualRoot
             .DOScale(Vector3.zero, despawnScaleDuration)
@@ -88,6 +127,13 @@ public class PickupItemView : MonoBehaviour
                 scaleTween = null;
                 onComplete?.Invoke();
             });
+    }
+
+    public void PrepareSpendPresentation()
+    {
+        scaleTween?.Kill();
+        scaleTween = null;
+        Animation.ResetVisualState();
     }
 
     private void PlaySpawnScale()

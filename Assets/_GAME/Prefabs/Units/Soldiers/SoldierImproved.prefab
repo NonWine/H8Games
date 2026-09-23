@@ -8,9 +8,25 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 99772144191784986, guid: 21808611dd85acf4db2708200a5d21be, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 99772144354320724, guid: 21808611dd85acf4db2708200a5d21be, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 99772144973037390, guid: 21808611dd85acf4db2708200a5d21be, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 99772144992030138, guid: 21808611dd85acf4db2708200a5d21be, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1132071011719142381, guid: 21808611dd85acf4db2708200a5d21be, type: 3}
       propertyPath: m_Name
-      value: Soldier Variant
+      value: SoldierImproved
       objectReference: {fileID: 0}
     - target: {fileID: 8080680048111041805, guid: 21808611dd85acf4db2708200a5d21be, type: 3}
       propertyPath: m_LocalPosition.x

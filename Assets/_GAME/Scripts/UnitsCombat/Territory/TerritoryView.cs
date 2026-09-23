@@ -80,6 +80,7 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
         }
 
         EnsureMeshes();
+        CancelCollapse(config);
 
         // First call — init smoothed = target instantly (no lerp on spawn).
         if (!boundaryInitialized || smoothedBoundary2D.Count != targetBoundary2D.Count)
@@ -202,6 +203,27 @@ public class TerritoryView : MonoBehaviour, ITerritoryView
                 1f, config.FadeInDuration)
             .SetEase(Ease.OutQuad)
             .SetLink(gameObject);
+    }
+
+    // A collapse can start on the frame the last enemy is scanned away and then be
+    // overtaken by the capture focus arriving one frame later. Left alone, the two
+    // would write the mesh against each other every tick, so the collapse is undone
+    // from wherever it got to and the zone grows back out of the shape on screen.
+    private void CancelCollapse(TerritoryConfig config)
+    {
+        if (collapseTween == null || !collapseTween.IsActive())
+            return;
+
+        collapseTween.Kill();
+        collapseTween = null;
+
+        if (collapseWorkBoundary2D.Count == smoothedBoundary2D.Count)
+        {
+            for (int i = 0; i < smoothedBoundary2D.Count; i++)
+                smoothedBoundary2D[i] = collapseWorkBoundary2D[i];
+        }
+
+        FadeIn(config);
     }
 
     private void CollapseAndFade(TerritoryConfig config)

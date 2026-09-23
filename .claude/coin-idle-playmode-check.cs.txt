@@ -1,0 +1,47 @@
+Application.runInBackground=true;
+var pools=UnityEngine.Object.FindFirstObjectByType<Zenject.SceneContext>().Container.Resolve<PickupViewPools>();
+var config=UnityEditor.AssetDatabase.LoadAssetAtPath<PickupVisualConfig>("Assets/_GAME/Configs/Currency/PickupVisualConfig.asset");
+var controllers=new System.Collections.Generic.List<PickupItemController>();
+for(int i=0;i<20;i++){
+var v=pools.Spawn("coin"); v.name="IdleReview_"+i;
+var c=new PickupItemController(v,config);
+Vector3 pos=i<2?new Vector3(-2f+i*1.5f,1f,0f):new Vector3(2f+(i%3)*0.45f,0.4f+(i/9)*0.18f,0f+(i/3%3)*0.45f);
+c.InitializeAsWorldItem("coin",1,pos,Vector3.forward);
+var rb=v.GetComponent<Rigidbody>(); rb.linearVelocity=Vector3.zero; rb.angularVelocity=Vector3.zero; controllers.Add(c);
+}
+var airborne=pools.Spawn("coin"); airborne.name="IdleReview_Airborne";
+new PickupItemController(airborne,config).InitializeAsWorldItem("coin",1,new Vector3(-3f,8f,0f),Vector3.forward);
+var arb=airborne.GetComponent<Rigidbody>(); arb.useGravity=false; arb.linearVelocity=Vector3.zero; arb.angularVelocity=Vector3.zero;
+typeof(PickupPhysicsHandler).GetField("isWorldGravityActive",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).SetValue(airborne.Physics,false);
+var playing=typeof(PickupIdleHandler).GetField("playing",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance);
+var enabled=typeof(PickupIdleHandler).GetField("enabled",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance);
+var anchor=new GameObject("IdleReview_Anchor").transform; anchor.position=new Vector3(-2f,2f,0f);
+var observed=new System.Collections.Generic.HashSet<int>(); var failures=new System.Collections.Generic.List<string>();
+var start=Time.time; bool interrupted=false; int reuse=0;
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+tick=()=>{
+if(!Application.isPlaying){ UnityEditor.EditorApplication.update-=tick; return;}
+float elapsed=Time.time-start;
+for(int i=0;i<controllers.Count;i++){ if((bool)playing.GetValue(controllers[i].View.Idle)) observed.Add(i); }
+if((bool)playing.GetValue(airborne.Idle) && !failures.Contains("airborne idle")) failures.Add("airborne idle");
+if(!interrupted && (bool)playing.GetValue(controllers[0].View.Idle)){
+var c=controllers[0]; c.PlayCollectAnimation(anchor,Vector3.zero,Quaternion.identity,()=>{});
+var visual=c.View.transform.Find("Visual");
+if(visual.localPosition.sqrMagnitude>0.000001f || Quaternion.Angle(visual.localRotation,Quaternion.Euler(-90f,0f,0f))>0.01f || (bool)enabled.GetValue(c.View.Idle)) failures.Add("collection reset");
+c.DiscardFromCarry(Vector3.right);
+if((bool)enabled.GetValue(c.View.Idle)) failures.Add("discard idle");
+interrupted=true;
+}
+if(elapsed>8f && reuse<3){
+var c=controllers[1]; pools.Despawn("coin",c.View); var v=pools.Spawn("coin");
+if(v.transform.Find("Visual").localPosition.sqrMagnitude>0.000001f) failures.Add("pool pose");
+var nc=new PickupItemController(v,config); nc.InitializeAsWorldItem("coin",1,new Vector3(-0.5f,1f,0f),Vector3.forward);
+v.GetComponent<Rigidbody>().linearVelocity=Vector3.zero; v.GetComponent<Rigidbody>().angularVelocity=Vector3.zero; controllers[1]=nc; reuse++;
+}
+if(elapsed>12f){
+string report="Observed hopping coins="+string.Join(",",observed)+"; collection/discard="+interrupted+"; pool cycles="+reuse+"; airborne settled="+airborne.Physics.IsSettled(config.GroundIdle)+"; failures="+string.Join(",",failures);
+System.IO.File.WriteAllText("C:/UnityProjects/H8Games/Temp/idle-review-results.txt",report);
+UnityEditor.EditorApplication.update-=tick;
+}};
+UnityEditor.EditorApplication.update+=tick;
+return "20 pooled coins + unsupported stationary coin; 12 second checks running";

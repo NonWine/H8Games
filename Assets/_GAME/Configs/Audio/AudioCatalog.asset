@@ -1,0 +1,144 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 426da0513cf7b524082c9254e5bb0c13, type: 3}
+  m_Name: AudioCatalog
+  m_EditorClassIdentifier: 
+  MasterSfxVolume: 1
+  VoiceCount: 16
+  MusicClip: {fileID: 0}
+  MusicVolume: 0.35
+  CoinStreakPitchStep: 0.045
+  CoinStreakMaxPitch: 1.8
+  CoinStreakResetSeconds: 1.2
+  Entries:
+  - Id: 1
+    Clips:
+    - {fileID: 8300000, guid: 379861d1be890dc43b0fca641f1a7591, type: 3}
+    Volume: 0.75
+    PitchMin: 0.98
+    PitchMax: 1.02
+    MinIntervalSeconds: 0.2
+  - Id: 2
+    Clips:
+    - {fileID: 8300000, guid: 79c3cb7a26813d146b07c293b0324039, type: 3}
+    Volume: 0.8
+    PitchMin: 0.95
+    PitchMax: 1.05
+    MinIntervalSeconds: 0.25
+  - Id: 3
+    Clips:
+    - {fileID: 8300000, guid: 5052682f23f19384da5d743dc76ed64b, type: 3}
+    Volume: 0.45
+    PitchMin: 0.92
+    PitchMax: 1.08
+    MinIntervalSeconds: 0.05
+  - Id: 10
+    Clips:
+    - {fileID: 8300000, guid: d6dbb92a655eeb549a408aa59fed63f4, type: 3}
+    - {fileID: 8300000, guid: c922c34f559ead440a273a13a924cfc7, type: 3}
+    - {fileID: 8300000, guid: 38d95e38f52f6a54b888d9fd555fa1e3, type: 3}
+    Volume: 0.3
+    PitchMin: 0.9
+    PitchMax: 1.12
+    MinIntervalSeconds: 0.05
+  - Id: 11
+    Clips:
+    - {fileID: 8300000, guid: 11390b4b43824e54e9eaada95422a366, type: 3}
+    Volume: 0.4
+    PitchMin: 0.9
+    PitchMax: 1.15
+    MinIntervalSeconds: 0.05
+  - Id: 12
+    Clips:
+    - {fileID: 8300000, guid: 96bbf34d7aee725449bb8a5f1a46bfbb, type: 3}
+    - {fileID: 8300000, guid: c149a5b5299974c4183ac0b2ea58a9a0, type: 3}
+    Volume: 0.7
+    PitchMin: 0.92
+    PitchMax: 1.08
+    MinIntervalSeconds: 0.06
+  - Id: 13
+    Clips:
+    - {fileID: 8300000, guid: 9a95927c7a74cb2488dea6e0217fb75a, type: 3}
+    Volume: 0.35
+    PitchMin: 1
+    PitchMax: 1
+    MinIntervalSeconds: 0.15
+  - Id: 20
+    Clips:
+    - {fileID: 8300000, guid: fcfa53ce54acaae4eb2ad143f4e308e2, type: 3}
+    Volume: 0.8
+    PitchMin: 0.94
+    PitchMax: 1.06
+    MinIntervalSeconds: 0.12
+  - Id: 21
+    Clips:
+    - {fileID: 8300000, guid: f9ccdb916ca1dea4ea6ecbdd7dc4d9f9, type: 3}
+    Volume: 0.9
+    PitchMin: 1
+    PitchMax: 1
+    MinIntervalSeconds: 0.5
+  - Id: 30
+    Clips:
+    - {fileID: 8300000, guid: a550cb02580f00c40b4ba02aeff3acb4, type: 3}
+    Volume: 0.45
+    PitchMin: 1
+    PitchMax: 1
+    MinIntervalSeconds: 0.02
+  - Id: 31
+    Clips:
+    - {fileID: 8300000, guid: 2722086750a69aa4289a792be804c60b, type: 3}
+    Volume: 0.55
+    PitchMin: 0.95
+    PitchMax: 1.05
+    MinIntervalSeconds: 0.03
+  - Id: 32
+    Clips:
+    - {fileID: 8300000, guid: 74ea4a2ad98acb241bdb9753be6cd8c4, type: 3}
+    Volume: 0.8
+    PitchMin: 0.98
+    PitchMax: 1.02
+    MinIntervalSeconds: 0.1
+  - Id: 40
+    Clips:
+    - {fileID: 8300000, guid: 2dcd5da12751d034bb710af85ad18450, type: 3}
+    Volume: 0.9
+    PitchMin: 1
+    PitchMax: 1
+    MinIntervalSeconds: 0.5
+  - Id: 41
+    Clips:
+    - {fileID: 8300000, guid: 9fb2085538d1bfe41abcb2b5c317517f, type: 3}
+    Volume: 0.95
+    PitchMin: 1
+    PitchMax: 1
+    MinIntervalSeconds: 0.5
+  - Id: 42
+    Clips:
+    - {fileID: 8300000, guid: 9a95927c7a74cb2488dea6e0217fb75a, type: 3}
+    Volume: 0.3
+    PitchMin: 1
+    PitchMax: 1
+    MinIntervalSeconds: 0.05
+  - Id: 33
+    Clips:
+    - {fileID: 8300000, guid: 79c3cb7a26813d146b07c293b0324039, type: 3}
+    Volume: 0.45
+    PitchMin: 0.8
+    PitchMax: 0.85
+    MinIntervalSeconds: 0.2
+  - Id: 34
+    Clips:
+    - {fileID: 8300000, guid: 11390b4b43824e54e9eaada95422a366, type: 3}
+    Volume: 0.35
+    PitchMin: 0.75
+    PitchMax: 0.9
+    MinIntervalSeconds: 0.04

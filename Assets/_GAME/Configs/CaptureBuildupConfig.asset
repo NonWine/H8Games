@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f6141a2c62a9ef45bf862fdbc4e8fce, type: 3}
+  m_Name: CaptureBuildupConfig
+  m_EditorClassIdentifier: 
+  fadeInDuration: 0.15
+  fadeOutDuration: 0.3
+  phases:
+  - Progress: 0
+    PulseInterval: 0.45
+    PulseStrength: 0.45
+    Tension: 0
+    TickPitch: 0.85
+    ShakePosition: 0
+    ShakeRotation: 0
+    ShakeFrequency: 14
+  - Progress: 0.3
+    PulseInterval: 0.38
+    PulseStrength: 0.6
+    Tension: 0.05
+    TickPitch: 1
+    ShakePosition: 0.004
+    ShakeRotation: 0.02
+    ShakeFrequency: 16
+  - Progress: 0.75
+    PulseInterval: 0.22
+    PulseStrength: 0.85
+    Tension: 0.25
+    TickPitch: 1.25
+    ShakePosition: 0.018
+    ShakeRotation: 0.09
+    ShakeFrequency: 20
+  - Progress: 1
+    PulseInterval: 0.12
+    PulseStrength: 1
+    Tension: 0.6
+    TickPitch: 1.5
+    ShakePosition: 0.04
+    ShakeRotation: 0.2
+    ShakeFrequency: 26
+  shakeEnabled: 1
+  shakePower: 1
+  shakeInterval: 0.1
+  shakeDuration: 0.2
+  shakeDepthInfluence: 0.1
+  shakeEnvelope:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.5
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  ringExpansion: 0.3
+  ringAlpha: 0.7
+  ringDuration: 0.45
+  ringColor: {r: 1, g: 0.95, b: 0.7, a: 1}
+  tensionColor: {r: 0.75, g: 1, b: 0.25, a: 1}
+  glowColor: {r: 1, g: 1, b: 1, a: 1}
+  glowStrength: 0.35
+  glowDecayDuration: 0.18
+  tickEnabled: 1
+  releaseDuration: 0.4
+  releaseScale: 1.9
+  releaseColor: {r: 1, g: 0.95, b: 0.7, a: 1}

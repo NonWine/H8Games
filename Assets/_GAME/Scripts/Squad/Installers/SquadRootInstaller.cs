@@ -5,11 +5,13 @@ public class SquadRootInstaller : MonoInstaller
 {
     [SerializeField] private SquadRootView squadRootViewAnchor;
     [SerializeField] private SquadFollowSettings squadFollowSettings;
+    [SerializeField] private SquadSlotMarkersView squadSlotMarkersView;
 
     public override void InstallBindings()
     {
         Container.BindInstance(squadRootViewAnchor).AsSingle();
         Container.BindInstance(squadFollowSettings).AsSingle();
+        Container.BindInstance(squadSlotMarkersView).AsSingle();
         Services();
         SquadStateMachine();
         Controllers();
@@ -21,6 +23,7 @@ public class SquadRootInstaller : MonoInstaller
         Container.BindInterfacesAndSelfTo<SquadMoveProvider>().AsSingle();
         Container.BindInterfacesAndSelfTo<SquadMovementFacade>().AsSingle();
         Container.BindInterfacesAndSelfTo<SquadFormationFacade>().AsSingle();
+        Container.BindInterfacesTo<SquadSlotMarkersPresenter>().AsSingle();
     }
 
     private void Services()

@@ -78,7 +78,7 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
     {
         lastDestination = Vector3.positiveInfinity;
         nextDestinationRefreshTime = 0f;
-        ConfigureAgent();
+        ConfigureAgent(true);
     }
 
     public void Stop(bool clearPath = true)
@@ -108,8 +108,6 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
             return SoldierFormationState.WaitingInFormation;
         }
 
-        ConfigureAgent();
-
         Vector3 desiredPosition = squadRootIsMoving
             ? slotCenter + GetMovingWorldOffset(squadRoot)
             : slotCenter;
@@ -118,6 +116,8 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
 
         Vector3 delta = desiredPosition - combatView.Transform.position;
         delta.y = 0f;
+
+        ConfigureAgent(ShouldAvoidOthers(delta, squadRootIsMoving));
 
         if (delta.sqrMagnitude <= settings.SlotReachThreshold * settings.SlotReachThreshold)
         {
@@ -143,7 +143,22 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
 
     private NavMeshAgent Agent => combatView.NavMeshAgent;
 
-    private void ConfigureAgent()
+    // Avoidance is what makes a marching squad read as a crowd, and it is also
+    // what deadlocks the last metre: two soldiers settling onto neighbouring
+    // slots push each other off both of them and neither ever arrives. Once the
+    // squad root has stopped and the slot is within reach, the slots themselves
+    // guarantee the spacing, so avoidance has nothing left to solve.
+    private bool ShouldAvoidOthers(Vector3 toSlot, bool squadRootIsMoving)
+    {
+        if (squadRootIsMoving)
+        {
+            return true;
+        }
+
+        return toSlot.sqrMagnitude > settings.SlotSettleRadius * settings.SlotSettleRadius;
+    }
+
+    private void ConfigureAgent(bool avoidOthers)
     {
         NavMeshAgent agent = Agent;
 
@@ -160,7 +175,9 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
         agent.autoRepath = true;
         agent.updatePosition = true;
         agent.updateRotation = false;
-        agent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+        agent.obstacleAvoidanceType = avoidOthers
+            ? ObstacleAvoidanceType.HighQualityObstacleAvoidance
+            : ObstacleAvoidanceType.NoObstacleAvoidance;
         agent.avoidancePriority = Mathf.Clamp(avoidancePriority, 0, 99);
 
         // Drives local avoidance only (the baked NavMesh uses the agent type's

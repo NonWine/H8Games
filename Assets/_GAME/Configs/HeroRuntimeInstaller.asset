@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   heroStatsTemplate:
     combat:
-      MaxHealth: 30
+      MaxHealth: 3000
       MoveSpeed: 5
       AttackCooldownRange: {x: 0.8, y: 1.5}
-      Damage: 5
+      Damage: 15
       ProjectileSpeed: 12
       DeathReward: 5
       DeathPickupId: coin

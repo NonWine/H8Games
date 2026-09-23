@@ -38,9 +38,16 @@ public class GameInstaller : MonoInstaller
         Container.DeclareSignal<LevelCaptureCompletedSignal>();
         Container.DeclareSignal<SquadDefeatedSignal>();
         Container.DeclareSignal<HeroDefeatedSignal>();
+        Container.DeclareSignal<HeroDamagedSignal>();
         Container.DeclareSignal<StartButtleSignal>();
         Container.DeclareSignal<GameIdleStateSignal>();
         Container.DeclareSignal<LevelRestartedSignal>();
+
+        // Per-unit combat feedback. Fired from inside each agent's own
+        // sub-container and consumed at scene scope by audio, shake and
+        // hit-stop, none of which the units know about.
+        Container.DeclareSignal<UnitDamagedSignal>();
+        Container.DeclareSignal<UnitDiedSignal>();
 
     }
 

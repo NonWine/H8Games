@@ -28,14 +28,14 @@ MonoBehaviour:
   BorderMaterial: {fileID: 2100000, guid: 422fd73e150746d5bb7fbbfe42be6bc3, type: 2}
   BorderColor: {r: 1, g: 1, b: 1, a: 1}
   DashTileLength: 1.2
-  DashScrollSpeed: 0
-  FadeInDuration: 0.7
+  DashScrollSpeed: 0.4
+  FadeInDuration: 4.68
   FadeOutDuration: 1.2
   FillAlpha: 0.8
-  StaticFillColor: {r: 0.9098039, g: 0.627451, b: 0.5647059, a: 1}
-  PulseColorA: {r: 0.9098039, g: 0.627451, b: 0.5647059, a: 1}
+  StaticFillColor: {r: 0.5283019, g: 0.5283019, b: 0.5283019, a: 1}
+  PulseColorA: {r: 1, g: 0.41960785, b: 0.41960785, a: 1}
   PulseColorB: {r: 1, g: 0.41960785, b: 0.41960785, a: 1}
-  PulseFrequency: 0.1
+  PulseFrequency: 21.54
   BorderParticlesPerSecond: 15
   BorderParticleSpeed: 1.4
   BorderParticleLifetime: 2
@@ -43,8 +43,8 @@ MonoBehaviour:
   CombatPulseFrequency: 0.63
   CombatBrightnessMult: 1.35
   CombatBurstCount: 0
-  DangerVignetteIntensity: 0.2
-  DangerChromaticAberration: 0.2
+  DangerVignetteIntensity: 0
+  DangerChromaticAberration: 0
   CameraShakeAmplitude: 0.1
-  CameraShakeFrequency: 0.3
+  CameraShakeFrequency: 0
   DangerFXDuration: 0.5

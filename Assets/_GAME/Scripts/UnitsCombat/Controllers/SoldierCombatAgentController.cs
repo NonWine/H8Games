@@ -1,16 +1,20 @@
 using UnityEngine;
+using Zenject;
 
 public class SoldierCombatAgentController : BaseCombatAgentController<SoldierRuntimeModel>
 {
     private readonly SoldierStateMachine stateMachine;
+
+    protected override CombatSide Side => CombatSide.Ally;
 
     public SoldierCombatAgentController(
         SoldierRuntimeModel runtimeModel,
         CombatUnitModules modules,
         SoldierStateMachine stateMachine,
         ITargetTrackerHandler targetTrackerHandler,
-        ITargetReservationHandler targetReservationHandler)
-        : base(runtimeModel, modules, targetTrackerHandler, targetReservationHandler)
+        ITargetReservationHandler targetReservationHandler,
+        SignalBus signalBus)
+        : base(runtimeModel, modules, targetTrackerHandler, targetReservationHandler, signalBus)
     {
         this.stateMachine = stateMachine;
     }

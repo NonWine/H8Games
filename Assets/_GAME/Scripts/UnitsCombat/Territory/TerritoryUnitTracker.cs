@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class TerritoryUnitTracker
@@ -12,7 +12,6 @@ public class TerritoryUnitTracker
 
     private readonly TerritoryConfig  config;
     private readonly LevelManager     levelManager;
-    private          Transform        flagAnchor;
 
     private readonly Dictionary<EnemyCombatAgentController, TrackedUnit> trackedUnits      = new();
     private readonly List<EnemyCombatAgentController>                    removalBuffer     = new();
@@ -20,18 +19,52 @@ public class TerritoryUnitTracker
 
     private LevelRuntime activeLevel;
 
+    // Centroid of the last non-empty set of tracked enemies. Deliberately kept
+    // after the set empties: the frame the last enemy dies this still holds the
+    // spot it was standing on, which is what the capture zone wants.
+    private Vector3 lastKnownCentroid;
+    private bool    hasKnownCentroid;
+
+    // While active the zone stops following units and holds a single frozen
+    // point, so the boundary smoothing shrinks whatever is on screen into a
+    // circle there instead of collapsing the zone away.
+    private Vector3 captureFocusPosition;
+    private bool    captureFocusActive;
+
     public IReadOnlyList<Vector3> SmoothedPositions => smoothedPositions;
 
-    public TerritoryUnitTracker(TerritoryConfig config, LevelManager levelManager, Transform flagAnchor = null)
+    public TerritoryUnitTracker(TerritoryConfig config, LevelManager levelManager)
     {
         this.config       = config;
         this.levelManager = levelManager;
-        this.flagAnchor   = flagAnchor;
     }
 
-    public void SetFlagAnchor(Transform anchor)
+    // Resolved on read rather than pushed on a signal, so no subscriber ordering
+    // decides whether the caller sees the death spot or a stale one.
+    public bool TryGetCaptureFocus(out Vector3 worldPosition)
     {
-        flagAnchor = anchor;
+        if (captureFocusActive)
+        {
+            worldPosition = captureFocusPosition;
+            return true;
+        }
+
+        worldPosition = lastKnownCentroid;
+        return hasKnownCentroid;
+    }
+
+    public void EnterCaptureFocus()
+    {
+        if (captureFocusActive || !hasKnownCentroid)
+            return;
+
+        captureFocusPosition = lastKnownCentroid;
+        captureFocusActive   = true;
+    }
+
+    public void ExitCaptureFocus()
+    {
+        captureFocusActive = false;
     }
 
     public bool Scan(out bool levelChanged)
@@ -58,12 +91,16 @@ public class TerritoryUnitTracker
 
     public bool UpdatePositions(float dt)
     {
+        if (captureFocusActive)
+        {
+            smoothedPositions.Clear();
+            smoothedPositions.Add(captureFocusPosition);
+            return false;
+        }
+
         if (trackedUnits.Count == 0)
         {
-            // No live units — keep the flag visible if present.
             smoothedPositions.Clear();
-            if (flagAnchor != null)
-                smoothedPositions.Add(flagAnchor.position);
             return false;
         }
 
@@ -121,12 +158,16 @@ public class TerritoryUnitTracker
         }
 
         smoothedPositions.Clear();
-
-        if (flagAnchor != null)
-            smoothedPositions.Add(flagAnchor.position);
+        Vector3 centroidSum = Vector3.zero;
 
         foreach (TrackedUnit unit in trackedUnits.Values)
+        {
             smoothedPositions.Add(unit.SmoothedPosition);
+            centroidSum += unit.SmoothedPosition;
+        }
+
+        lastKnownCentroid = centroidSum / trackedUnits.Count;
+        hasKnownCentroid  = true;
 
         return hasChanges;
     }
@@ -135,6 +176,9 @@ public class TerritoryUnitTracker
     {
         trackedUnits.Clear();
         smoothedPositions.Clear();
+        captureFocusActive = false;
+        hasKnownCentroid   = false;
+        lastKnownCentroid  = Vector3.zero;
     }
 
     private void MarkAllAsNotSeen()

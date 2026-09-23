@@ -15,6 +15,7 @@ public class PlayerCombatInstaller : MonoInstaller
         BindData();
         BindTargeting();
         BindModules();
+        BindHealthPresentation();
         BindStateMachine();
         BindControllers();
         ValidateAttackSetup();
@@ -77,6 +78,19 @@ public class PlayerCombatInstaller : MonoInstaller
             .WithArguments(combatView.ProjectilePrefab);
 
         Container.Bind<IAttackModule>().To<UnitAttackAgentHandler>().AsSingle();
+    }
+
+    // The bar itself lives on the prefab's nested HealthUI object; the hero side
+    // only ever sees IHealthView, so swapping in a different bar is a change to
+    // this one binding.
+    private void BindHealthPresentation()
+    {
+        Container.Bind<IHealthView>()
+            .FromMethod(context => context.Container.Resolve<PlayerView>().HealthBar)
+            .AsSingle();
+
+        Container.BindInterfacesAndSelfTo<HeroHealthPresenter>().AsSingle();
+        Container.BindInterfacesAndSelfTo<HeroHealthResetService>().AsSingle();
     }
 
     private void BindStateMachine()

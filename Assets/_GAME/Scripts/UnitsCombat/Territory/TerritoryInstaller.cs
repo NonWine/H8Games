@@ -7,11 +7,6 @@ public class TerritoryInstaller : MonoInstaller
     [SerializeField] private TerritoryConfig         config;
     [SerializeField] private TerritoryDangerCameraFX cameraFX;
 
-    [Header("Flag Anchor")]
-    [Tooltip("Drag the flag/objective Transform here. The territory zone will always include this point " +
-             "and shrink to a circle around it when all enemies are dead.")]
-    [SerializeField] private Transform flagAnchor;
-
     public override void InstallBindings()
     {
         BindViews();
@@ -32,11 +27,10 @@ public class TerritoryInstaller : MonoInstaller
         Container.Bind<TerritoryMeshBuilder>().AsSingle();
     }
 
+    // BindInterfacesAndSelfTo also publishes ITerritoryCaptureFocusProvider, which
+    // is how CaptureZoneController learns where the last enemy fell.
     private void BindServices()
     {
-        if (flagAnchor != null)
-            Container.BindInstance(flagAnchor).WithId("TerritoryFlagAnchor").AsCached();
-
         Container.BindInterfacesAndSelfTo<TerritoryService>().AsSingle();
     }
 

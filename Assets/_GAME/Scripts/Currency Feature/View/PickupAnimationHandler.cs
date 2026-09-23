@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class PickupAnimationHandler
 {
+    private const float HalfTurn = 180f;
     private readonly Transform transform;
     private readonly Rigidbody rb;
     private readonly Transform visualRoot;
@@ -42,6 +43,12 @@ public class PickupAnimationHandler
     private Quaternion spendStartRot;
     private float      spendElapsed;
     private Action     spendCompleted;
+    private readonly System.Random spendRandom = new System.Random(Guid.NewGuid().GetHashCode());
+    private PickupSpendSettings spendSettings;
+    private Vector3 spendLateralOffset;
+    private Vector3 spendSpinAxis;
+    private float spendArcMultiplier;
+    private float spendSpinMultiplier;
 
     public Action     CollectCompleted      => collectCompleted;
     public Transform  CollectAnchor         => collectAnchor;
@@ -140,13 +147,23 @@ public class PickupAnimationHandler
         SyncKinematicRigidbody();
     }
 
-    public void BeginSpend(Transform target, Action onCompleted)
+    public void BeginSpend(Transform target, PickupSpendSettings settings, Action onCompleted)
     {
+        spendSettings = settings;
         spendTarget    = target;
         spendStartPos  = transform.position;
-        spendStartRot  = transform.rotation;
+        spendStartRot  = transform.rotation * Quaternion.Euler(
+            SampleSpendRange(-settings.InitialTilt, settings.InitialTilt),
+            SampleSpendRange(-HalfTurn, HalfTurn),
+            SampleSpendRange(-settings.InitialTilt, settings.InitialTilt));
         spendElapsed   = 0f;
         spendCompleted = onCompleted;
+        spendArcMultiplier = SampleSpendRange(settings.ArcMultiplier.x, settings.ArcMultiplier.y);
+        spendSpinMultiplier = SampleSpendRange(settings.SpinMultiplier.x, settings.SpinMultiplier.y) * (spendRandom.Next(2) == 0 ? -1f : 1f);
+        spendSpinAxis = Quaternion.Euler(
+            SampleSpendRange(-HalfTurn, HalfTurn), SampleSpendRange(-HalfTurn, HalfTurn), 0f) * Vector3.up;
+        Vector3 direction = Vector3.ProjectOnPlane(target.position - spendStartPos, Vector3.up).normalized;
+        spendLateralOffset = Vector3.Cross(Vector3.up, direction) * SampleSpendRange(-settings.LateralOffset, settings.LateralOffset);
     }
 
     public bool TickSpend(float deltaTime, float duration)
@@ -158,16 +175,18 @@ public class PickupAnimationHandler
     public void ApplySpendPose(float duration, float jumpPower, float spinSpeed, AnimationCurve curve)
     {
         var t      = Mathf.Clamp01(spendElapsed / Mathf.Max(0.0001f, duration));
-        var eased  = curve.Evaluate(t);
+        var eased  = t >= 1f ? 1f : Mathf.Clamp01(curve.Evaluate(t));
         var endPos = spendTarget.position;
         var pos    = Vector3.Lerp(spendStartPos, endPos, eased);
 
-        pos.y += 4f * jumpPower * t * (1f - t);
+        float arc = 4f * eased * (1f - eased);
+        pos += spendLateralOffset * arc;
+        pos.y += jumpPower * spendArcMultiplier * arc;
 
         transform.position = pos;
 
-        if (spinSpeed != 0f)
-            transform.rotation = Quaternion.AngleAxis(spinSpeed * spendElapsed, Vector3.up) * spendStartRot;
+        transform.rotation = Quaternion.AngleAxis(spinSpeed * spendSpinMultiplier * spendElapsed, spendSpinAxis) * spendStartRot;
+        visualRoot.localScale = initVisualLocalScale * (t >= 1f ? 0f : Mathf.Max(0f, spendSettings.Scale.Evaluate(t)));
 
         SyncKinematicRigidbody();
     }
@@ -205,6 +224,16 @@ public class PickupAnimationHandler
         spendStartRot  = Quaternion.identity;
         spendElapsed   = 0f;
         spendCompleted = null;
+        spendSettings = null;
+        spendLateralOffset = Vector3.zero;
+        spendSpinAxis = Vector3.up;
+        spendArcMultiplier = 1f;
+        spendSpinMultiplier = 1f;
+    }
+
+    private float SampleSpendRange(float min, float max)
+    {
+        return Mathf.Lerp(min, max, (float)spendRandom.NextDouble());
     }
 
     public void ResetVisualState()

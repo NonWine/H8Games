@@ -11,6 +11,10 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
 
     private readonly ITargetTrackerHandler targetTracker;
     private readonly ITargetReservationHandler reservationHandlerAttackers;
+    private readonly SignalBus signalBus;
+
+    // Feedback needs to tell a kill from a loss; the combat rules never read it.
+    protected abstract CombatSide Side { get; }
 
     public Vector3 Position => agentView.Transform.position;
     public bool IsAlive => runtimeModel.IsAlive;
@@ -23,11 +27,13 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
         TModel runtimeModel,
         CombatUnitModules modules,
         ITargetTrackerHandler targetTracker,
-        ITargetReservationHandler targetReservationHandler)
+        ITargetReservationHandler targetReservationHandler,
+        SignalBus signalBus)
     {
         this.runtimeModel = runtimeModel;
         this.modules = modules;
         this.targetTracker = targetTracker;
+        this.signalBus = signalBus;
         reservationHandlerAttackers = targetReservationHandler;
         agentView = runtimeModel.View;
     }
@@ -64,6 +70,14 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
 
         runtimeModel.LastHitData = hitData;
         ParticlePool.Instance.PlayHit(agentView.Transform.position);
+
+        // Fired before ApplyDamage, and with the lethality worked out up front,
+        // so a listener always sees the hit before the death it caused.
+        // ApplyDamage raises Died synchronously, so firing afterwards would
+        // deliver the kill first and leave every listener to reorder it back.
+        bool wasLethal = modules.Health.CurrentHealth - hitData.damage <= 0f;
+        signalBus.Fire(new UnitDamagedSignal(agentView.Transform.position, hitData.damage, Side, wasLethal));
+
         modules.Health.ApplyDamage(hitData.damage);
         agentView.PlayHitFeedback();
     }
@@ -101,6 +115,7 @@ public abstract class BaseCombatAgentController<TModel> : ITickable, IInitializa
     protected virtual void OnDied()
     {
         ChangeToDeadState();
+        signalBus.Fire(new UnitDiedSignal(agentView.Transform.position, Side));
         Died?.Invoke();
     }
 

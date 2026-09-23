@@ -8,6 +8,7 @@ public class SquadBarracksSpawner : MonoBehaviour
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private BarracksStats barracksStats;
     [SerializeField] private GameObject[] barracks;
+    [SerializeField] private BarracksUpgradeRevealView upgradeReveal;
 
     private SoldierFactory soldierFactory;
     private SquadFormationFacade squadFormationFacade;
@@ -72,7 +73,16 @@ public class SquadBarracksSpawner : MonoBehaviour
 
     public void UpgradeLevel()
     {
+        GameObject previousModel = barracksStats?.BarrackLevelData.UnitModel;
         barracksStats?.Update();
+        GameObject nextModel = barracksStats?.BarrackLevelData.UnitModel;
+
+        if (upgradeReveal != null && previousModel != null && nextModel != null && previousModel != nextModel)
+        {
+            upgradeReveal.Play(previousModel, nextModel);
+            return;
+        }
+
         SetBarrackView();
     }
 

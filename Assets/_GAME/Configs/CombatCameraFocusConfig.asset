@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22bc7e007a66a2c4ba9cad68bef1488d, type: 3}
+  m_Name: CombatCameraFocusConfig
+  m_EditorClassIdentifier: 
+  <Enabled>k__BackingField: 1
+  <OffsetScale>k__BackingField: 0.62
+  <HeightScale>k__BackingField: 0.9
+  <DefaultFieldOfView>k__BackingField: 71.2
+  <FieldOfView>k__BackingField: 70.2
+  <PositionSmoothTime>k__BackingField: 0.45
+  <LookAtSmoothTime>k__BackingField: 0.55
+  <CombatAnchorBlend>k__BackingField: 0.65
+  <TargetScreenWeight>k__BackingField: 0.85
+  <MaxTargetLookAhead>k__BackingField: 5.5
+  <EnterDuration>k__BackingField: 0.95
+  <ExitDuration>k__BackingField: 1.1
+  <TargetInfluence>k__BackingField: 0.25
+  <MaxAttentionOffset>k__BackingField: 2.5
+  <FocusInDuration>k__BackingField: 0.2
+  <FocusHoldDuration>k__BackingField: 0.32
+  <FocusOutDuration>k__BackingField: 0.4
+  <TargetSwitchSmoothTime>k__BackingField: 0.15
+  <AttackerMatchRadius>k__BackingField: 1.5
+  <UseFocusZoom>k__BackingField: 1
+  <FocusZoomPercent>k__BackingField: 0.05006
+  <SwitchPunchDegrees>k__BackingField: 1
+  <SwitchPunchDuration>k__BackingField: 0.22
+  <SwitchFlashColor>k__BackingField: {r: 0.22, g: 0.85, b: 1, a: 1}
+  <SwitchFlashDuration>k__BackingField: 0.18
+  <EnterEase>k__BackingField: 9
+  <ExitEase>k__BackingField: 4

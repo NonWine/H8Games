@@ -28,6 +28,8 @@ public class SquadFollowSettings : ScriptableObject
     [SerializeField] private float soldierRotationSpeed = 540f;
     [Min(0.01f)]
     [SerializeField] private float slotReachThreshold = 0.12f;
+    [Min(0f)]
+    [SerializeField] private float slotSettleRadius = 1.6f;
 
     [Header("Moving Formation Variation")]
     [Min(0f)]
@@ -64,6 +66,7 @@ public class SquadFollowSettings : ScriptableObject
     public float SoldierMoveSpeed => soldierMoveSpeed;
     public float SoldierRotationSpeed => soldierRotationSpeed;
     public float SlotReachThreshold => slotReachThreshold;
+    public float SlotSettleRadius => slotSettleRadius;
     public float MovingSlotOffsetRadius => movingSlotOffsetRadius;
     public float SoldierFollowSmoothTime => soldierFollowSmoothTime;
     public float MovingFacingToSlotWeight => movingFacingToSlotWeight;

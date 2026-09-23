@@ -101,7 +101,7 @@ Material:
     - _CaveBlend: 0
     - _CaveDistortion: 0
     - _DepthCompareDistance: 0.1
-    - _DepthFadeDistance: 10
+    - _DepthFadeDistance: 0
     - _FoamBlend: 0.09
     - _FresnelPower: 1
     - _GradientRefractionScale: 10
@@ -131,7 +131,7 @@ Material:
     - _RefractionSpeed: 0.01
     - _RefractionStrength: 0
     - _RippleStrength: 83.62
-    - _Saturation: 1
+    - _Saturation: 1.45
     - _SecondaryFoamBlend: 0.06
     - _Show: 0
     - _SkyboxForce: 2.5
@@ -141,7 +141,7 @@ Material:
     - _SurfaceFoamSpeed: 0
     - _SurfaceFoamTiling: 0.53
     - _TileSize: 200
-    - _Value: 1
+    - _Value: 1.83
     - _WORLD_SPACE_UV: 1
     - _WaterAlpha: 1
     - _WaterMetallic: 0.559

@@ -15,7 +15,7 @@ public class EnemyDeadState : EnemyStateBase
         var ragdoll = (model.View as BaseCombatAgentView)?.RagdollView;
 
         var damageData = UnitDamageData.FromHitData(model.LastHitData, model.Transform.position);
-        ragdoll.EnableRagdoll(damageData);
+        ragdoll.EnableRagdoll(damageData, true);
 
         modules.Death.HandleDeathAsync().Forget();
     }

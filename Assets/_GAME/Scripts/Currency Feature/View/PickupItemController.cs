@@ -29,16 +29,20 @@ public class PickupItemController
     {
         PickupId = pickupId;
         Amount = amount;
+        view.Idle.Stop();
         state = PickupState.World;
+        view.Idle.Begin(visualConfig.GroundIdle);
         view.SetActivePose(null);
         view.Transform.SetParent(null, true);
         view.Physics.PlaceAt(position, Quaternion.identity);
-        view.Physics.EnableWorldPhysics(visualConfig.UseGravity);
+        view.Physics.EnableWorldPhysics(visualConfig.UseGravity, visualConfig.GravityMultiplier);
         view.Physics.ApplyScatterVelocity(scatterDirection, visualConfig.MinHorizSpeed, visualConfig.MaxHorizSpeed, visualConfig.MinVertSpeed, visualConfig.MaxVertSpeed, visualConfig.MaxAngularSpeed);
+        view.Impact.Configure(visualConfig.ImpactGroundMask, visualConfig.ImpactMinSpeed, visualConfig.ImpactFxCooldown);
     }
 
     public void PlayCollectAnimation(Transform anchor, Vector3 localTargetPos, Quaternion localTargetRot, Action onCompleted)
     {
+        view.Idle.Stop();
         state = PickupState.Collecting;
         view.Animation.BeginCollect(anchor, localTargetPos, localTargetRot, onCompleted);
         view.Transform.SetParent(null, true);
@@ -48,6 +52,7 @@ public class PickupItemController
 
     public void ForceAttachToCarry(Transform anchor, Vector3 localPos, Quaternion localRot)
     {
+        view.Idle.Stop();
         state = PickupState.Carried;
         view.Animation.BeginCarry(anchor, localPos, localRot);
         view.Transform.SetParent(null, true);
@@ -73,17 +78,20 @@ public class PickupItemController
     // never sucks it back in while the player is dead.
     public void DiscardFromCarry(Vector3 scatterDirection)
     {
+        view.Idle.Stop();
         state = PickupState.Discarded;
         view.SetActivePose(null);
         view.Transform.SetParent(null, true);
-        view.Physics.EnableWorldPhysics(visualConfig.UseGravity);
+        view.Physics.EnableWorldPhysics(visualConfig.UseGravity, visualConfig.GravityMultiplier);
         view.Physics.ApplyScatterVelocity(scatterDirection, visualConfig.MinHorizSpeed, visualConfig.MaxHorizSpeed, visualConfig.MinVertSpeed, visualConfig.MaxVertSpeed, visualConfig.MaxAngularSpeed);
+        view.Impact.Configure(visualConfig.ImpactGroundMask, visualConfig.ImpactMinSpeed, visualConfig.ImpactFxCooldown);
     }
 
     public void InitializeAsSpendProjectile(string pickupId, Vector3 origin)
     {
         PickupId = pickupId;
         Amount = 1;
+        view.Idle.Stop();
         state = PickupState.None;
         view.SetActivePose(null);
         view.Transform.SetParent(null, true);
@@ -92,11 +100,14 @@ public class PickupItemController
 
     public void PlaySpendAnimation(Transform target, Action onCompleted)
     {
+        view.Idle.Stop();
         state = PickupState.Spending;
-        view.Animation.BeginSpend(target, onCompleted);
+        view.PrepareSpendPresentation();
+        view.Animation.BeginSpend(target, visualConfig.SpendPresentation, onCompleted);
         view.Transform.SetParent(null, true);
         view.Physics.EnableCarryPhysics();
         view.SetActivePose(() => view.Animation.ApplySpendPose(visualConfig.SpendDuration, visualConfig.JumpPower, visualConfig.SpendSpinSpeed, visualConfig.SpendCurve));
+        view.Animation.ApplySpendPose(visualConfig.SpendDuration, visualConfig.JumpPower, visualConfig.SpendSpinSpeed, visualConfig.SpendCurve);
     }
 
     public void Tick(float deltaTime)
@@ -123,6 +134,7 @@ public class PickupItemController
             case PickupState.Spending:
                 if (view.Animation.TickSpend(deltaTime, visualConfig.SpendDuration))
                 {
+                    view.Animation.ApplySpendPose(visualConfig.SpendDuration, visualConfig.JumpPower, visualConfig.SpendSpinSpeed, visualConfig.SpendCurve);
                     var cb = view.Animation.SpendCompleted;
 
                     state = PickupState.None;

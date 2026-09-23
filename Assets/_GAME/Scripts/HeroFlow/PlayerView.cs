@@ -7,8 +7,10 @@ public class PlayerView : MonoBehaviour, IPickupCarryAnchorProvider
 {
     [SerializeField] private Transform attackPoint;
     [SerializeField] private Transform cameraAnchor;
+    [SerializeField] private Transform cameraLookAtAnchor;
+    [SerializeField] private Transform combatCameraAnchor;
     [SerializeField] private Transform carryAnchor;
-    [SerializeField] private WorldHealthBarView healthBarView;
+    [SerializeField] private HealthView healthBarView;
     [SerializeField] private SimpleProjectileView projectilePrefab;
     [SerializeField] private CharacterController characterController;
     [SerializeField] private Animator animator;
@@ -20,11 +22,13 @@ public class PlayerView : MonoBehaviour, IPickupCarryAnchorProvider
 
     public Transform AttackOrigin => attackPoint;
     public Transform CameraAnchor => cameraAnchor;
+    public Transform CameraLookAtAnchor => cameraLookAtAnchor != null ? cameraLookAtAnchor : cameraAnchor;
+    public Transform CombatCameraAnchor => combatCameraAnchor != null ? combatCameraAnchor : cameraAnchor;
     public Transform CarryAnchor => carryAnchor;
     public Joystick MovementJoystick => movementJoystick;
     public CharacterController CharacterController => characterController;
     public Animator Animator => animator;
-    public WorldHealthBarView HealthBarView => healthBarView;
+    public IHealthView HealthBar => healthBarView;
 
     public bool TryGetAnchor(out Transform anchor)
     {

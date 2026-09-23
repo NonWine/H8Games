@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-public class SquadFormationController
+public class SquadFormationController : ISquadFormationLayoutSource
 {
     private readonly SquadRootView squadRootView;
     private readonly SquadFollowSettings settings;
@@ -16,10 +16,14 @@ public class SquadFormationController
     private readonly LazyInject<ISoldierDespawner> soldierDespawner;
 
     private readonly List<FormationSlot> slots = new();
+    private readonly List<SoldierCombatAgentController> unassignedSoldiers = new();
     private readonly Dictionary<SoldierCombatAgentController, Action> diedHandlers = new();
     private readonly SignalBus signalBus;
     private int capacity;
 
+    public event Action FormationChanged;
+
+    public IReadOnlyList<FormationSlot> Slots => slots;
     public int Capacity => capacity;
     public bool HasFreeSlot => registry.Count < capacity;
     public bool HasAlly => registry.HasLivingAllies;
@@ -124,6 +128,13 @@ public class SquadFormationController
     public void RebuildFormation()
     {
         registry.PruneInvalid();
+        BuildSlots();
+        AssignSoldiersToClosestSlots();
+        FormationChanged?.Invoke();
+    }
+
+    private void BuildSlots()
+    {
         slots.Clear();
 
         List<Vector3> offsets = squadFormationLayoutService.CalculateLocalOffsets(capacity);
@@ -132,19 +143,63 @@ public class SquadFormationController
         {
             slots.Add(new FormationSlot(i, offsets[i]));
         }
+    }
+
+    // Slots used to be handed out in registry order, so one death re-indexed every
+    // soldier behind the gap and the whole squad swapped places at once. Eight
+    // soldiers walking through each other is exactly the case local avoidance
+    // cannot resolve, and whoever lost the standoff never reached its slot.
+    // Filling each slot with the closest soldier keeps the formation just as
+    // compact while leaving almost everybody where they already stand.
+    private void AssignSoldiersToClosestSlots()
+    {
+        unassignedSoldiers.Clear();
+        unassignedSoldiers.AddRange(registry.Soldiers);
 
         for (int i = 0; i < slots.Count; i++)
         {
-            SoldierCombatAgentController soldier = i < registry.Soldiers.Count ? registry.Soldiers[i] : null;
             FormationSlot slot = slots[i];
+            SoldierCombatAgentController soldier = TakeClosestSoldier(GetSlotWorldPosition(slot));
             slot.AssignedSoldier = soldier;
 
-            if (soldier != null)
+            if (soldier == null)
             {
-                soldier.AssignSquad(squadRootView);
-                soldier.AssignSlot(slot);
+                continue;
             }
+
+            soldier.AssignSquad(squadRootView);
+            soldier.AssignSlot(slot);
         }
+    }
+
+    private SoldierCombatAgentController TakeClosestSoldier(Vector3 slotWorldPosition)
+    {
+        int closestIndex = -1;
+        float closestSqrDistance = float.MaxValue;
+
+        for (int i = 0; i < unassignedSoldiers.Count; i++)
+        {
+            Vector3 delta = unassignedSoldiers[i].Position - slotWorldPosition;
+            delta.y = 0f;
+
+            if (delta.sqrMagnitude >= closestSqrDistance)
+            {
+                continue;
+            }
+
+            closestSqrDistance = delta.sqrMagnitude;
+            closestIndex = i;
+        }
+
+        if (closestIndex < 0)
+        {
+            return null;
+        }
+
+        SoldierCombatAgentController closest = unassignedSoldiers[closestIndex];
+        unassignedSoldiers.RemoveAt(closestIndex);
+
+        return closest;
     }
 
     public Vector3 GetSlotWorldPosition(FormationSlot slot)

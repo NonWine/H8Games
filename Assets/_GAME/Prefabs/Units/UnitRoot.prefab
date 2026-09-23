@@ -445,6 +445,8 @@ MonoBehaviour:
   upwardDirectionFactor: 0.5
   additionalUpwardImpulse: 2
   randomTorqueForce: 1.2
+  deathKnockbackForceMin: 4
+  deathKnockbackForceMax: 10
   startLinearDamping: 0.05
   startAngularDamping: 0.05
   settledLinearDamping: 1.5

@@ -1,14 +1,19 @@
+using Zenject;
+
 public class EnemyCombatAgentController : BaseCombatAgentController<EnemyRuntimeModel>
 {
     private readonly EnemyStateMachine stateMachine;
+
+    protected override CombatSide Side => CombatSide.Enemy;
 
     public EnemyCombatAgentController(
         EnemyRuntimeModel runtimeModel,
         CombatUnitModules modules,
         EnemyStateMachine stateMachine,
         ITargetTrackerHandler targetTrackerHandler,
-        ITargetReservationHandler targetReservationHandler)
-        : base(runtimeModel, modules, targetTrackerHandler, targetReservationHandler)
+        ITargetReservationHandler targetReservationHandler,
+        SignalBus signalBus)
+        : base(runtimeModel, modules, targetTrackerHandler, targetReservationHandler, signalBus)
     {
         this.stateMachine = stateMachine;
     }

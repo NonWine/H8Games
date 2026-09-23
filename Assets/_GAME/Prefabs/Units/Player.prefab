@@ -24,13 +24,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2112872943614323587}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.153, z: 0}
+  m_LocalRotation: {x: -0.37865385, y: -0.0000002831221, z: 0.000000005587936, w: 0.92553836}
+  m_LocalPosition: {x: 0, y: 14.58, z: -13.88}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 7015833431241976852}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Father: {fileID: 938778802246508214}
+  m_LocalEulerAnglesHint: {x: -44.501, y: 0, z: 0}
 --- !u!1 &2219294345864612596
 GameObject:
   m_ObjectHideFlags: 0
@@ -71,8 +71,8 @@ Transform:
   m_Children:
   - {fileID: 8053813438429543557}
   - {fileID: 4336257952065069858}
-  - {fileID: 3707676204388540313}
   - {fileID: 7322730919446662416}
+  - {fileID: 938778802246508214}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2909014775975443010
@@ -128,7 +128,9 @@ MonoBehaviour:
   - {fileID: 1160555249001208370}
   - {fileID: 1160555248852950360}
   - {fileID: 1160555249913138002}
-  timeToSetColor: 0.12
+  timeToSetColor: 0.08
+  hitFlashMinInterval: 0.15
+  useUnscaledHitFlashTime: 1
   emissionHitColor: {r: 1, g: 0.8627451, b: 0.19607843, a: 1}
   hitGlow: 5
   hitBlend: 1
@@ -172,6 +174,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackPoint: {fileID: 8805818230395325000}
   cameraAnchor: {fileID: 3707676204388540313}
+  cameraLookAtAnchor: {fileID: 1659170380182078516}
+  combatCameraAnchor: {fileID: 7952497536213150549}
   carryAnchor: {fileID: 7322730919446662416}
   healthBarView: {fileID: 5908764474789611670}
   projectilePrefab: {fileID: 4041960524083155756, guid: 4d339c7c02696d14196569d8dae8f7b8, type: 3}
@@ -477,6 +481,115 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7015833431241976852}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5355263241299886681
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 938778802246508214}
+  - component: {fileID: 88880125990039476}
+  m_Layer: 6
+  m_Name: CombatCameraAnchorRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &938778802246508214
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5355263241299886681}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 7952497536213150549}
+  - {fileID: 3707676204388540313}
+  - {fileID: 1659170380182078516}
+  m_Father: {fileID: 7015833431241976852}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &88880125990039476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5355263241299886681}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc6a2c37be3ffcc41b9b8b9e65f3d872, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!1 &8262067474060261608
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1659170380182078516}
+  m_Layer: 6
+  m_Name: CameraLookAtAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1659170380182078516
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8262067474060261608}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 2.153, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 938778802246508214}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8729335340298631377
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7952497536213150549}
+  m_Layer: 6
+  m_Name: CombatCameraAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7952497536213150549
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8729335340298631377}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.5314809, y: 0.19663233, z: 0.1284074, w: 0.81386447}
+  m_LocalPosition: {x: -2.031, y: 4.052, z: -3.193}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 938778802246508214}
+  m_LocalEulerAnglesHint: {x: -66.292, y: 27.165, z: 0}
 --- !u!1001 &269058835138375513
 PrefabInstance:
   m_ObjectHideFlags: 0

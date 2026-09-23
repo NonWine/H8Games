@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37f7d4a13ebcc2146be7917a6f37d0a8, type: 3}
+  m_Name: FloatingNumberConfig
+  m_EditorClassIdentifier: 
+  <EnemyDamageColor>k__BackingField: {r: 1, g: 0.78, b: 0.18, a: 1}
+  <FriendlyDamageColor>k__BackingField: {r: 1, g: 0.28, b: 0.24, a: 1}
+  <CoinColor>k__BackingField: {r: 1, g: 0.85, b: 0.2, a: 1}
+  <DamageOffset>k__BackingField: {x: 0, y: 2.2, z: 0}
+  <CoinOffset>k__BackingField: {x: 0, y: 1.2, z: 0}
+  <LateralJitter>k__BackingField: 0.32
+  <Duration>k__BackingField: 1.1
+  <RiseDistance>k__BackingField: 1.7
+  <DamageFontSize>k__BackingField: 19.11
+  <CoinFontSize>k__BackingField: 18.14
+  <LethalScale>k__BackingField: 1.25

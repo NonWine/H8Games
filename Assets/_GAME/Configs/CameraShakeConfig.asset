@@ -1,0 +1,147 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9bb800cf606a3940b0b3c558976a5dc, type: 3}
+  m_Name: CameraShakeConfig
+  m_EditorClassIdentifier: 
+  Enabled: 1
+  MasterAmplitude: 1
+  MaxConcurrentShakes: 3
+  UseUnscaledTime: 1
+  HeroDamage:
+    Duration: 0.1
+    PositionAmplitude: 0.06
+    RotationAmplitude: 0.25
+    Frequency: 24
+    DirectionalPunch: 0.015
+    DepthInfluence: 0.1
+    Envelope:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: -2.5
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: -0.5
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  HeroDamageMinInterval: 0.15
+  HeroDamageStrengthMin: 1.5
+  HeroDamageStrengthMax: 2.5
+  UseHitDirection: 1
+  EnemyKill:
+    Duration: 0.12
+    PositionAmplitude: 0.06
+    RotationAmplitude: 0.35
+    Frequency: 30
+    DirectionalPunch: 0
+    DepthInfluence: 0.15
+    Envelope:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: -2.5
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: -0.5
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  EnemyKillMinInterval: 0.08
+  SquadClash:
+    Duration: 0.35
+    PositionAmplitude: 0.22
+    RotationAmplitude: 1.1
+    Frequency: 18
+    DirectionalPunch: 0
+    DepthInfluence: 0.3
+    Envelope:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: -2.5
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: -0.5
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  CaptureComplete:
+    Duration: 0.5
+    PositionAmplitude: 0.3
+    RotationAmplitude: 1.4
+    Frequency: 14
+    DirectionalPunch: 0
+    DepthInfluence: 0.35
+    Envelope:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: -2.5
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: -0.5
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
