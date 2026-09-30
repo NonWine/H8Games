@@ -5,6 +5,8 @@ public class EnemyAttackState : EnemyStateBase
     private readonly BaseCombatAgentView combatView;
     private readonly UnitRotatorService unitRotatorService;
     private readonly AttackRuntimeModel attackData;
+    private readonly EnemySortiePlanner sortiePlanner;
+    private readonly EnemySortieConfig sortieConfig;
 
     public EnemyAttackState(
         EnemyRuntimeModel model,
@@ -12,26 +14,36 @@ public class EnemyAttackState : EnemyStateBase
         AgentAnimationController agentAnimationController,
         BaseCombatAgentView combatView,
         UnitRotatorService unitRotatorService,
-        AttackRuntimeModel attackData)
+        AttackRuntimeModel attackData,
+        EnemySortiePlanner sortiePlanner,
+        EnemySortieConfig sortieConfig)
         : base(model, modules, agentAnimationController)
     {
         this.combatView = combatView;
         this.unitRotatorService = unitRotatorService;
         this.attackData = attackData;
+        this.sortiePlanner = sortiePlanner;
+        this.sortieConfig = sortieConfig;
     }
 
     public override void Enter()
     {
         attackData.CooldownRemaining = 0f;
         agentAnimationController.SetAnimationState(UnitState.Attack);
-
+        sortiePlanner.BeginFight(Time.time);
     }
 
     public override void Tick()
     {
         if (!Enemy.HasValidTarget)
         {
-            ChangeState<EnemyIdleState>();
+            LeaveFight();
+            return;
+        }
+
+        if (TryPlanSortie())
+        {
+            ChangeState<EnemySortieState>();
             return;
         }
 
@@ -49,6 +61,26 @@ public class EnemyAttackState : EnemyStateBase
     public override void Exit()
     {
         attackData.CooldownRemaining = attackData.GetRandomizedCooldown();
+    }
+
+    private void LeaveFight()
+    {
+        if (Enemy.IsAtPost(sortieConfig.PostReachThreshold))
+        {
+            ChangeState<EnemyIdleState>();
+            return;
+        }
+
+        ChangeState<EnemyReturnState>();
+    }
+
+    private bool TryPlanSortie()
+    {
+        return sortiePlanner.TryPlanSortie(
+            Time.time,
+            Enemy.PostPosition,
+            Enemy.Transform.position,
+            Enemy.CurrentTarget.transform.position);
     }
 
     private void HandleAttack()

@@ -1,7 +1,10 @@
+using UnityEngine;
 using Zenject;
 
 public class EnemyCombatAgentInstaller : CombatAgentInstaller
 {
+    [SerializeField] private EnemySortieConfig sortieConfig;
+
     protected override void BindModules()
     {
         base.BindModules();
@@ -18,6 +21,7 @@ public class EnemyCombatAgentInstaller : CombatAgentInstaller
     {
         BindTargeting();
         BindRuntime();
+        BindSortie();
         BindStateMachine();
         BindController();
     }
@@ -40,10 +44,19 @@ public class EnemyCombatAgentInstaller : CombatAgentInstaller
             .AsSingle();
     }
 
+    private void BindSortie()
+    {
+        Container.BindInstance(sortieConfig).AsSingle();
+        Container.Bind<EnemySortiePlanner>().AsSingle();
+        Container.Bind<EnemyNavMeshMover>().AsSingle();
+    }
+
     private void BindStateMachine()
     {
         Container.Bind<EnemyStateBase>().To<EnemyIdleState>().AsSingle();
         Container.Bind<EnemyStateBase>().To<EnemyAttackState>().AsSingle();
+        Container.Bind<EnemyStateBase>().To<EnemySortieState>().AsSingle();
+        Container.Bind<EnemyStateBase>().To<EnemyReturnState>().AsSingle();
         Container.Bind<EnemyStateBase>().To<EnemyDeadState>().AsSingle();
         Container.Bind<EnemyStateMachine>().AsSingle();
     }

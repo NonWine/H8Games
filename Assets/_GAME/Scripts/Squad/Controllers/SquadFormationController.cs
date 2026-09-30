@@ -26,6 +26,7 @@ public class SquadFormationController : ISquadFormationLayoutSource
     public IReadOnlyList<FormationSlot> Slots => slots;
     public int Capacity => capacity;
     public bool HasFreeSlot => registry.Count < capacity;
+    public bool IsFull => !HasFreeSlot;
     public bool HasAlly => registry.HasLivingAllies;
 
     public SquadFormationController(
@@ -123,6 +124,7 @@ public class SquadFormationController : ISquadFormationLayoutSource
         registry.Clear();
         squadRootView.transform.position = squadRootView.HomePosition;
         squadRootView.transform.rotation = Quaternion.identity;
+        FormationChanged?.Invoke();
     }
 
     public void RebuildFormation()

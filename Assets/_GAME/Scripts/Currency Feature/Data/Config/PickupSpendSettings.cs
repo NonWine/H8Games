@@ -4,18 +4,43 @@ using UnityEngine;
 [Serializable]
 public class PickupSpendSettings
 {
-    [SerializeField] private Vector2 arcMultiplier = new Vector2(0.85f, 1.15f);
-    [SerializeField, Min(0f)] private float lateralOffset = 0.25f;
-    [SerializeField] private Vector2 spinMultiplier = new Vector2(0.75f, 1.25f);
-    [SerializeField, Range(0f, 180f)] private float initialTilt = 45f;
-    [SerializeField] private AnimationCurve scale = new AnimationCurve(
-        new Keyframe(0f, 0f), new Keyframe(0.18f, 1.1f),
-        new Keyframe(0.32f, 1f), new Keyframe(0.65f, 1f),
-        new Keyframe(1f, 0f));
+    [SerializeField] private PickupSpendPreset preset = PickupSpendPreset.Balanced;
+    [Tooltip("Only used when Preset is set to Custom. Use the config's context menu to bake the " +
+             "selected preset into these fields and switch to Custom.")]
+    [SerializeField] private PickupSpendAnimationSettings custom = new PickupSpendAnimationSettings();
 
-    public Vector2 ArcMultiplier => arcMultiplier;
-    public float LateralOffset => lateralOffset;
-    public Vector2 SpinMultiplier => spinMultiplier;
-    public float InitialTilt => initialTilt;
-    public AnimationCurve Scale => scale;
+    [NonSerialized] private PickupSpendAnimationSettings resolved;
+    [NonSerialized] private PickupSpendPreset resolvedFor = (PickupSpendPreset)(-1);
+
+    private PickupSpendAnimationSettings Active
+    {
+        get
+        {
+            if (resolved == null || resolvedFor != preset)
+            {
+                resolved = preset == PickupSpendPreset.Custom ? custom : PickupSpendPresets.Create(preset);
+                resolvedFor = preset;
+            }
+
+            return resolved;
+        }
+    }
+
+    public Vector2 ArcMultiplier => Active.ArcMultiplier;
+    public float LateralOffset => Active.LateralOffset;
+    public Vector2 SpinMultiplier => Active.SpinMultiplier;
+    public float InitialTilt => Active.InitialTilt;
+    public AnimationCurve Scale => Active.Scale;
+
+    public void InvalidateCache()
+    {
+        resolved = null;
+    }
+
+    public void BakePresetIntoCustom()
+    {
+        custom = PickupSpendPresets.Create(preset).Clone();
+        preset = PickupSpendPreset.Custom;
+        resolved = null;
+    }
 }

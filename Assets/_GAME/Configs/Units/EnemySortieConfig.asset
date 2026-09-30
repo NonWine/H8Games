@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74b6dc650b25bae43abbd98eeb6d8830, type: 3}
+  m_Name: EnemySortieConfig
+  m_EditorClassIdentifier: 
+  chance: 0.3
+  firstSortieDelayRange: {x: 1.5, y: 4.5}
+  repeatSortieDelayRange: {x: 5, y: 9}
+  maxSortiesPerFight: 2
+  stepDistanceRange: {x: 1.2, y: 2.5}
+  minStepDistance: 0.6
+  leashRadius: 3.5
+  minDistanceToTarget: 4
+  headingJitterAngle: 30
+  sortieSpeedMultiplier: 1
+  returnSpeedMultiplier: 1
+  maxSortieDuration: 3
+  maxReturnDuration: 6
+  arriveThreshold: 0.15
+  postReachThreshold: 0.3
+  returnRotationSpeed: 360

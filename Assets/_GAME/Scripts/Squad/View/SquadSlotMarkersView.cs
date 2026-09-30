@@ -12,6 +12,7 @@ public class SquadSlotMarkersView : MonoBehaviour
     [SerializeField] private float groundOffsetY = 0.02f;
 
     private readonly List<GameObject> markers = new();
+    private readonly List<SquadSlotMarkerView> markerFeedback = new();
 
     private Transform MarkersParent => markersRoot != null ? markersRoot : transform;
 
@@ -40,6 +41,25 @@ public class SquadSlotMarkersView : MonoBehaviour
         }
     }
 
+    // Arrival feedback is addressed by slot index, so a marker that is currently
+    // hidden (the squad shrank) silently swallows the call instead of popping in.
+    public void PlayArrivalFeedback(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= markerFeedback.Count)
+        {
+            return;
+        }
+
+        SquadSlotMarkerView feedback = markerFeedback[slotIndex];
+
+        if (!feedback.gameObject.activeInHierarchy)
+        {
+            return;
+        }
+
+        feedback.PlayArrival();
+    }
+
     private GameObject GetOrCreateMarker(int index)
     {
         if (index < markers.Count)
@@ -51,6 +71,7 @@ public class SquadSlotMarkersView : MonoBehaviour
         marker.name = $"{markerPrefab.name}({index})";
         marker.transform.localRotation = Quaternion.identity;
         markers.Add(marker);
+        markerFeedback.Add(marker.GetComponent<SquadSlotMarkerView>());
 
         return marker;
     }

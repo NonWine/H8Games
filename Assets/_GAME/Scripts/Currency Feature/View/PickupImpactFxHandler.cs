@@ -3,6 +3,8 @@ using UnityEngine;
 public class PickupImpactFxHandler
 {
     private readonly ParticleSystem impactFx;
+    private readonly Vector3        authoredLocalPos;
+    private readonly Quaternion     authoredLocalRot;
 
     private LayerMask groundMask;
     private float     minImpactSpeed;
@@ -13,6 +15,26 @@ public class PickupImpactFxHandler
     public PickupImpactFxHandler(ParticleSystem impactFx)
     {
         this.impactFx = impactFx;
+
+        if (impactFx == null)
+            return;
+
+        authoredLocalPos = impactFx.transform.localPosition;
+        authoredLocalRot = impactFx.transform.localRotation;
+    }
+
+    public void PlayAtSelf()
+    {
+        if (impactFx == null)
+            return;
+
+        if (Time.time < nextAllowedTime)
+            return;
+
+        nextAllowedTime = Time.time + cooldown;
+
+        impactFx.transform.SetLocalPositionAndRotation(authoredLocalPos, authoredLocalRot);
+        impactFx.Play(true);
     }
 
     public void Configure(LayerMask groundMask, float minImpactSpeed, float cooldown)

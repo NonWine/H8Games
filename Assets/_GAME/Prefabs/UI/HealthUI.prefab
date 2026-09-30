@@ -34,7 +34,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -8, y: -8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &6778376746764668608
 GameObject:
@@ -46,9 +46,8 @@ GameObject:
   m_Component:
   - component: {fileID: 8767343695999930957}
   - component: {fileID: 8073048052713333977}
-  - component: {fileID: 529959168443424938}
   - component: {fileID: 683376420776475225}
-  - component: {fileID: 5190580195857008143}
+  - component: {fileID: 8592302647031206130}
   m_Layer: 0
   m_Name: Slider_Level
   m_TagString: Untagged
@@ -63,18 +62,18 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6778376746764668608}
-  m_LocalRotation: {x: 0.50452757, y: 0, z: 0, w: 0.86339563}
-  m_LocalPosition: {x: 0, y: 0, z: 0.135}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3220227012901680580}
   m_Father: {fileID: 4582017036163959931}
-  m_LocalEulerAnglesHint: {x: 60.6, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -0.018}
-  m_SizeDelta: {x: 1.5, y: 0.25}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 150, y: 26}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8073048052713333977
 CanvasRenderer:
@@ -84,36 +83,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6778376746764668608}
   m_CullTransparentMesh: 0
---- !u!114 &529959168443424938
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6778376746764668608}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: b5b935fd153444e4dbf14b44a78b54b3, type: 3}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 732.3
 --- !u!114 &683376420776475225
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -153,19 +122,19 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 529959168443424938}
+  m_Interactable: 0
+  m_TargetGraphic: {fileID: 8592302647031206130}
   m_FillRect: {fileID: 7207072360692045577}
   m_HandleRect: {fileID: 0}
   m_Direction: 0
   m_MinValue: 0
-  m_MaxValue: 10
+  m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 10
+  m_Value: 1
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &5190580195857008143
+--- !u!114 &8592302647031206130
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -174,12 +143,42 @@ MonoBehaviour:
   m_GameObject: {fileID: 6778376746764668608}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Script: {fileID: 11500000, guid: b093625672d2c11468e677f2214cd572, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
-  m_EffectDistance: {x: 0.02, y: 0.02}
-  m_UseGraphicAlpha: 1
+  m_Material: {fileID: 2100000, guid: 37b1e5dbbdcf3e0488d4329d8db2633e, type: 2}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  palette: 36
+  style: 3
+  depth: 0
+  shape: 0
+  cornerRadius: 13
+  outlineWidth: 0
+  gradientMode: 0
+  presetMode: 0
+  hasPresetMode: 1
+  topLeft: {r: 0.13725491, g: 0.16862746, b: 0.26666668, a: 1}
+  topRight: {r: 0.13725491, g: 0.16862746, b: 0.26666668, a: 1}
+  bottomRight: {r: 0.08235294, g: 0.101960786, b: 0.16862746, a: 1}
+  bottomLeft: {r: 0.08235294, g: 0.101960786, b: 0.16862746, a: 1}
+  bevelSize: 0
+  shadowOffsetY: 3
+  shadowSoftness: 6
+  shadowAlpha: 0.35
+  effect: 0
+  effectStrength: 0.5
+  effectSpeed: 1
+  desyncFromSiblings: 1
+  pattern: 0
+  patternScale: 8
+  patternStrength: 0.35
+  patternSpeed: 0.1
 --- !u!1 &7742757959425203175
 GameObject:
   m_ObjectHideFlags: 0
@@ -191,7 +190,6 @@ GameObject:
   - component: {fileID: 4582017036163959931}
   - component: {fileID: 8367518003126455761}
   - component: {fileID: 4427576363008023203}
-  - component: {fileID: 2349764125191514206}
   - component: {fileID: 6431817907356763935}
   - component: {fileID: 5889519113890572239}
   m_Layer: 5
@@ -239,7 +237,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 25
+  m_AdditionalShaderChannelsFlag: 31
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -267,23 +265,6 @@ MonoBehaviour:
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
   m_PresetInfoIsWorld: 1
---- !u!114 &2349764125191514206
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7742757959425203175}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
-  m_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
 --- !u!225 &6431817907356763935
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -310,18 +291,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slider: {fileID: 683376420776475225}
   canvasRoot: {fileID: 4582017036163959931}
-  fillImage: {fileID: 8190614675785355645}
+  fillGraphic: {fileID: 4795262811748491989}
   healthText: {fileID: 0}
   barRoot: {fileID: 8767343695999930957}
   heart: {fileID: 0}
-  highColor: {fileID: 0}
-  midColor: {fileID: 0}
-  lowColor: {fileID: 0}
+  highPalette: 10
+  midPalette: 20
+  lowPalette: 13
+  fillStyle: 1
+  lowHpEffect: 3
+  lowHpEffectStrength: 0.45
+  lowHpEffectSpeed: 2.4
   fillTweenTime: 0.35
   midHpThreshold: 0.5
   lowHpThreshold: 0.25
   damagePunchStrength: 0.12
-  damageShakeStrength: 10
+  damageShakeStrength: 0.04
   damageFeedbackDuration: 0.3
 --- !u!1 &8263549410828870317
 GameObject:
@@ -333,7 +318,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7207072360692045577}
   - component: {fileID: 7429374993993982093}
-  - component: {fileID: 8190614675785355645}
+  - component: {fileID: 4795262811748491989}
   m_Layer: 0
   m_Name: Fill
   m_TagString: Untagged
@@ -368,7 +353,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8263549410828870317}
   m_CullTransparentMesh: 0
---- !u!114 &8190614675785355645
+--- !u!114 &4795262811748491989
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -377,24 +362,39 @@ MonoBehaviour:
   m_GameObject: {fileID: 8263549410828870317}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Script: {fileID: 11500000, guid: b093625672d2c11468e677f2214cd572, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.33490568, b: 0.33490568, a: 1}
+  m_Material: {fileID: 2100000, guid: 37b1e5dbbdcf3e0488d4329d8db2633e, type: 2}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: b5b935fd153444e4dbf14b44a78b54b3, type: 3}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 709.3
+  palette: 10
+  style: 1
+  depth: 0
+  shape: 0
+  cornerRadius: 9
+  outlineWidth: 0
+  gradientMode: 0
+  presetMode: 0
+  hasPresetMode: 1
+  topLeft: {r: 0.3882353, g: 0.84705883, b: 0.4745098, a: 1}
+  topRight: {r: 0.3882353, g: 0.84705883, b: 0.4745098, a: 1}
+  bottomRight: {r: 0.2, g: 0.69411767, b: 0.29803923, a: 1}
+  bottomLeft: {r: 0.2, g: 0.69411767, b: 0.29803923, a: 1}
+  bevelSize: 0
+  shadowOffsetY: 0
+  shadowSoftness: 0.5
+  shadowAlpha: 0
+  effect: 0
+  effectStrength: 0.5
+  effectSpeed: 1
+  desyncFromSiblings: 1
+  pattern: 0
+  patternScale: 8
+  patternStrength: 0.35
+  patternSpeed: 0.1

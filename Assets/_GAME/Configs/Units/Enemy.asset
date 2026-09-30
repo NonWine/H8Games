@@ -18,10 +18,10 @@ MonoBehaviour:
     AttackCooldownRange: {x: 0.8, y: 1.5}
     Damage: 2
     ProjectileSpeed: 33
-    DeathReward: 3
+    DeathReward: 5
     DeathPickupId: coin
   targetingData:
-    DetectionRadius: 12
+    DetectionRadius: 10
     ReservationPenalty: 3
     RetargetInterval: 0.35
     TargetLockDuration: 0.35

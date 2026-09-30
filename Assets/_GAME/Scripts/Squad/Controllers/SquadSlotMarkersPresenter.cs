@@ -6,15 +6,18 @@ public class SquadSlotMarkersPresenter : IInitializable, IDisposable
     private readonly ISquadFormationLayoutSource layoutSource;
     private readonly SquadSlotMarkersView view;
     private readonly SquadRootView squadRootView;
+    private readonly SignalBus signalBus;
 
     public SquadSlotMarkersPresenter(
         ISquadFormationLayoutSource layoutSource,
         SquadSlotMarkersView view,
-        SquadRootView squadRootView)
+        SquadRootView squadRootView,
+        SignalBus signalBus)
     {
         this.layoutSource = layoutSource;
         this.view = view;
         this.squadRootView = squadRootView;
+        this.signalBus = signalBus;
     }
 
     // The markers are anchored to the home pose once and never touched again: the
@@ -29,12 +32,19 @@ public class SquadSlotMarkersPresenter : IInitializable, IDisposable
     {
         view.AnchorTo(squadRootView.HomePosition, squadRootView.HomeRotation);
         layoutSource.FormationChanged += Redraw;
+        signalBus.Subscribe<SoldierReachedSlotSignal>(OnSoldierReachedSlot);
         Redraw();
     }
 
     public void Dispose()
     {
         layoutSource.FormationChanged -= Redraw;
+        signalBus.Unsubscribe<SoldierReachedSlotSignal>(OnSoldierReachedSlot);
+    }
+
+    private void OnSoldierReachedSlot(SoldierReachedSlotSignal signal)
+    {
+        view.PlayArrivalFeedback(signal.SlotIndex);
     }
 
     private void Redraw()

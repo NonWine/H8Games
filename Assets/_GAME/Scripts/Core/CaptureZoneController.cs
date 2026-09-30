@@ -7,7 +7,7 @@ public class CaptureZoneController : MonoBehaviour
 {
     [Header("Visuals")]
     [SerializeField] private GameObject root;
-    [SerializeField] private Image progressFillImage;
+    [SerializeField] private Slider progressSlider;
     [SerializeField] private CaptureZoneFeedbackView feedback;
 
     [Header("Capture")]
@@ -20,6 +20,9 @@ public class CaptureZoneController : MonoBehaviour
 
     [SerializeField, Min(0.01f)] private float appearDurationSeconds = 0.45f;
 
+    [Header("Preview")]
+    [SerializeField, Min(0f)] private float previewRestartDelaySeconds = 0.6f;
+
     private SignalBus signalBus;
     private ITerritoryCaptureFocusProvider captureFocusProvider;
 
@@ -27,8 +30,10 @@ public class CaptureZoneController : MonoBehaviour
     private Tween appearTween;
 
     private float captureProgress;
+    private float previewRestartTimer;
     private bool isPlayerInside;
     private bool isCaptured;
+    private bool previewMode;
 
     [Inject]
     public void Construct(
@@ -44,6 +49,11 @@ public class CaptureZoneController : MonoBehaviour
         // Read before the first hide: the pop-in scales from zero back to this.
         rootBaseScale = root.transform.localScale;
 
+        // The controller works in 0..1, so the fill never depends on whatever
+        // range the slider happens to be authored with.
+        progressSlider.minValue = 0f;
+        progressSlider.maxValue = 1f;
+
         root.SetActive(false);
         signalBus.Subscribe<LevelCompletedSignal>(Show);
     }
@@ -56,12 +66,22 @@ public class CaptureZoneController : MonoBehaviour
 
     private void Update()
     {
+        if (previewMode && isCaptured)
+        {
+            previewRestartTimer -= Time.deltaTime;
+
+            if (previewRestartTimer <= 0f)
+                RestartPreviewLoop();
+
+            return;
+        }
+
         bool isCapturing = isPlayerInside && !isCaptured;
 
         if (isCapturing)
         {
             captureProgress = Mathf.Clamp01(captureProgress + Time.deltaTime / captureDurationSeconds);
-            progressFillImage.fillAmount = captureProgress;
+            progressSlider.value = captureProgress;
 
             if (captureProgress >= 1f)
             {
@@ -76,7 +96,7 @@ public class CaptureZoneController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (isCaptured || other.GetComponentInParent<PlayerView>() == null)
+        if (previewMode || isCaptured || other.GetComponentInParent<PlayerView>() == null)
             return;
 
         isPlayerInside = true;
@@ -84,10 +104,30 @@ public class CaptureZoneController : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.GetComponentInParent<PlayerView>() == null)
+        if (previewMode || other.GetComponentInParent<PlayerView>() == null)
             return;
 
         isPlayerInside = false;
+    }
+
+    public void SetPreviewMode(bool enabled)
+    {
+        if (previewMode == enabled)
+            return;
+
+        previewMode = enabled;
+
+        if (enabled)
+        {
+            RestartPreviewLoop();
+            return;
+        }
+
+        appearTween?.Kill();
+        root.SetActive(false);
+        isPlayerInside = false;
+        isCaptured = false;
+        captureProgress = 0f;
     }
 
     private void Show()
@@ -95,12 +135,13 @@ public class CaptureZoneController : MonoBehaviour
         captureProgress = 0f;
         isPlayerInside = false;
         isCaptured = false;
-        progressFillImage.fillAmount = 0f;
+        progressSlider.value = 0f;
 
         if (feedback != null)
             feedback.ResetFeedback();
 
-        MoveToCaptureFocus();
+        if (!previewMode)
+            MoveToCaptureFocus();
 
         appearTween?.Kill();
         root.transform.localScale = Vector3.zero;
@@ -111,6 +152,14 @@ public class CaptureZoneController : MonoBehaviour
             .SetDelay(appearDelaySeconds)
             .SetEase(Ease.OutBack)
             .SetLink(gameObject);
+
+        if (previewMode)
+            appearTween.OnComplete(BeginPreviewCapture);
+    }
+
+    private void BeginPreviewCapture()
+    {
+        isPlayerInside = true;
     }
 
     // Only the ground plane moves. The zone is a flat world-space canvas and its
@@ -130,12 +179,32 @@ public class CaptureZoneController : MonoBehaviour
         isCaptured = true;
 
         appearTween?.Kill();
-        root.transform.localScale = rootBaseScale;
-        root.SetActive(false);
 
         if (feedback != null)
             feedback.PlayCompleted();
 
+        if (previewMode)
+        {
+            appearTween = root.transform
+                .DOScale(Vector3.zero, 0.3f)
+                .SetEase(Ease.InBack)
+                .SetLink(gameObject);
+                
+            previewRestartTimer = previewRestartDelaySeconds;
+            return;
+        }
+
         signalBus.Fire<LevelCaptureCompletedSignal>();
+
+        appearTween = root.transform
+            .DOScale(Vector3.zero, 0.3f)
+            .SetEase(Ease.InBack)
+            .SetLink(gameObject)
+            .OnComplete(() => root.SetActive(false));
+    }
+
+    private void RestartPreviewLoop()
+    {
+        Show();
     }
 }

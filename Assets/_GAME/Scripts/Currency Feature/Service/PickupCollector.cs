@@ -8,6 +8,7 @@ public class PickupCollector : IPickupCollector, IInitializable, IDisposable
     private readonly IPickupMagnetProvider magnetProvider;
     private readonly IPickupAcceptanceFilter acceptanceFilter;
     private readonly IPickupCarrySink carrySink;
+    private readonly IPickupStackImpactFeedback stackImpact;
     private readonly PickupServiceConfig config;
 
     public event Action<PickupCollectedEvent> Collected;
@@ -17,12 +18,14 @@ public class PickupCollector : IPickupCollector, IInitializable, IDisposable
         IPickupMagnetProvider   magnetProvider,
         IPickupAcceptanceFilter acceptanceFilter,
         IPickupCarrySink        carrySink,
+        IPickupStackImpactFeedback stackImpact,
         PickupServiceConfig     config)
     {
         this.registry         = registry;
         this.magnetProvider   = magnetProvider;
         this.acceptanceFilter = acceptanceFilter;
         this.carrySink        = carrySink;
+        this.stackImpact      = stackImpact;
         this.config           = config;
     }
 
@@ -88,7 +91,10 @@ public class PickupCollector : IPickupCollector, IInitializable, IDisposable
     private void OnCollectComplete(PickupItemController controller, bool hasSink)
     {
         if (hasSink)
+        {
+            stackImpact.PlayLanding(carrySink.Carried, controller);
             return;
+        }
 
         registry.RemoveAnimating(controller);
         registry.DespawnAnimated(controller);

@@ -287,6 +287,8 @@ MonoBehaviour:
   - {fileID: 7097182484638663493}
   - {fileID: 7097182485667304783}
   timeToSetColor: 0.12
+  hitFlashMinInterval: 0
+  useUnscaledHitFlashTime: 0
   emissionHitColor: {r: 1, g: 0.8627451, b: 0.19607843, a: 1}
   hitGlow: 5
   hitBlend: 1
@@ -297,6 +299,10 @@ MonoBehaviour:
   <NavMeshAgent>k__BackingField: {fileID: 4296184366157949911}
   <unitConfig>k__BackingField: {fileID: 11400000, guid: 5a8894bdb65a914448e84ca5c6ded748, type: 2}
   <RagdollView>k__BackingField: {fileID: 1976025304984227630}
+  deathSinkDelay: 2
+  deathSinkDepth: 4
+  deathSinkDuration: 1
+  deathSinkEase: 5
 --- !u!195 &4296184366157949911
 NavMeshAgent:
   m_ObjectHideFlags: 0

@@ -89,4 +89,16 @@ public class CameraShakeConfig : ScriptableObject
         DirectionalPunch = 0f,
         DepthInfluence = 0.35f,
     };
+
+    [Header("Barracks")]
+    [Tooltip("Fires once, right as the building lands at the end of the level-up reveal.")]
+    public CameraShakeSettings BarracksUpgrade = new CameraShakeSettings
+    {
+        Duration = 0.3f,
+        PositionAmplitude = 0.2f,
+        RotationAmplitude = 1f,
+        Frequency = 20f,
+        DirectionalPunch = 0f,
+        DepthInfluence = 0.3f,
+    };
 }

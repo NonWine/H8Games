@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8581836457901434835}
   - component: {fileID: 4301820170824989695}
   - component: {fileID: 8105849994025495292}
+  - component: {fileID: 5121389344902371575}
   m_Layer: 0
   m_Name: SquadSlotMarker
   m_TagString: Untagged
@@ -86,3 +87,23 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &5121389344902371575
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5722313467554545099}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c06e5c1432943df43a607e5b4dec95b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  markerRenderer: {fileID: 8105849994025495292}
+  punchScale: 1
+  punchDuration: 0.3
+  punchVibrato: 7
+  punchElasticity: 0.7
+  flashColor: {r: 0.54107255, g: 1, b: 0.45098042, a: 1}
+  flashDuration: 0.35
+  minInterval: 0.2

@@ -7,6 +7,8 @@ public class PickupVisualConfig : ScriptableObject
     public PickupIdleSettings GroundIdle => groundIdle;
     [SerializeField] private PickupSpendSettings spendPresentation = new PickupSpendSettings();
     public PickupSpendSettings SpendPresentation => spendPresentation;
+    [SerializeField] private PickupStackImpactSettings stackImpact = new PickupStackImpactSettings();
+    public PickupStackImpactSettings StackImpact => stackImpact;
 
     [Header("Scatter")]
     [SerializeField] private float minHorizSpeed = 1.25f;
@@ -56,4 +58,26 @@ public class PickupVisualConfig : ScriptableObject
     public float          JumpPower          => jumpPower;
     public float          SpendSpinSpeed     => spendSpinSpeed;
     public AnimationCurve SpendCurve         => spendCurve;
+
+    private void OnValidate()
+    {
+        groundIdle?.InvalidateCache();
+        spendPresentation?.InvalidateCache();
+    }
+
+#if UNITY_EDITOR
+    [ContextMenu("Bake Ground Idle Preset Into Custom")]
+    private void BakeGroundIdlePresetIntoCustom()
+    {
+        groundIdle.BakePresetIntoCustom();
+        UnityEditor.EditorUtility.SetDirty(this);
+    }
+
+    [ContextMenu("Bake Spend Presentation Preset Into Custom")]
+    private void BakeSpendPresentationPresetIntoCustom()
+    {
+        spendPresentation.BakePresetIntoCustom();
+        UnityEditor.EditorUtility.SetDirty(this);
+    }
+#endif
 }

@@ -23,24 +23,18 @@ public class BarracksUpgradeZoneController : MonoBehaviour
     [SerializeField, Min(0f)] private float acceleratePerToss = 0.004f;
     [SerializeField, Min(1)] private int maxConcurrentInFlight = 6;
 
-    [Header("Panel Animation")]
-    [SerializeField, Min(0f)] private float showDuration = 0.18f;
-    [SerializeField, Min(0f)] private float fillDuration = 0.2f;
-    [SerializeField, Min(0f)] private float hideDuration = 0.2f;
-
     [Header("Juice")]
     [SerializeField] private ParticleSystem arrivalBurst;
-    [SerializeField, Min(0.1f)] private float baseTossPitch = 1f;
-    [SerializeField, Min(0f)] private float tossPitchStep = 0.03f;
-    [SerializeField, Min(0.1f)] private float maxTossPitch = 1.6f;
-    [SerializeField, Min(0f)] private float labelPunch = 0.18f;
-    [SerializeField, Min(0f)] private float arrivalAccentInterval = 0.09f;
-    [SerializeField, Min(0f)] private float labelPunchDuration = 0.12f;
-    [SerializeField, Min(1)] private int arrivalParticleCount = 1;
-    [SerializeField, Min(1f)] private float finalArrivalMultiplier = 1.6f;
     [SerializeField] private Transform completionShakeTarget;
-    [SerializeField, Min(0f)] private float completionShakeStrength = 0.4f;
-    [SerializeField, Min(0f)] private float completionShakeDuration = 0.3f;
+
+    [Header("Animation Preset")]
+    [SerializeField] private BarracksUpgradeZonePreset preset = BarracksUpgradeZonePreset.Balanced;
+    [Tooltip("Only used when Preset is set to Custom. Right-click the component header to bake the " +
+             "selected preset into these fields and switch to Custom.")]
+    [SerializeField] private BarracksUpgradeZoneAnimationSettings custom = new BarracksUpgradeZoneAnimationSettings();
+
+    [System.NonSerialized] private BarracksUpgradeZoneAnimationSettings resolvedSettings;
+    [System.NonSerialized] private BarracksUpgradeZonePreset resolvedFor = (BarracksUpgradeZonePreset)(-1);
 
     private CurrencyService currencyService;
     private IPickupService pickupService;
@@ -63,6 +57,22 @@ public class BarracksUpgradeZoneController : MonoBehaviour
     private float currentInterval;
     private float tossTimer;
 
+    private BarracksUpgradeZoneAnimationSettings Active
+    {
+        get
+        {
+            if (resolvedSettings == null || resolvedFor != preset)
+            {
+                resolvedSettings = preset == BarracksUpgradeZonePreset.Custom
+                    ? custom
+                    : BarracksUpgradeZonePresets.Create(preset);
+                resolvedFor = preset;
+            }
+
+            return resolvedSettings;
+        }
+    }
+
     [Inject]
     public void Construct(
         CurrencyService currencyService,
@@ -80,6 +90,11 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         hasPresentationPose = true;
         currentInterval = tossInterval;
         RefreshVisualState(animate: false);
+    }
+
+    private void OnValidate()
+    {
+        resolvedSettings = null;
     }
 
     private void OnDestroy()
@@ -140,7 +155,7 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         tossTimer = 0f;
         tossStreakForPitch = 0;
 
-        panelRoot.transform.DOScale(1.2f, showDuration).SetEase(Ease.OutBack);
+        panelRoot.transform.DOScale(Active.ShowOvershootScale, Active.ShowDuration).SetEase(Active.ShowEase);
     }
 
     private void EndSession()
@@ -152,7 +167,7 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         carryAnchorProvider = null;
 
         if (!isCompleted)
-            panelRoot.transform.DOScale(1f, showDuration).SetEase(Ease.Linear);
+            panelRoot.transform.DOScale(1f, Active.ShowDuration).SetEase(Ease.Linear);
     }
 
     private bool CanLaunchToss()
@@ -218,8 +233,8 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         if (animate && slider != null)
         {
             fillTween = slider
-                .DOValue(1f, fillDuration)
-                .SetEase(Ease.OutBack)
+                .DOValue(1f, Active.FillDuration)
+                .SetEase(Active.FillEase)
                 .OnComplete(FinishCompletion);
             return;
         }
@@ -248,7 +263,7 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         {
             if (animate)
             {
-                fillTween = slider.DOValue(fillValue, fillDuration).SetEase(Ease.OutBack);
+                fillTween = slider.DOValue(fillValue, Active.FillDuration).SetEase(Active.FillEase);
             }
             else
             {
@@ -265,8 +280,8 @@ public class BarracksUpgradeZoneController : MonoBehaviour
         if (!isFinal && Time.unscaledTime < nextArrivalAccentTime)
             return;
 
-        nextArrivalAccentTime = Time.unscaledTime + arrivalAccentInterval;
-        float multiplier = isFinal ? finalArrivalMultiplier : 1f;
+        nextArrivalAccentTime = Time.unscaledTime + Active.ArrivalAccentInterval;
+        float multiplier = isFinal ? Active.FinalArrivalMultiplier : 1f;
 
         if (arrivalBurst != null)
         {
@@ -274,20 +289,20 @@ public class BarracksUpgradeZoneController : MonoBehaviour
             arrivalBurst.transform.position = target.position;
             if (!arrivalBurst.isPlaying)
                 arrivalBurst.Play();
-            arrivalBurst.Emit(Mathf.CeilToInt(arrivalParticleCount * multiplier));
+            arrivalBurst.Emit(Mathf.CeilToInt(Active.ArrivalParticleCount * multiplier));
         }
 
         if (!isFinal)
             PlayArrivalSfx();
 
-        if (labelPunch <= 0f)
+        if (Active.LabelPunch <= 0f)
             return;
 
         RectTransform labelTransform = priceLabel.rectTransform;
         labelTween?.Kill();
         labelTransform.localScale = authoredLabelScale;
         labelTween = labelTransform
-            .DOPunchScale(authoredLabelScale * (labelPunch * multiplier), labelPunchDuration, 1, 0.75f)
+            .DOPunchScale(authoredLabelScale * (Active.LabelPunch * multiplier), Active.LabelPunchDuration, Active.LabelPunchVibrato, Active.LabelPunchElasticity)
             .SetLink(priceLabel.gameObject);
     }
 
@@ -297,18 +312,18 @@ public class BarracksUpgradeZoneController : MonoBehaviour
     // pitch that climbs with the length of the deposit run.
     private void PlayArrivalSfx()
     {
-        float pitch = Mathf.Min(maxTossPitch, baseTossPitch + tossPitchStep * tossStreakForPitch);
+        float pitch = Mathf.Min(Active.MaxTossPitch, Active.BaseTossPitch + Active.TossPitchStep * tossStreakForPitch);
         audioService.Play(SfxId.CoinDeposit, pitch);
     }
 
     private void PlayCompletionShake()
     {
-        if (completionShakeTarget == null || completionShakeStrength <= 0f)
+        if (completionShakeTarget == null || Active.CompletionShakeStrength <= 0f)
             return;
 
         completionShakeOrigin = completionShakeTarget.localPosition;
         completionShakeTween = completionShakeTarget
-            .DOShakePosition(completionShakeDuration, completionShakeStrength)
+            .DOShakePosition(Active.CompletionShakeDuration, Active.CompletionShakeStrength, Active.CompletionShakeVibrato)
             .SetLink(completionShakeTarget.gameObject)
             .OnComplete(() => completionShakeTween = null);
     }
@@ -335,8 +350,20 @@ public class BarracksUpgradeZoneController : MonoBehaviour
     private void HidePanel()
     {
         panelTween = panelRoot.transform
-            .DOScale(Vector3.zero, hideDuration)
-            .SetEase(Ease.Linear)
+            .DOScale(Vector3.zero, Active.HideDuration)
+            .SetEase(Active.HideEase)
             .OnComplete(() => panelRoot.SetActive(false));
     }
+
+#if UNITY_EDITOR
+    [ContextMenu("Bake Preset Into Custom")]
+    private void BakePresetIntoCustom()
+    {
+        custom = BarracksUpgradeZonePresets.Create(preset).Clone();
+        preset = BarracksUpgradeZonePreset.Custom;
+        resolvedSettings = null;
+
+        UnityEditor.EditorUtility.SetDirty(this);
+    }
+#endif
 }

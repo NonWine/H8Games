@@ -1,4 +1,5 @@
 using UnityEngine;
+using Zenject;
 
 public class SoldierMoveState : SoldierStateBase
 {
@@ -6,6 +7,7 @@ public class SoldierMoveState : SoldierStateBase
     private readonly ISquadSlotPositionProvider squadSlotPositionProvider;
     private readonly SquadFollowSettings squadFollowSettings;
     private readonly ISoldierFormationMover formationMover;
+    private readonly SignalBus signalBus;
 
     public SoldierMoveState(
         SoldierRuntimeModel model,
@@ -14,13 +16,15 @@ public class SoldierMoveState : SoldierStateBase
         ISquadMovementStateReader movementStateReader,
         ISquadSlotPositionProvider squadSlotPositionProvider,
         SquadFollowSettings squadFollowSettings,
-        ISoldierFormationMover formationMover)
+        ISoldierFormationMover formationMover,
+        SignalBus signalBus)
         : base(model, modules, agentAnimationController)
     {
         this.movementStateReader = movementStateReader;
         this.squadSlotPositionProvider = squadSlotPositionProvider;
         this.squadFollowSettings = squadFollowSettings;
         this.formationMover = formationMover;
+        this.signalBus = signalBus;
     }
 
     public override void Enter()
@@ -57,6 +61,7 @@ public class SoldierMoveState : SoldierStateBase
 
         if (formationMover.IsAt(slotCenter, squadFollowSettings.SlotReachThreshold))
         {
+            signalBus.Fire(new SoldierReachedSlotSignal(Soldier.AssignedSlot.Index));
             ChangeState<SoldierIdleState>();
             return;
         }

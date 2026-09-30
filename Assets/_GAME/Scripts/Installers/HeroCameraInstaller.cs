@@ -8,9 +8,11 @@ public class HeroCameraInstaller : MonoInstaller
     [SerializeField] private CinemachineCameraShaker cameraShaker;
     [SerializeField] private CameraShakeConfig cameraShakeConfig;
     [SerializeField] private CombatCameraFocusConfig combatFocusConfig;
+    [SerializeField] private CinematicFocusConfig cinematicFocusConfig;
 
     public override void InstallBindings()
     {
+        InstallCinematicFocusBindings();
         InstallCameraBindings();
         InstallShakeBindings();
         InstallCombatFocusBindings();
@@ -20,6 +22,12 @@ public class HeroCameraInstaller : MonoInstaller
     {
         Container.Bind<CinemachineCamera>().FromInstance(followCamera).AsSingle();
         Container.BindInterfacesAndSelfTo<HeroCameraController>().AsSingle();
+    }
+
+    private void InstallCinematicFocusBindings()
+    {
+        Container.Bind<CinematicFocusConfig>().FromInstance(cinematicFocusConfig).AsSingle();
+        Container.BindInterfacesTo<CinematicCameraFocusService>().AsSingle();
     }
 
     private void InstallCombatFocusBindings()

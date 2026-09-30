@@ -12,71 +12,92 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e3c2503140f31e4ab5c2b1be295d0c5, type: 3}
   m_Name: BarracksRevealConfig
   m_EditorClassIdentifier: 
-  anticipationDuration: 0.18
-  anticipationSquash: {x: 1.06, y: 0.88, z: 1.06}
-  trembleStrength: 0.05
-  trembleVibrato: 25
-  anticipationSfx: 0
-  buildingStartScale: 0.85
-  buildingOvershoot: 1.12
-  buildingGrowDuration: 0.18
-  buildingSettleDuration: 0.14
-  buildingDustCount: 18
-  buildingDustRadius: 2.8
-  buildingSfx: 33
-  crates:
-    StartTime: 0.12
-    Stagger: 0.07
-    Duration: 0.22
-    StartHeight: 0.6
-    MoveEase: 5
-    StartScale: 0.6
-    MaxTilt: 12
-    LandSquash: {x: 1.12, y: 0.85, z: 1.12}
-    LandSettleDuration: 0.1
-    WobbleAngle: 0
-    WobbleCycles: 2.5
-    WobbleDuration: 0.35
-    DustCount: 4
-    DustRadius: 0.35
-    LandSfx: 34
-    LandPitch: 1
-  barrels:
-    StartTime: 0.26
-    Stagger: 0.09
-    Duration: 0.24
-    StartHeight: 0.5
-    MoveEase: 5
-    StartScale: 0.6
-    MaxTilt: 8
-    LandSquash: {x: 1.12, y: 0.85, z: 1.12}
-    LandSettleDuration: 0.1
-    WobbleAngle: 12
-    WobbleCycles: 2.5
-    WobbleDuration: 0.35
-    DustCount: 4
-    DustRadius: 0.3
-    LandSfx: 34
-    LandPitch: 1.1
-  equipment:
-    StartTime: 0.42
-    Stagger: 0.05
-    Duration: 0.28
-    StartHeight: -0.45
-    MoveEase: 27
-    StartScale: 0.9
-    MaxTilt: 0
-    LandSquash: {x: 1.05, y: 0.94, z: 1.05}
-    LandSettleDuration: 0.14
-    WobbleAngle: 0
-    WobbleCycles: 2.5
-    WobbleDuration: 0.35
-    DustCount: 10
-    DustRadius: 0.9
-    LandSfx: 34
-    LandPitch: 0.75
-  dustSpeed: {x: 0.6, y: 1.4}
-  dustUpwardSpeed: 0.35
-  dustHeight: 0.1
-  completionSfx: 0
+  preset: 8
+  custom:
+    AnticipationDuration: 0.15
+    AnticipationSquash: {x: 1.06, y: 0.88, z: 1.06}
+    TrembleStrength: 0.05
+    TrembleVibrato: 25
+    AnticipationSfx: 0
+    BuildingJumpUpDuration: 0.16
+    BuildingJumpHeight: 0.9
+    BuildingJumpUpEase: 6
+    BuildingLaunchStretch: {x: 0.9, y: 1.2, z: 0.9}
+    BuildingLaunchSfx: 0
+    BuildingApexDuration: 0.32
+    BuildingApexOvershoot: 1.18
+    BuildingApexSpin: 12
+    BuildingApexSpinCycles: 1.5
+    BuildingApexSpinAxis: {x: 0, y: 1, z: 0}
+    BuildingFallDuration: 0.14
+    BuildingFallEase: 5
+    BuildingLandSquash: {x: 1.22, y: 0.78, z: 1.22}
+    BuildingLandSettleDuration: 0.16
+    BuildingDustCount: 14
+    BuildingDustRadius: 2.2
+    BuildingLandSfx: 33
+    Crates:
+      AirHeight: 0.5
+      RevealStartTime: 0
+      RevealStagger: 0.06
+      RevealDuration: 0.16
+      HopHeight: 0.12
+      HopDuration: 0.18
+      HopStretch: 1.15
+      HopSpinAngle: 14
+      HopSpinCycles: 1.5
+      HopSpinAxis: {x: 0, y: 1, z: 0}
+      LandStagger: 0.05
+      FallDuration: 0.14
+      FallEase: 5
+      LandSquash: {x: 1.15, y: 0.82, z: 1.15}
+      LandSettleDuration: 0.14
+      DustCount: 4
+      DustRadius: 0.35
+      LandSfx: 34
+      LandPitch: 1
+    Barrels:
+      AirHeight: 0.45
+      RevealStartTime: 0.08
+      RevealStagger: 0.07
+      RevealDuration: 0.18
+      HopHeight: 0.12
+      HopDuration: 0.2
+      HopStretch: 1.15
+      HopSpinAngle: 10
+      HopSpinCycles: 1.5
+      HopSpinAxis: {x: 0, y: 0, z: 1}
+      LandStagger: 0.05
+      FallDuration: 0.14
+      FallEase: 5
+      LandSquash: {x: 1.12, y: 0.85, z: 1.12}
+      LandSettleDuration: 0.14
+      DustCount: 4
+      DustRadius: 0.3
+      LandSfx: 34
+      LandPitch: 1.1
+    Equipment:
+      AirHeight: 0.35
+      RevealStartTime: 0.16
+      RevealStagger: 0.05
+      RevealDuration: 0.2
+      HopHeight: 0.08
+      HopDuration: 0.22
+      HopStretch: 1.08
+      HopSpinAngle: 6
+      HopSpinCycles: 1.2
+      HopSpinAxis: {x: 0, y: 1, z: 0}
+      LandStagger: 0.04
+      FallDuration: 0.16
+      FallEase: 5
+      LandSquash: {x: 1.06, y: 0.93, z: 1.06}
+      LandSettleDuration: 0.16
+      DustCount: 10
+      DustRadius: 0.9
+      LandSfx: 34
+      LandPitch: 0.75
+    DustSpeed: {x: 0.6, y: 1.4}
+    DustUpwardSpeed: 0.35
+    DustHeight: 0.1
+    CompletionSfx: 0
   tiltSeed: 7

@@ -14,6 +14,7 @@ public class PickupItemController
     public bool IsWorldPickup => state == PickupState.World;
 
     public PickupItemView View => view;
+    public PickupStackImpactSettings StackImpact => visualConfig.StackImpact;
 
     public PickupItemController(PickupItemView view, PickupVisualConfig visualConfig)
     {
@@ -38,6 +39,22 @@ public class PickupItemController
         view.Physics.EnableWorldPhysics(visualConfig.UseGravity, visualConfig.GravityMultiplier);
         view.Physics.ApplyScatterVelocity(scatterDirection, visualConfig.MinHorizSpeed, visualConfig.MaxHorizSpeed, visualConfig.MinVertSpeed, visualConfig.MaxVertSpeed, visualConfig.MaxAngularSpeed);
         view.Impact.Configure(visualConfig.ImpactGroundMask, visualConfig.ImpactMinSpeed, visualConfig.ImpactFxCooldown);
+    }
+
+    public void PlayStackImpact(PickupStackImpactSettings settings, float strength, float dipStrength, float delay)
+    {
+        if (state != PickupState.Carried)
+            return;
+
+        view.PlayStackImpact(settings, strength, dipStrength, delay);
+    }
+
+    public void SetCarrySway(Vector3 worldOffset, float tiltDegrees, Vector3 worldTiltAxis, float smoothTime)
+    {
+        if (state != PickupState.Carried)
+            return;
+
+        view.SetCarrySway(worldOffset, tiltDegrees, worldTiltAxis, smoothTime);
     }
 
     public void PlayCollectAnimation(Transform anchor, Vector3 localTargetPos, Quaternion localTargetRot, Action onCompleted)
@@ -79,6 +96,7 @@ public class PickupItemController
     public void DiscardFromCarry(Vector3 scatterDirection)
     {
         view.Idle.Stop();
+        view.StopStackImpact();
         state = PickupState.Discarded;
         view.SetActivePose(null);
         view.Transform.SetParent(null, true);
@@ -92,6 +110,7 @@ public class PickupItemController
         PickupId = pickupId;
         Amount = 1;
         view.Idle.Stop();
+        view.StopStackImpact();
         state = PickupState.None;
         view.SetActivePose(null);
         view.Transform.SetParent(null, true);

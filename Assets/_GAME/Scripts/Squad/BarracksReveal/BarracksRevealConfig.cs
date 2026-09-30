@@ -4,65 +4,87 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "BarracksRevealConfig", menuName = "Config/BarracksRevealConfig")]
 public class BarracksRevealConfig : ScriptableObject
 {
-    [Header("Anticipation (previous level)")]
-    [SerializeField, Min(0.01f)] private float anticipationDuration = 0.18f;
-    [SerializeField] private Vector3 anticipationSquash = new Vector3(1.06f, 0.88f, 1.06f);
-    [SerializeField, Min(0f)] private float trembleStrength = 0.05f;
-    [SerializeField, Min(1)] private int trembleVibrato = 25;
-    [SerializeField] private SfxId anticipationSfx = SfxId.None;
+    [SerializeField] private BarracksRevealPreset preset = BarracksRevealPreset.Balanced;
 
-    [Header("Building (new level)")]
-    [SerializeField, Range(0f, 1f)] private float buildingStartScale = 0.85f;
-    [SerializeField, Min(1f)] private float buildingOvershoot = 1.12f;
-    [SerializeField, Min(0.01f)] private float buildingGrowDuration = 0.18f;
-    [SerializeField, Min(0.01f)] private float buildingSettleDuration = 0.14f;
-    [SerializeField, Min(0)] private int buildingDustCount = 14;
-    [SerializeField, Min(0f)] private float buildingDustRadius = 2.2f;
-    [SerializeField] private SfxId buildingSfx = SfxId.BarracksBuild;
+    [Tooltip("Only used when Preset is set to Custom. Right-click the asset header to bake the " +
+             "selected preset into these fields and switch to Custom.")]
+    [SerializeField] private BarracksRevealSettings custom = new BarracksRevealSettings();
 
-    [Header("Props")]
-    [SerializeField] private BarracksPropMotion crates = new BarracksPropMotion();
-    [SerializeField] private BarracksPropMotion barrels = new BarracksPropMotion
-    {
-        StartTime = 0.26f, Stagger = 0.09f, Duration = 0.24f, StartHeight = 0.5f,
-        MaxTilt = 8f, WobbleAngle = 12f, WobbleCycles = 2.5f, WobbleDuration = 0.35f,
-        DustCount = 4, DustRadius = 0.3f, LandPitch = 1.1f,
-    };
-    [SerializeField] private BarracksPropMotion equipment = new BarracksPropMotion
-    {
-        StartTime = 0.42f, Stagger = 0.05f, Duration = 0.28f, StartHeight = -0.45f,
-        MoveEase = Ease.OutBack, StartScale = 0.9f, MaxTilt = 0f,
-        LandSquash = new Vector3(1.05f, 0.94f, 1.05f), LandSettleDuration = 0.14f,
-        DustCount = 10, DustRadius = 0.9f, LandPitch = 0.75f,
-    };
-
-    [Header("Dust")]
-    [SerializeField] private Vector2 dustSpeed = new Vector2(0.6f, 1.4f);
-    [SerializeField, Min(0f)] private float dustUpwardSpeed = 0.35f;
-    [SerializeField, Min(0f)] private float dustHeight = 0.1f;
-
-    [Header("Completion")]
-    [SerializeField] private SfxId completionSfx = SfxId.None;
     [SerializeField] private int tiltSeed = 7;
 
-    public float AnticipationDuration => anticipationDuration;
-    public Vector3 AnticipationSquash => anticipationSquash;
-    public float TrembleStrength => trembleStrength;
-    public int TrembleVibrato => trembleVibrato;
-    public SfxId AnticipationSfx => anticipationSfx;
-    public float BuildingStartScale => buildingStartScale;
-    public float BuildingOvershoot => buildingOvershoot;
-    public float BuildingGrowDuration => buildingGrowDuration;
-    public float BuildingSettleDuration => buildingSettleDuration;
-    public int BuildingDustCount => buildingDustCount;
-    public float BuildingDustRadius => buildingDustRadius;
-    public SfxId BuildingSfx => buildingSfx;
-    public BarracksPropMotion Crates => crates;
-    public BarracksPropMotion Barrels => barrels;
-    public BarracksPropMotion Equipment => equipment;
-    public Vector2 DustSpeed => dustSpeed;
-    public float DustUpwardSpeed => dustUpwardSpeed;
-    public float DustHeight => dustHeight;
-    public SfxId CompletionSfx => completionSfx;
+    [System.NonSerialized] private BarracksRevealSettings resolved;
+    [System.NonSerialized] private BarracksRevealPreset resolvedFor = (BarracksRevealPreset)(-1);
+
+    // Resolved once per preset change rather than per access: the view reads these
+    // getters from inside per-frame tween callbacks.
+    public BarracksRevealSettings Active
+    {
+        get
+        {
+            if (resolved == null || resolvedFor != preset)
+            {
+                resolved = preset == BarracksRevealPreset.Custom ? custom : BarracksRevealPresets.Create(preset);
+                resolvedFor = preset;
+            }
+
+            return resolved;
+        }
+    }
+
+    public BarracksRevealPreset Preset => preset;
+
+    public float AnticipationDuration => Active.AnticipationDuration;
+    public Vector3 AnticipationSquash => Active.AnticipationSquash;
+    public float TrembleStrength => Active.TrembleStrength;
+    public int TrembleVibrato => Active.TrembleVibrato;
+    public SfxId AnticipationSfx => Active.AnticipationSfx;
+
+    public float BuildingJumpUpDuration => Active.BuildingJumpUpDuration;
+    public float BuildingJumpHeight => Active.BuildingJumpHeight;
+    public Ease BuildingJumpUpEase => Active.BuildingJumpUpEase;
+    public Vector3 BuildingLaunchStretch => Active.BuildingLaunchStretch;
+    public SfxId BuildingLaunchSfx => Active.BuildingLaunchSfx;
+
+    public float BuildingApexDuration => Active.BuildingApexDuration;
+    public float BuildingApexOvershoot => Active.BuildingApexOvershoot;
+    public float BuildingApexSpin => Active.BuildingApexSpin;
+    public float BuildingApexSpinCycles => Active.BuildingApexSpinCycles;
+    public Vector3 BuildingApexSpinAxis => Active.BuildingApexSpinAxis;
+
+    public float BuildingFallDuration => Active.BuildingFallDuration;
+    public Ease BuildingFallEase => Active.BuildingFallEase;
+    public Vector3 BuildingLandSquash => Active.BuildingLandSquash;
+    public float BuildingLandSettleDuration => Active.BuildingLandSettleDuration;
+    public int BuildingDustCount => Active.BuildingDustCount;
+    public float BuildingDustRadius => Active.BuildingDustRadius;
+    public SfxId BuildingLandSfx => Active.BuildingLandSfx;
+
+    public BarracksPropMotion Crates => Active.Crates;
+    public BarracksPropMotion Barrels => Active.Barrels;
+    public BarracksPropMotion Equipment => Active.Equipment;
+
+    public Vector2 DustSpeed => Active.DustSpeed;
+    public float DustUpwardSpeed => Active.DustUpwardSpeed;
+    public float DustHeight => Active.DustHeight;
+
+    public SfxId CompletionSfx => Active.CompletionSfx;
     public int TiltSeed => tiltSeed;
+
+    private void OnValidate()
+    {
+        resolved = null;
+    }
+
+#if UNITY_EDITOR
+    [ContextMenu("Bake Preset Into Custom")]
+    private void BakePresetIntoCustom()
+    {
+        custom = BarracksRevealPresets.Create(preset).Clone();
+        preset = BarracksRevealPreset.Custom;
+        resolved = null;
+
+        UnityEditor.EditorUtility.SetDirty(this);
+        UnityEditor.AssetDatabase.SaveAssetIfDirty(this);
+    }
+#endif
 }

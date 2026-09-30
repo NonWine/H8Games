@@ -25,6 +25,8 @@ public class PickupItemView : MonoBehaviour
     public PickupImpactFxHandler  Impact    { get; private set; }
     public PickupIdleHandler Idle { get; private set; }
 
+    private PickupStackImpactHandler stackImpact;
+
     private Action activePose;
     private Tween  scaleTween;
 
@@ -37,6 +39,7 @@ public class PickupItemView : MonoBehaviour
         if (visualRoot == transform || !visualRoot.IsChildOf(transform))
             throw new InvalidOperationException("Pickup visualRoot must be a separate visual child.");
         Idle = new PickupIdleHandler(visualRoot, Physics, idleShineFx);
+        stackImpact = new PickupStackImpactHandler(visualRoot);
     }
 
     private void Reset()
@@ -55,11 +58,13 @@ public class PickupItemView : MonoBehaviour
     {
         activePose?.Invoke();
         Idle.Tick(Time.deltaTime);
+        stackImpact.Tick(Time.deltaTime);
     }
 
     private void OnDisable()
     {
         Idle?.Stop();
+        stackImpact?.Stop();
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -78,6 +83,48 @@ public class PickupItemView : MonoBehaviour
         Physics.RemoveSupport(collision);
     }
 
+    public void PlayStackImpact(PickupStackImpactSettings settings, float strength, float dipStrength, float delay)
+    {
+        scaleTween?.Kill();
+        scaleTween = null;
+
+        stackImpact.Play(settings, strength, dipStrength, delay);
+
+        if (settings.PlayLandingFx && delay <= 0f)
+            Impact.PlayAtSelf();
+    }
+
+    public void SetCarrySway(Vector3 worldOffset, float tiltDegrees, Vector3 worldTiltAxis, float smoothTime)
+    {
+        var parent = visualRoot.parent;
+
+        if (parent == null)
+            return;
+
+        var localOffset = parent.InverseTransformVector(worldOffset);
+        var localEuler  = Vector3.zero;
+
+        if (tiltDegrees > 0.01f && worldTiltAxis.sqrMagnitude > 0.0001f)
+            localEuler = ToSignedEuler(Quaternion.AngleAxis(tiltDegrees, parent.InverseTransformDirection(worldTiltAxis)).eulerAngles);
+
+        Animation.SetSecondaryMotion(localOffset, localEuler, smoothTime);
+    }
+
+    private static Vector3 ToSignedEuler(Vector3 euler)
+    {
+        return new Vector3(SignedAngle(euler.x), SignedAngle(euler.y), SignedAngle(euler.z));
+    }
+
+    private static float SignedAngle(float angle)
+    {
+        return angle > 180f ? angle - 360f : angle;
+    }
+
+    public void StopStackImpact()
+    {
+        stackImpact.Stop();
+    }
+
     public void SetActivePose(Action pose)
     {
         activePose = pose;
@@ -86,6 +133,7 @@ public class PickupItemView : MonoBehaviour
     public void Rent()
     {
         Idle.Stop();
+        stackImpact.Stop();
         IsRented   = true;
         activePose = null;
 
@@ -98,6 +146,7 @@ public class PickupItemView : MonoBehaviour
         activePose = null;
 
         Impact.Disable();
+        stackImpact.Stop();
 
         scaleTween?.Kill();
         scaleTween = null;
@@ -117,6 +166,7 @@ public class PickupItemView : MonoBehaviour
     public void PlayDespawnScale(Action onComplete)
     {
         Idle.Stop();
+        stackImpact.Stop();
         scaleTween?.Kill();
         scaleTween = visualRoot
             .DOScale(Vector3.zero, despawnScaleDuration)

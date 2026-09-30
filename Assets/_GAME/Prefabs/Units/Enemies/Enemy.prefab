@@ -130,6 +130,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   combatView: {fileID: 5315371997611608987}
+  sortieConfig: {fileID: 11400000, guid: d76196c529d19c2499623bf7c96ccefd, type: 2}
 --- !u!114 &5315371997611608987 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 659474785926432852, guid: 01ced4803ad69094da1641053a107106, type: 3}

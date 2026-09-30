@@ -1,4 +1,5 @@
 using DG.Tweening;
+using H8.UI;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
@@ -6,7 +7,7 @@ using Zenject;
 public class CaptureZoneFeedbackView : MonoBehaviour
 {
     [SerializeField] private CaptureBuildupConfig config;
-    [SerializeField] private Image fillImage;
+    [SerializeField] private StylizedGraphic fillGraphic;
     [SerializeField] private Image[] pulseRings;
     [SerializeField] private Image releaseRing;
 
@@ -16,7 +17,8 @@ public class CaptureZoneFeedbackView : MonoBehaviour
     private CaptureBuildupRhythm rhythm;
     private Tween[] ringTweens;
     private Tween releaseTween;
-    private Color fillBaseColor;
+    private Color fillBaseTop;
+    private Color fillBaseBottom;
     private float glow;
     private int nextRingIndex;
 
@@ -31,7 +33,8 @@ public class CaptureZoneFeedbackView : MonoBehaviour
     {
         rhythm = new CaptureBuildupRhythm(config);
         ringTweens = new Tween[pulseRings.Length];
-        fillBaseColor = fillImage.color;
+        fillBaseTop = fillGraphic.TopColor;
+        fillBaseBottom = fillGraphic.BottomColor;
 
         HideRings();
         HideRing(releaseRing);
@@ -54,7 +57,7 @@ public class CaptureZoneFeedbackView : MonoBehaviour
             EmitShake(phase);
 
         glow = Mathf.MoveTowards(glow, 0f, deltaTime / config.GlowDecayDuration);
-        ApplyFillColor(phase);
+        ApplyFillGradient(phase);
     }
 
     public void PlayCompleted()
@@ -77,7 +80,7 @@ public class CaptureZoneFeedbackView : MonoBehaviour
 
         rhythm.Reset();
         glow = 0f;
-        fillImage.color = fillBaseColor;
+        fillGraphic.SetFill(fillBaseTop, fillBaseBottom);
     }
 
     private void EmitPulse(CaptureBuildupPhase phase)
@@ -124,11 +127,25 @@ public class CaptureZoneFeedbackView : MonoBehaviour
         cameraShake.Shake(settings, scale, Vector3.zero);
     }
 
-    private void ApplyFillColor(CaptureBuildupPhase phase)
+    // The stylized shader reads the gradient corners and ignores Graphic.color.rgb,
+    // so the tension and glow tints have to be written into the fill itself. Both
+    // ends are lerped by the same amount, which keeps the authored top-to-bottom
+    // ramp intact instead of flattening it to one colour.
+    private void ApplyFillGradient(CaptureBuildupPhase phase)
     {
         float engagement = rhythm.Engagement;
-        Color tensed = Color.Lerp(fillBaseColor, config.TensionColor, phase.Tension * engagement);
-        fillImage.color = Color.Lerp(tensed, config.GlowColor, glow * config.GlowStrength * engagement);
+        float tension = phase.Tension * engagement;
+        float glowAmount = glow * config.GlowStrength * engagement;
+
+        fillGraphic.SetFill(
+            BlendFillColor(fillBaseTop, tension, glowAmount),
+            BlendFillColor(fillBaseBottom, tension, glowAmount));
+    }
+
+    private Color BlendFillColor(Color baseColor, float tension, float glowAmount)
+    {
+        Color tensed = Color.Lerp(baseColor, config.TensionColor, tension);
+        return Color.Lerp(tensed, config.GlowColor, glowAmount);
     }
 
     private static void ApplyRing(Image ring, float t, float targetScale, Color color)

@@ -176,6 +176,12 @@ namespace H8.UI
             ? bottomLeft
             : StylizedPalettes.Base(palette);
 
+        /// <summary>The two ends a Linear gradient actually reads, so a caller that
+        /// animates the fill can capture the authored pair and restore it later.</summary>
+        public Color TopColor => topLeft;
+
+        public Color BottomColor => bottomLeft;
+
         // ------------------------------------------------------------------
         // Presets
         // ------------------------------------------------------------------

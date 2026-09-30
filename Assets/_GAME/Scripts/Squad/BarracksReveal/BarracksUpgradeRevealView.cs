@@ -1,3 +1,4 @@
+﻿using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
@@ -11,6 +12,7 @@ public class BarracksUpgradeRevealView : MonoBehaviour
     [SerializeField] private Transform[] barrels;
     [SerializeField] private Transform[] equipment;
     [SerializeField] private ParticleSystem dust;
+    [SerializeField] private ParticleSystem[] upgradeStartEffects;
 
     private readonly struct LocalPose
     {
@@ -36,15 +38,20 @@ public class BarracksUpgradeRevealView : MonoBehaviour
     private readonly Dictionary<Transform, LocalPose> authoredPoses = new Dictionary<Transform, LocalPose>();
 
     private IAudioService audioService;
+    private ICameraShakeService cameraShake;
+    private CameraShakeConfig shakeConfig;
     private System.Random random;
     private Sequence sequence;
     private GameObject previousModel;
     private GameObject nextModel;
+    private Action pendingCompletion;
 
     [Inject]
-    public void Construct(IAudioService audioService)
+    public void Construct(IAudioService audioService, ICameraShakeService cameraShake, CameraShakeConfig shakeConfig)
     {
         this.audioService = audioService;
+        this.cameraShake = cameraShake;
+        this.shakeConfig = shakeConfig;
     }
 
     private void Awake()
@@ -60,26 +67,37 @@ public class BarracksUpgradeRevealView : MonoBehaviour
         Finish();
     }
 
-    public void Play(GameObject previous, GameObject next)
+    public void Play(GameObject previous, GameObject next, Action onCompleted = null)
     {
         Finish();
 
+        pendingCompletion = onCompleted;
         previousModel = previous;
         nextModel = next;
         CachePose(previous.transform);
         random = new System.Random(config.TiltSeed);
 
-        float switchTime = config.AnticipationDuration;
+        float launchTime = config.AnticipationDuration;
+        float apexTime = launchTime + config.BuildingJumpUpDuration;
+        float fallTime = apexTime + config.BuildingApexDuration;
+        float landTime = fallTime + config.BuildingFallDuration;
 
         sequence = DOTween.Sequence().SetLink(gameObject);
         sequence.Insert(0f, CreateAnticipation(previous.transform));
-        sequence.InsertCallback(switchTime, SwitchModels);
-        InsertBuilding(switchTime);
-        InsertProps(crates, config.Crates, switchTime);
-        InsertProps(barrels, config.Barrels, switchTime);
-        InsertProps(equipment, config.Equipment, switchTime);
+        sequence.InsertCallback(launchTime, SwitchModels);
+
+        InsertBuildingLaunch(launchTime, apexTime);
+        InsertBuildingApex(apexTime, fallTime);
+        InsertBuildingFall(fallTime, landTime);
+        InsertBuildingLand(landTime);
+
+        InsertProps(crates, config.Crates, apexTime, landTime);
+        InsertProps(barrels, config.Barrels, apexTime, landTime);
+        InsertProps(equipment, config.Equipment, apexTime, landTime);
+
         sequence.OnComplete(OnSequenceCompleted);
 
+        PlayUpgradeStartEffects();
         PlaySfx(config.AnticipationSfx, 1f);
     }
 
@@ -110,28 +128,91 @@ public class BarracksUpgradeRevealView : MonoBehaviour
 
         if (building != null)
         {
-            building.localScale = authoredPoses[building].Scale * config.BuildingStartScale;
-            EmitDust(building.position, config.BuildingDustCount, config.BuildingDustRadius);
+            // Set the pose explicitly so the very first rendered frame already
+            // matches what the launch tween's t=0 sample would produce - avoids
+            // a one-frame flash of a leftover scale from the previous play.
+            LocalPose restPose = authoredPoses[building];
+            building.localPosition = restPose.Position;
+            building.localRotation = restPose.Rotation;
+            building.localScale = Vector3.Scale(restPose.Scale, config.BuildingLaunchStretch);
         }
 
-        PlaySfx(config.BuildingSfx, 1f);
+        PlaySfx(config.BuildingLaunchSfx, 1f);
     }
 
-    private void InsertBuilding(float startTime)
+    private void InsertBuildingLaunch(float startTime, float endTime)
     {
         if (building == null)
             return;
 
-        Vector3 scale = authoredPoses[building].Scale;
-        float grownAt = startTime + config.BuildingGrowDuration;
+        LocalPose rest = authoredPoses[building];
+        float duration = endTime - startTime;
 
-        sequence.Insert(startTime, DOVirtual.Float(config.BuildingStartScale, config.BuildingOvershoot,
-            config.BuildingGrowDuration, value => building.localScale = scale * value).SetEase(Ease.OutQuad));
-        sequence.Insert(grownAt, DOVirtual.Float(config.BuildingOvershoot, 1f,
-            config.BuildingSettleDuration, value => building.localScale = scale * value).SetEase(Ease.InOutQuad));
+        sequence.Insert(startTime, DOVirtual.Float(0f, 1f, duration, t =>
+        {
+            float move = DOVirtual.EasedValue(0f, 1f, t, config.BuildingJumpUpEase);
+            building.localPosition = rest.Position + Vector3.up * (config.BuildingJumpHeight * move);
+            building.localScale = Vector3.Scale(rest.Scale, Vector3.Lerp(config.BuildingLaunchStretch, Vector3.one, move));
+        }));
     }
 
-    private void InsertProps(Transform[] props, BarracksPropMotion motion, float switchTime)
+    private void InsertBuildingApex(float startTime, float endTime)
+    {
+        if (building == null)
+            return;
+
+        LocalPose rest = authoredPoses[building];
+        float duration = endTime - startTime;
+        Vector3 spinAxis = NormalizedOrUp(config.BuildingApexSpinAxis);
+
+        sequence.Insert(startTime, DOVirtual.Float(0f, 1f, duration, t =>
+        {
+            // 0 -> 1 -> 0 bump centered on the apex window: scale balloons to the
+            // overshoot and settles back to 1 right as the fall begins.
+            float bump = Mathf.Sin(t * Mathf.PI);
+            building.localScale = rest.Scale * Mathf.Lerp(1f, config.BuildingApexOvershoot, bump);
+
+            float phase = t * config.BuildingApexSpinCycles * 2f * Mathf.PI;
+            float angle = config.BuildingApexSpin * Mathf.Sin(phase) * (1f - t);
+            building.localRotation = Quaternion.AngleAxis(angle, spinAxis) * rest.Rotation;
+        }));
+    }
+
+    private void InsertBuildingFall(float startTime, float endTime)
+    {
+        if (building == null)
+            return;
+
+        LocalPose rest = authoredPoses[building];
+        float duration = endTime - startTime;
+
+        sequence.Insert(startTime, DOVirtual.Float(1f, 0f, duration, t =>
+            building.localPosition = rest.Position + Vector3.up * (config.BuildingJumpHeight * t))
+            .SetEase(config.BuildingFallEase));
+    }
+
+    private void InsertBuildingLand(float landTime)
+    {
+        if (building == null)
+            return;
+
+        LocalPose rest = authoredPoses[building];
+
+        sequence.InsertCallback(landTime, () =>
+        {
+            building.localPosition = rest.Position;
+            building.localRotation = rest.Rotation;
+            EmitDust(building.position, config.BuildingDustCount, config.BuildingDustRadius);
+            PlaySfx(config.BuildingLandSfx, 1f);
+            cameraShake.Shake(shakeConfig.BarracksUpgrade, 1f, Vector3.zero);
+        });
+
+        sequence.Insert(landTime, DOVirtual.Float(0f, 1f, config.BuildingLandSettleDuration, t =>
+            building.localScale = Vector3.Scale(rest.Scale, Vector3.Lerp(config.BuildingLandSquash, Vector3.one, t)))
+            .SetEase(Ease.OutQuad));
+    }
+
+    private void InsertProps(Transform[] props, BarracksPropMotion motion, float apexTime, float buildingLandTime)
     {
         if (props == null)
             return;
@@ -142,44 +223,65 @@ public class BarracksUpgradeRevealView : MonoBehaviour
             if (prop == null)
                 continue;
 
-            float startTime = switchTime + motion.StartTime + motion.Stagger * i;
-            InsertProp(prop, motion, startTime);
+            float revealStart = apexTime + motion.RevealStartTime + motion.RevealStagger * i;
+            float hopEnd = revealStart + motion.RevealDuration + motion.HopDuration;
+
+            // Landing is staged after the building lands, but never before this
+            // prop's own spawn + hop has actually finished playing.
+            float landStart = Mathf.Max(buildingLandTime + motion.LandStagger * i, hopEnd);
+
+            InsertProp(prop, motion, revealStart, landStart);
         }
     }
 
-    private void InsertProp(Transform prop, BarracksPropMotion motion, float startTime)
+    private void InsertProp(Transform prop, BarracksPropMotion motion, float revealStart, float landStart)
     {
         LocalPose pose = authoredPoses[prop];
-        Quaternion tilt = Quaternion.AngleAxis(NextRange(-motion.MaxTilt, motion.MaxTilt), RandomHorizontalAxis());
-        Vector3 wobbleAxis = RandomHorizontalAxis();
-        float landTime = startTime + motion.Duration;
+        Vector3 airPos = pose.Position + Vector3.up * motion.AirHeight;
+        Vector3 spinAxis = NormalizedOrUp(motion.HopSpinAxis);
+        float hopStart = revealStart + motion.RevealDuration;
+        float spinDirection = NextRange(0f, 1f) < 0.5f ? -1f : 1f;
 
-        sequence.Insert(startTime, DOVirtual.Float(0f, 1f, motion.Duration, t =>
+        // Spawn: pops into existence already airborne, at a fixed point in the air.
+        sequence.Insert(revealStart, DOVirtual.Float(0f, 1f, motion.RevealDuration, t =>
         {
-            float move = DOVirtual.EasedValue(0f, 1f, t, motion.MoveEase);
-            prop.localPosition = pose.Position + Vector3.up * (motion.StartHeight * (1f - move));
-            prop.localRotation = Quaternion.Slerp(tilt, Quaternion.identity, DOVirtual.EasedValue(0f, 1f, t, Ease.OutQuad)) * pose.Rotation;
-            prop.localScale = pose.Scale * Mathf.Lerp(motion.StartScale, 1f, Mathf.Clamp01(t * 2f));
+            prop.localPosition = airPos;
+            prop.localScale = pose.Scale * DOVirtual.EasedValue(0f, 1f, t, Ease.OutBack);
         }));
 
-        sequence.InsertCallback(landTime, () =>
+        // Air hop: a little extra bounce back to the same air height, with a squash & stretch
+        // pulse and a small springy rotation that peaks right at the highest point of the hop
+        // (bump == 1) and settles flat again by the time it comes back down (bump == 0).
+        sequence.Insert(hopStart, DOVirtual.Float(0f, 1f, motion.HopDuration, t =>
         {
-            pose.ApplyTo(prop);
+            float bump = Mathf.Sin(t * Mathf.PI);
+            prop.localPosition = airPos + Vector3.up * (motion.HopHeight * bump);
+            prop.localScale = pose.Scale * Mathf.Lerp(1f, motion.HopStretch, bump);
+
+            float spinPhase = t * motion.HopSpinCycles * 2f * Mathf.PI;
+            float angle = motion.HopSpinAngle * spinDirection * Mathf.Sin(spinPhase) * bump;
+            prop.localRotation = Quaternion.AngleAxis(angle, spinAxis) * pose.Rotation;
+        }));
+
+        // Fall & land: drops from the air spawn height to the authored resting position,
+        // squashing on impact.
+        sequence.Insert(landStart, DOVirtual.Float(0f, 1f, motion.FallDuration, t =>
+            prop.localPosition = Vector3.Lerp(airPos, pose.Position, t))
+            .SetEase(motion.FallEase));
+
+        float landImpactTime = landStart + motion.FallDuration;
+
+        sequence.InsertCallback(landImpactTime, () =>
+        {
+            prop.localPosition = pose.Position;
+            prop.localRotation = pose.Rotation;
             EmitDust(prop.position, motion.DustCount, motion.DustRadius);
             PlaySfx(motion.LandSfx, motion.LandPitch);
         });
 
-        sequence.Insert(landTime, DOVirtual.Float(0f, 1f, motion.LandSettleDuration, t =>
-            prop.localScale = Vector3.Scale(pose.Scale, Vector3.Lerp(motion.LandSquash, Vector3.one, t))).SetEase(Ease.OutQuad));
-
-        if (motion.WobbleAngle <= 0f)
-            return;
-
-        sequence.Insert(landTime, DOVirtual.Float(0f, 1f, motion.WobbleDuration, t =>
-        {
-            float angle = motion.WobbleAngle * Mathf.Sin(t * motion.WobbleCycles * 2f * Mathf.PI) * (1f - t);
-            prop.localRotation = Quaternion.AngleAxis(angle, wobbleAxis) * pose.Rotation;
-        }));
+        sequence.Insert(landImpactTime, DOVirtual.Float(0f, 1f, motion.LandSettleDuration, t =>
+            prop.localScale = Vector3.Scale(pose.Scale, Vector3.Lerp(motion.LandSquash, Vector3.one, t)))
+            .SetEase(Ease.OutQuad));
     }
 
     private void OnSequenceCompleted()
@@ -213,6 +315,15 @@ public class BarracksUpgradeRevealView : MonoBehaviour
 
         previousModel = null;
         nextModel = null;
+
+        RaisePendingCompletion();
+    }
+
+    private void RaisePendingCompletion()
+    {
+        Action completion = pendingCompletion;
+        pendingCompletion = null;
+        completion?.Invoke();
     }
 
     private void EmitDust(Vector3 center, int count, float radius)
@@ -233,6 +344,21 @@ public class BarracksUpgradeRevealView : MonoBehaviour
             emitParams.position = center + direction * radius + Vector3.up * config.DustHeight;
             emitParams.velocity = direction * NextRange(config.DustSpeed.x, config.DustSpeed.y) + Vector3.up * config.DustUpwardSpeed;
             dust.Emit(emitParams, 1);
+        }
+    }
+
+    private void PlayUpgradeStartEffects()
+    {
+        if (upgradeStartEffects == null)
+            return;
+
+        foreach (ParticleSystem effect in upgradeStartEffects)
+        {
+            if (effect == null)
+                continue;
+
+            effect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            effect.Play(true);
         }
     }
 
@@ -275,10 +401,9 @@ public class BarracksUpgradeRevealView : MonoBehaviour
             pose.ApplyTo(target);
     }
 
-    private Vector3 RandomHorizontalAxis()
+    private static Vector3 NormalizedOrUp(Vector3 axis)
     {
-        float angle = NextRange(0f, 2f * Mathf.PI);
-        return new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
+        return axis.sqrMagnitude > 0.0001f ? axis.normalized : Vector3.up;
     }
 
     private float NextRange(float min, float max)

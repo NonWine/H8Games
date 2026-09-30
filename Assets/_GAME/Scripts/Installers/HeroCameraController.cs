@@ -16,6 +16,7 @@ public class HeroCameraController : IInitializable, ITickable, IDisposable
     private readonly PlayerView hero;
     private readonly CinemachineCamera followCamera;
     private readonly CombatCameraFocusConfig focusConfig;
+    private readonly ICameraFocusState cinematicFocus;
 
     private Transform followTarget;
     private Transform lookAtTarget;
@@ -34,11 +35,13 @@ public class HeroCameraController : IInitializable, ITickable, IDisposable
     public HeroCameraController(
         PlayerView hero,
         CinemachineCamera followCamera,
-        CombatCameraFocusConfig focusConfig)
+        CombatCameraFocusConfig focusConfig,
+        ICameraFocusState cinematicFocus)
     {
         this.hero = hero;
         this.followCamera = followCamera;
         this.focusConfig = focusConfig;
+        this.cinematicFocus = cinematicFocus;
     }
 
     public void Initialize()
@@ -168,8 +171,21 @@ public class HeroCameraController : IInitializable, ITickable, IDisposable
             deltaTime);
         Vector3 attentionOffset = smoothedBias * focusWeight;
 
-        followTarget.position = heroPosition + followOffset + attentionOffset;
-        lookAtTarget.position = heroPosition + lookAtOffset + attentionOffset;
+        Vector3 followPosition = heroPosition + followOffset + attentionOffset;
+        Vector3 lookAtPosition = heroPosition + lookAtOffset + attentionOffset;
+
+        if (cinematicFocus.TryGetFrame(out CameraFocusFrame frame))
+        {
+            float blend = Mathf.Clamp01(cinematicFocus.Weight);
+            Vector3 cinematicOffset = Quaternion.AngleAxis(frame.OrbitDegrees, Vector3.up)
+                * (followOffset * frame.DistanceScale);
+
+            followPosition = Vector3.Lerp(followPosition, frame.LookAtPoint + cinematicOffset, blend);
+            lookAtPosition = Vector3.Lerp(lookAtPosition, frame.LookAtPoint, blend);
+        }
+
+        followTarget.position = followPosition;
+        lookAtTarget.position = lookAtPosition;
     }
 
     private Vector3 GetAttentionBias(Vector3 position)
@@ -194,7 +210,13 @@ public class HeroCameraController : IInitializable, ITickable, IDisposable
         float zoom = focusConfig.UseFocusZoom
             ? baseFieldOfView * focusConfig.FocusZoomPercent * focusWeight
             : 0f;
-        followCamera.Lens.FieldOfView = Mathf.Clamp(
-            baseFieldOfView + zoom, 10f, 120f);
+        float fieldOfView = baseFieldOfView + zoom;
+
+        if (cinematicFocus.TryGetFrame(out CameraFocusFrame frame))
+        {
+            fieldOfView = Mathf.Lerp(fieldOfView, frame.FieldOfView, Mathf.Clamp01(cinematicFocus.Weight));
+        }
+
+        followCamera.Lens.FieldOfView = Mathf.Clamp(fieldOfView, 10f, 120f);
     }
 }

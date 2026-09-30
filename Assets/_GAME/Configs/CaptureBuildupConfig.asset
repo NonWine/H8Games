@@ -22,36 +22,36 @@ MonoBehaviour:
     TickPitch: 0.85
     ShakePosition: 0
     ShakeRotation: 0
-    ShakeFrequency: 14
-  - Progress: 0.3
+    ShakeFrequency: 10
+  - Progress: 0.261
     PulseInterval: 0.38
     PulseStrength: 0.6
-    Tension: 0.05
-    TickPitch: 1
-    ShakePosition: 0.004
-    ShakeRotation: 0.02
-    ShakeFrequency: 16
-  - Progress: 0.75
+    Tension: 0.197
+    TickPitch: 1.335
+    ShakePosition: 0.03
+    ShakeRotation: 0
+    ShakeFrequency: 10
+  - Progress: 0.5
     PulseInterval: 0.22
     PulseStrength: 0.85
-    Tension: 0.25
-    TickPitch: 1.25
-    ShakePosition: 0.018
-    ShakeRotation: 0.09
-    ShakeFrequency: 20
-  - Progress: 1
+    Tension: 0.5
+    TickPitch: 1.522
+    ShakePosition: 0.06
+    ShakeRotation: 0
+    ShakeFrequency: 10
+  - Progress: 0.802
     PulseInterval: 0.12
     PulseStrength: 1
-    Tension: 0.6
-    TickPitch: 1.5
-    ShakePosition: 0.04
-    ShakeRotation: 0.2
-    ShakeFrequency: 26
+    Tension: 1
+    TickPitch: 3
+    ShakePosition: 0.1
+    ShakeRotation: 0
+    ShakeFrequency: 10
   shakeEnabled: 1
-  shakePower: 1
+  shakePower: 1.55
   shakeInterval: 0.1
-  shakeDuration: 0.2
-  shakeDepthInfluence: 0.1
+  shakeDuration: 0.3
+  shakeDepthInfluence: 0.708
   shakeEnvelope:
     serializedVersion: 2
     m_Curve:
@@ -85,15 +85,15 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  ringExpansion: 0.3
+  ringExpansion: 0.73
   ringAlpha: 0.7
   ringDuration: 0.45
   ringColor: {r: 1, g: 0.95, b: 0.7, a: 1}
   tensionColor: {r: 0.75, g: 1, b: 0.25, a: 1}
   glowColor: {r: 1, g: 1, b: 1, a: 1}
-  glowStrength: 0.35
+  glowStrength: 0.623
   glowDecayDuration: 0.18
   tickEnabled: 1
   releaseDuration: 0.4
-  releaseScale: 1.9
+  releaseScale: 1.52
   releaseColor: {r: 1, g: 0.95, b: 0.7, a: 1}

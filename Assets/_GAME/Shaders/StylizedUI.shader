@@ -414,6 +414,14 @@ Shader "H8/Stylized UI"
                 float3 outlineRGB = cBL * (1.0 - _OutlineDarken);
                 float3 bodyRGB    = lerp(outlineRGB, fill, fillM);
 
+                // uv2 bypasses the vertex colour stream, so Unity never converted
+                // the packed sRGB palette; _ShadowColor is a material Color property
+                // and already arrives linear.
+                #ifndef UNITY_COLORSPACE_GAMMA
+                    outlineRGB = GammaToLinearSpace(saturate(outlineRGB));
+                    bodyRGB    = GammaToLinearSpace(saturate(bodyRGB));
+                #endif
+
                 // ---- composite back to front, premultiplied --------------------
                 float3 outRGB = _ShadowColor.rgb * shadowM;
                 float  outA   = shadowM;

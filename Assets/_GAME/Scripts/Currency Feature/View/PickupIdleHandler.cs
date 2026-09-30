@@ -81,8 +81,7 @@ public class PickupIdleHandler
         if (!shinePlayed && progress >= settings.ShineTime)
         {
             shinePlayed = true;
-            if (shine != null)
-                shine.Play(true);
+                // shine.Play(true);
         }
 
         if (progress >= 1f)

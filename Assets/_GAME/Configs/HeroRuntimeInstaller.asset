@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   heroStatsTemplate:
     combat:
-      MaxHealth: 3000
+      MaxHealth: 50
       MoveSpeed: 5
       AttackCooldownRange: {x: 0.8, y: 1.5}
       Damage: 15
@@ -22,7 +22,7 @@ MonoBehaviour:
       DeathReward: 5
       DeathPickupId: coin
     targeting:
-      DetectionRadius: 12
+      DetectionRadius: 10
       ReservationPenalty: 3
       RetargetInterval: 0.35
       TargetLockDuration: 0.38

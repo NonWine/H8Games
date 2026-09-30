@@ -48,6 +48,7 @@ public class GameInstaller : MonoInstaller
         // hit-stop, none of which the units know about.
         Container.DeclareSignal<UnitDamagedSignal>();
         Container.DeclareSignal<UnitDiedSignal>();
+        Container.DeclareSignal<SoldierReachedSlotSignal>();
 
     }
 

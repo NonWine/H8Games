@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Zenject;
 
 public class SquadRootInstaller : MonoInstaller
@@ -6,12 +6,14 @@ public class SquadRootInstaller : MonoInstaller
     [SerializeField] private SquadRootView squadRootViewAnchor;
     [SerializeField] private SquadFollowSettings squadFollowSettings;
     [SerializeField] private SquadSlotMarkersView squadSlotMarkersView;
+    [SerializeField] private SquadLayoutFullFeedbackView squadLayoutFullFeedbackView;
 
     public override void InstallBindings()
     {
         Container.BindInstance(squadRootViewAnchor).AsSingle();
         Container.BindInstance(squadFollowSettings).AsSingle();
         Container.BindInstance(squadSlotMarkersView).AsSingle();
+        Container.BindInstance(squadLayoutFullFeedbackView).AsSingle();
         Services();
         SquadStateMachine();
         Controllers();
@@ -23,7 +25,9 @@ public class SquadRootInstaller : MonoInstaller
         Container.BindInterfacesAndSelfTo<SquadMoveProvider>().AsSingle();
         Container.BindInterfacesAndSelfTo<SquadMovementFacade>().AsSingle();
         Container.BindInterfacesAndSelfTo<SquadFormationFacade>().AsSingle();
+        Container.BindInterfacesAndSelfTo<SquadAssemblyTracker>().AsSingle();
         Container.BindInterfacesTo<SquadSlotMarkersPresenter>().AsSingle();
+        Container.BindInterfacesTo<SquadLayoutFullFeedbackPresenter>().AsSingle();
     }
 
     private void Services()

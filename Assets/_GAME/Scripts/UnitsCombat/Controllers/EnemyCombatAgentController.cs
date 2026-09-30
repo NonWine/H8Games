@@ -20,6 +20,7 @@ public class EnemyCombatAgentController : BaseCombatAgentController<EnemyRuntime
     
     public override void Initialize()
     {
+        runtimeModel.CapturePost();
         base.Initialize();
         ChangeToIdleState();
     }

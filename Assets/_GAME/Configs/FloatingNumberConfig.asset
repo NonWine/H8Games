@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <EnemyDamageColor>k__BackingField: {r: 1, g: 0.78, b: 0.18, a: 1}
   <FriendlyDamageColor>k__BackingField: {r: 1, g: 0.28, b: 0.24, a: 1}
-  <CoinColor>k__BackingField: {r: 1, g: 0.85, b: 0.2, a: 1}
+  <CoinColor>k__BackingField: {r: 0.4039216, g: 0.4431373, b: 0.48235297, a: 1}
   <DamageOffset>k__BackingField: {x: 0, y: 2.2, z: 0}
-  <CoinOffset>k__BackingField: {x: 0, y: 1.2, z: 0}
+  <CoinOffset>k__BackingField: {x: 0, y: 1.79, z: 0}
   <LateralJitter>k__BackingField: 0.32
   <Duration>k__BackingField: 1.1
   <RiseDistance>k__BackingField: 1.7
   <DamageFontSize>k__BackingField: 19.11
-  <CoinFontSize>k__BackingField: 18.14
+  <CoinFontSize>k__BackingField: 32.1
   <LethalScale>k__BackingField: 1.25
