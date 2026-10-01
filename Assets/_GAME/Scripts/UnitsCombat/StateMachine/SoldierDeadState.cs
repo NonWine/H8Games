@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 public class SoldierDeadState : SoldierStateBase
 {
@@ -24,7 +25,8 @@ public class SoldierDeadState : SoldierStateBase
         var view = (BaseCombatAgentView)model.View;
         view.NavMeshAgent.enabled = false;
 
-        var damageData = UnitDamageData.FromHitData(model.LastHitData, model.Transform.position);
+        var centerPosition = model.Transform.position + Vector3.up * 1f;
+        var damageData = UnitDamageData.FromHitData(model.LastHitData, centerPosition);
         view.RagdollView.EnableRagdoll(damageData);
 
         HandleDeathSequenceAsync(view).Forget();

@@ -49,6 +49,22 @@ public class AgentAnimationController
     public void SetTrig(string name) => animator.SetTrigger(name);
 
     public void SetAttackTrigger() => SetTrig("AttackTrigger");
+    public void SetVictoryTrigger() => SetTrig("VictoryTrigger");
+    public void SetHitTrigger() => SetTrig("HitTrigger");
+    public void SetReloadTrigger() => SetTrig("ReloadTrigger");
+    
+    public void SetRandomIdleEmote()
+    {
+        if (UnityEngine.Random.value > 0.5f)
+            SetTrig("Emote1Trigger");
+        else
+            SetTrig("Emote2Trigger");
+    }
+    
+    public void StopUpperBodyEmotes()
+    {
+        SetTrig("StopUpperBodyTrigger");
+    }
     
     public void Reset()
     {

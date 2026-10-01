@@ -4,12 +4,19 @@ using UnityEngine.AI;
 public class SoldierNavMeshFormationMover : ISoldierFormationMover
 {
     private const float MinPlanarSqrMagnitude = 0.0001f;
-    private const float NavMeshSampleDistance = 1.5f;
+    private const float NavMeshSampleDistance = 5f;
     private const float DestinationRefreshDistance = 0.08f;
     private const float AgentStoppingDistance = 0.03f;
     private const float AgentAccelerationMultiplier = 6f;
     private const float AgentAngularSpeed = 720f;
     private const float FullCircleRadians = Mathf.PI * 2f;
+
+    // If a soldier makes less than this distance of progress toward its slot
+    // over StuckTimeout seconds while the squad root is stationary, warp it
+    // there. Covers NavMesh holes, obstacle geometry the agent can't path
+    // around, and any other edge case that leaves a soldier stranded.
+    private const float StuckTimeout = 3f;
+    private const float StuckProgressThreshold = 0.15f;
 
     private readonly BaseCombatAgentView combatView;
     private readonly SquadFollowSettings settings;
@@ -24,6 +31,11 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
 
     private Vector3 lastDestination;
     private float nextDestinationRefreshTime;
+
+    // Stuck detection: tracks how long the soldier has been trying to reach
+    // a stationary slot without meaningful progress.
+    private float stuckTimer;
+    private float stuckCheckDistance;
 
     public SoldierNavMeshFormationMover(BaseCombatAgentView combatView, SquadFollowSettings settings, int seed)
     {
@@ -78,6 +90,8 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
     {
         lastDestination = Vector3.positiveInfinity;
         nextDestinationRefreshTime = 0f;
+        stuckTimer = 0f;
+        stuckCheckDistance = float.MaxValue;
         ConfigureAgent(true);
     }
 
@@ -123,8 +137,43 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
         {
             Stop();
             RotateTowards(GetLookDirection(squadRoot, delta, squadRootIsMoving), deltaTime);
+            stuckTimer = 0f;
 
             return SoldierFormationState.WaitingInFormation;
+        }
+
+        // Stuck detection: when the squad root is parked and the soldier is not
+        // making meaningful progress toward the slot, warp it there so it is
+        // never permanently stranded by NavMesh holes or obstacle colliders.
+        if (!squadRootIsMoving)
+        {
+            float currentDistance = delta.magnitude;
+
+            if (currentDistance < stuckCheckDistance - StuckProgressThreshold)
+            {
+                // Made real progress — reset the timer.
+                stuckTimer = 0f;
+                stuckCheckDistance = currentDistance;
+            }
+            else
+            {
+                stuckTimer += deltaTime;
+
+                if (stuckTimer >= StuckTimeout)
+                {
+                    agent.Warp(desiredPosition);
+                    Stop();
+                    stuckTimer = 0f;
+                    stuckCheckDistance = float.MaxValue;
+
+                    return SoldierFormationState.WaitingInFormation;
+                }
+            }
+        }
+        else
+        {
+            stuckTimer = 0f;
+            stuckCheckDistance = float.MaxValue;
         }
 
         TrySetDestination(agent, desiredPosition);
@@ -148,14 +197,14 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
     // slots push each other off both of them and neither ever arrives. Once the
     // squad root has stopped and the slot is within reach, the slots themselves
     // guarantee the spacing, so avoidance has nothing left to solve.
+    //
+    // Disable entirely when the root is stationary: soldiers returning from combat
+    // are scattered far from their slots and all converge at once — avoidance at
+    // full quality during that convergence is the main cause of "some of them
+    // can't go back".
     private bool ShouldAvoidOthers(Vector3 toSlot, bool squadRootIsMoving)
     {
-        if (squadRootIsMoving)
-        {
-            return true;
-        }
-
-        return toSlot.sqrMagnitude > settings.SlotSettleRadius * settings.SlotSettleRadius;
+        return squadRootIsMoving;
     }
 
     private void ConfigureAgent(bool avoidOthers)

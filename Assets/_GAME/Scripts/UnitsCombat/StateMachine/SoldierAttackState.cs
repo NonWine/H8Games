@@ -61,6 +61,15 @@ public class SoldierAttackState : SoldierStateBase
             return;
         }
 
+        attackData.ShotsFired++;
+        if (attackData.ShotsFired >= 8)
+        {
+            attackData.ShotsFired = 0;
+            agentAnimationController.SetReloadTrigger();
+            attackData.CooldownRemaining += 1.5f; // Extra pause for reload
+            return;
+        }
+
         ICombatTarget target = Soldier.CurrentTarget;
         agentAnimationController.SetAttackTrigger();
         modules.Attack.HandleAttack(

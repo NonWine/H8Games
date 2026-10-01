@@ -93,6 +93,7 @@ public class PickupCollector : IPickupCollector, IInitializable, IDisposable
         if (hasSink)
         {
             stackImpact.PlayLanding(carrySink.Carried, controller);
+            controller.View.PlayJuicyLandingSquash(controller.CollectPunchScale, controller.CollectPunchDuration);
             return;
         }
 

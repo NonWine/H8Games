@@ -32,6 +32,8 @@ public class PickupVisualConfig : ScriptableObject
     [SerializeField] private float arcHeight = 1.5f;
     [SerializeField] private AnimationCurve collectCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
     [SerializeField] private float moveToSlotDuration = 0.15f;
+    [SerializeField] private Vector3 collectPunchScale = new Vector3(0.5f, -0.5f, 0.5f);
+    [SerializeField] private float collectPunchDuration = 0.35f;
 
     [Header("Spend")]
     [SerializeField] private float spendDuration = 0.35f;
@@ -54,6 +56,8 @@ public class PickupVisualConfig : ScriptableObject
     public float          ArcHeight          => arcHeight;
     public AnimationCurve CollectCurve       => collectCurve;
     public float          MoveToSlotDuration => moveToSlotDuration;
+    public Vector3        CollectPunchScale  => collectPunchScale;
+    public float          CollectPunchDuration => collectPunchDuration;
     public float          SpendDuration      => spendDuration;
     public float          JumpPower          => jumpPower;
     public float          SpendSpinSpeed     => spendSpinSpeed;

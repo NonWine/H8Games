@@ -8,40 +8,60 @@ public class LevelTransitionView : MonoBehaviour
 {
     [SerializeField] private Image zoomImage;
 
-    [Inject] private SignalBus signalBus;
-    [Inject] private LevelManager levelManager;
-    [Inject] private HeroCombatAgentController heroCombatAgentController;
-
-    private Tween zoomTween;
-
     [Header("Timings")]
-    [Tooltip("Wait before fading to allow the 'CAPTURED' text to play.")]
-    [SerializeField, Min(0f)] private float startDelay = 0.75f;
-    [SerializeField, Min(0f)] private float zoomInDuration = 0.25f;
-    [SerializeField, Min(0f)] private float zoomOutDuration = 0.35f;
-    
+    [SerializeField, Min(0f)] private float startDelay = 0.5f;
+    [SerializeField, Min(0.01f)] private float zoomInDuration = 0.25f;
+    [SerializeField, Min(0.01f)] private float zoomOutDuration = 0.35f;
+
+    private SignalBus signalBus;
+    private LevelManager levelManager;
+    private HeroCombatAgentController heroCombatAgentController;
+    private Tween activeTween;
+
+    [Inject]
+    public void Construct(
+        SignalBus signalBus,
+        LevelManager levelManager,
+        HeroCombatAgentController heroCombatAgentController)
+    {
+        this.signalBus = signalBus;
+        this.levelManager = levelManager;
+        this.heroCombatAgentController = heroCombatAgentController;
+    }
+
     private void Awake()
     {
-        zoomImage.rectTransform.localScale = Vector3.one;
-        SetAlpha(0f);
-        zoomImage.raycastTarget = false;
-        
-        signalBus.Subscribe<LevelCaptureCompletedSignal>(HandleLevelCaptured);
+        if (zoomImage != null)
+        {
+            zoomImage.rectTransform.localScale = Vector3.zero;
+            SetAlpha(0f);
+            zoomImage.raycastTarget = false;
+        }
+    }
+
+    private void Start()
+    {
+        signalBus?.Subscribe<LevelCaptureCompletedSignal>(HandleLevelCaptured);
     }
 
     private void OnDestroy()
     {
-        signalBus.Unsubscribe<LevelCaptureCompletedSignal>(HandleLevelCaptured);
-        zoomTween?.Kill();
+        signalBus?.TryUnsubscribe<LevelCaptureCompletedSignal>(HandleLevelCaptured);
+        activeTween?.Kill();
     }
 
     private void HandleLevelCaptured()
     {
         RunTransitionAsync().Forget();
     }
-    
+
     private async UniTaskVoid RunTransitionAsync()
     {
+        if (zoomImage == null)
+        {
+            return;
+        }
+
         zoomImage.raycastTarget = true;
 
         if (startDelay > 0f)
@@ -49,47 +69,66 @@ public class LevelTransitionView : MonoBehaviour
             await UniTask.Delay(System.TimeSpan.FromSeconds(startDelay), ignoreTimeScale: false);
         }
 
-        await FadeAsync(1f, zoomInDuration);
+        await PlayTransitionInAsync();
 
         signalBus.Fire(new LoadNextLevelSignal());
         TeleportHeroToLevelStart();
         levelManager.CurrentLevel?.ResetRuntimeState();
 
-        await FadeAsync(0f, zoomOutDuration);
-        
+        await PlayTransitionOutAsync();
+
         zoomImage.raycastTarget = false;
+        signalBus.Fire<LevelTransitionCompletedSignal>();
     }
 
-    // Runs while the zoom overlay is still fully covering the screen, right
-    // before enemies respawn, so the hero is already at the new encounter's
-    // start point before any enemy can wake up and see him there.
     private void TeleportHeroToLevelStart()
     {
         Transform startPoint = levelManager.CurrentLevel?.StartPoint;
         if (startPoint == null)
         {
-            Debug.LogError("LevelTransitionView: current level has no StartPoint assigned - hero will not be repositioned before enemies respawn.", this);
             return;
         }
 
         heroCombatAgentController.TeleportTo(startPoint.position, startPoint.rotation);
     }
 
-    private UniTask FadeAsync(float targetAlpha, float duration)
+    private UniTask PlayTransitionInAsync()
     {
-        zoomTween?.Kill();
+        activeTween?.Kill();
+        var tcs = new UniTaskCompletionSource();
 
-        UniTaskCompletionSource completionSource = new UniTaskCompletionSource();
-        zoomTween = zoomImage.DOFade(targetAlpha, duration)
-            .SetEase(Ease.Linear)
+        Sequence seq = DOTween.Sequence()
             .SetLink(gameObject)
-            .OnComplete(() => completionSource.TrySetResult());
+            .Append(zoomImage.rectTransform.DOScale(Vector3.one, zoomInDuration).SetEase(Ease.OutCubic))
+            .Join(zoomImage.DOFade(1f, zoomInDuration * 0.8f).SetEase(Ease.OutQuad))
+            .OnComplete(() => tcs.TrySetResult());
 
-        return completionSource.Task;
+        activeTween = seq;
+        return tcs.Task;
     }
-    
+
+    private UniTask PlayTransitionOutAsync()
+    {
+        activeTween?.Kill();
+        var tcs = new UniTaskCompletionSource();
+
+        Sequence seq = DOTween.Sequence()
+            .SetLink(gameObject)
+            .Append(zoomImage.rectTransform.DOScale(Vector3.zero, zoomOutDuration).SetEase(Ease.InCubic))
+            .Join(zoomImage.DOFade(0f, zoomOutDuration).SetEase(Ease.InQuad))
+            .OnComplete(() =>
+            {
+                SetAlpha(0f);
+                tcs.TrySetResult();
+            });
+
+        activeTween = seq;
+        return tcs.Task;
+    }
+
     private void SetAlpha(float alpha)
     {
+        if (zoomImage == null) return;
         Color c = zoomImage.color;
         c.a = alpha;
         zoomImage.color = c;

@@ -1,0 +1,11 @@
+{
+  "task-completion-notifier": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\Nik\\.gemini\\config\\scripts\\notify-on-finish.ps1",
+        "timeout": 10
+      }
+    ]
+  }
+}

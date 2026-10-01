@@ -143,6 +143,7 @@ public class UnitRagdollView : MonoBehaviour
         [Header("Components")]
         [SerializeField] private Animator animator;
         [SerializeField] private Rigidbody rootRigidbody;
+        [SerializeField] private Collider[] rootColliders;
         [SerializeField] private CharacterJoint[] joints;
         [SerializeField] private BoneEntry[] bones;
         [SerializeField] private DroppedWeaponEntry[] droppedWeapons;
@@ -157,6 +158,10 @@ public class UnitRagdollView : MonoBehaviour
         [Header("Death Knockback")]
         [Min(0f)] [SerializeField] private float deathKnockbackForceMin = 4f;
         [Min(0f)] [SerializeField] private float deathKnockbackForceMax = 10f;
+
+        [Header("Gravity")]
+        [Tooltip("Multiplies downward gravity for ragdoll bones. 1 = standard Unity gravity (-9.81), 2-2.5 = fast heavy arcade fall.")]
+        [Min(0.1f)] [SerializeField] private float gravityMultiplier = 2f;
 
         [Header("Settling")]
         [Min(0f)] [SerializeField] private float startLinearDamping = 0.05f;
@@ -204,6 +209,7 @@ public class UnitRagdollView : MonoBehaviour
                 return;
             }
 
+            ApplyCustomGravity();
             UpdateSettling();
         }
 
@@ -230,7 +236,10 @@ public class UnitRagdollView : MonoBehaviour
             {
                 rootRigidbody.isKinematic = true;
                 rootRigidbody.useGravity = false;
+                rootRigidbody.detectCollisions = false;
             }
+
+            SetRootCollidersEnabled(false);
 
             if (bones != null && bones.Length > 0)
             {
@@ -293,6 +302,15 @@ public class UnitRagdollView : MonoBehaviour
             isRagdollActive = false;
             stillTimer = 0f;
             ragdollEnabledTime = 0f;
+
+            if (rootRigidbody != null)
+            {
+                rootRigidbody.isKinematic = true;
+                rootRigidbody.useGravity = false;
+                rootRigidbody.detectCollisions = false;
+            }
+
+            SetRootCollidersEnabled(true);
 
             if (bones != null && bones.Length > 0)
             {
@@ -370,6 +388,8 @@ public class UnitRagdollView : MonoBehaviour
             isRagdollActive = false;
             stillTimer = 0f;
 
+            SetRootCollidersEnabled(false);
+
             if (bones == null || bones.Length == 0)
             {
                 return;
@@ -410,6 +430,8 @@ public class UnitRagdollView : MonoBehaviour
             {
                 rootRigidbody = searchRoot.GetComponent<Rigidbody>();
             }
+
+            rootColliders = ResolveRootColliders();
 
             joints = searchRoot.GetComponentsInChildren<CharacterJoint>(true);
 
@@ -543,6 +565,13 @@ public class UnitRagdollView : MonoBehaviour
             {
                 return;
             }
+
+            if (rootColliders == null || rootColliders.Length == 0)
+            {
+                rootColliders = ResolveRootColliders();
+            }
+
+            IgnoreRagdollInternalCollisions();
 
             if (bones == null || bones.Length == 0)
             {
@@ -856,14 +885,8 @@ public class UnitRagdollView : MonoBehaviour
             }
 
             var impulseForce = Mathf.Max(minImpactForce, damageData.ImpactStrength * impactForceMultiplier);
-            var impactPoint = damageData.ImpactPoint;
 
-            if (impactPoint == Vector3.zero)
-            {
-                impactPoint = targetRigidbody.worldCenterOfMass;
-            }
-
-            targetRigidbody.AddForceAtPosition(impulseDirection * impulseForce, impactPoint, ForceMode.Impulse);
+            targetRigidbody.AddForce(impulseDirection * impulseForce, ForceMode.Impulse);
 
             if (additionalUpwardImpulse > 0f)
             {
@@ -878,14 +901,7 @@ public class UnitRagdollView : MonoBehaviour
 
         private void ApplyDeathKnockback(UnitDamageData damageData)
         {
-            if (damageData.HasImpact == false)
-            {
-                return;
-            }
-
-            var targetRigidbody = ResolveImpactRigidbody(damageData.ImpactPoint);
-
-            if (targetRigidbody == null)
+            if (damageData.HasImpact == false || bones == null || bones.Length == 0)
             {
                 return;
             }
@@ -899,9 +915,19 @@ public class UnitRagdollView : MonoBehaviour
 
             var minForce = Mathf.Min(deathKnockbackForceMin, deathKnockbackForceMax);
             var maxForce = Mathf.Max(deathKnockbackForceMin, deathKnockbackForceMax);
-            var impulseForce = UnityEngine.Random.Range(minForce, maxForce);
+            var impulseSpeed = UnityEngine.Random.Range(minForce, maxForce);
 
-            targetRigidbody.AddForce(impulseDirection * impulseForce, ForceMode.Impulse);
+            for (var i = 0; i < bones.Length; i++)
+            {
+                var rb = bones[i]?.Rigidbody;
+
+                if (rb == null || rb.isKinematic)
+                {
+                    continue;
+                }
+
+                rb.AddForce(impulseDirection * impulseSpeed, ForceMode.VelocityChange);
+            }
         }
 
         private void ApplyWeaponImpact(Rigidbody weaponRigidbody)
@@ -1008,5 +1034,111 @@ public class UnitRagdollView : MonoBehaviour
             }
 
             return null;
+        }
+        private Collider[] ResolveRootColliders()
+        {
+            var found = new List<Collider>();
+
+            if (rootRigidbody != null)
+            {
+                found.AddRange(rootRigidbody.GetComponents<Collider>());
+            }
+
+            var unitView = GetComponentInParent<BaseCombatAgentView>();
+            if (unitView != null && (rootRigidbody == null || unitView.gameObject != rootRigidbody.gameObject))
+            {
+                found.AddRange(unitView.GetComponents<Collider>());
+            }
+
+            return found.ToArray();
+        }
+
+        private void SetRootCollidersEnabled(bool isEnabled)
+        {
+            if (rootColliders == null || rootColliders.Length == 0)
+            {
+                rootColliders = ResolveRootColliders();
+            }
+
+            if (rootColliders == null || rootColliders.Length == 0)
+            {
+                return;
+            }
+
+            for (var i = 0; i < rootColliders.Length; i++)
+            {
+                var col = rootColliders[i];
+                if (col != null)
+                {
+                    col.enabled = isEnabled;
+                }
+            }
+        }
+
+        private void IgnoreRagdollInternalCollisions()
+        {
+            var allColliders = new List<Collider>();
+
+            if (bones != null)
+            {
+                for (var i = 0; i < bones.Length; i++)
+                {
+                    var boneColliders = bones[i]?.Colliders;
+                    if (boneColliders == null) continue;
+
+                    for (var j = 0; j < boneColliders.Length; j++)
+                    {
+                        var col = boneColliders[j];
+                        if (col != null)
+                        {
+                            allColliders.Add(col);
+                        }
+                    }
+                }
+            }
+
+            for (var i = 0; i < allColliders.Count; i++)
+            {
+                for (var j = i + 1; j < allColliders.Count; j++)
+                {
+                    Physics.IgnoreCollision(allColliders[i], allColliders[j], true);
+                }
+            }
+
+            if (rootColliders != null)
+            {
+                for (var i = 0; i < rootColliders.Length; i++)
+                {
+                    var rootCol = rootColliders[i];
+                    if (rootCol == null) continue;
+
+                    for (var j = 0; j < allColliders.Count; j++)
+                    {
+                        Physics.IgnoreCollision(rootCol, allColliders[j], true);
+                    }
+                }
+            }
+        }
+
+        private void ApplyCustomGravity()
+        {
+            if (Mathf.Approximately(gravityMultiplier, 1f) || bones == null || bones.Length == 0)
+            {
+                return;
+            }
+
+            var extraGravity = Physics.gravity * (gravityMultiplier - 1f);
+
+            for (var i = 0; i < bones.Length; i++)
+            {
+                var rb = bones[i]?.Rigidbody;
+
+                if (rb == null || rb.isKinematic || rb.IsSleeping())
+                {
+                    continue;
+                }
+
+                rb.AddForce(extraGravity, ForceMode.Acceleration);
+            }
         }
 }

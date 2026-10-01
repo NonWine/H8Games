@@ -15,6 +15,8 @@ public class PickupItemController
 
     public PickupItemView View => view;
     public PickupStackImpactSettings StackImpact => visualConfig.StackImpact;
+    public Vector3 CollectPunchScale => visualConfig.CollectPunchScale;
+    public float CollectPunchDuration => visualConfig.CollectPunchDuration;
 
     public PickupItemController(PickupItemView view, PickupVisualConfig visualConfig)
     {

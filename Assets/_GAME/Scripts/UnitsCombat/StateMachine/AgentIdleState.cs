@@ -7,6 +7,8 @@ public class SoldierIdleState : SoldierStateBase
     private readonly SquadFollowSettings squadFollowSettings;
     private readonly ISoldierFormationMover formationMover;
     private readonly UnitRotatorService unitRotatorService;
+    private readonly ICombatStateProvider combatStateProvider;
+    private float emoteTimer;
 
     public SoldierIdleState(
         SoldierRuntimeModel model,
@@ -16,7 +18,8 @@ public class SoldierIdleState : SoldierStateBase
         ISquadSlotPositionProvider squadSlotPositionProvider,
         SquadFollowSettings squadFollowSettings,
         ISoldierFormationMover formationMover,
-        UnitRotatorService unitRotatorService)
+        UnitRotatorService unitRotatorService,
+        ICombatStateProvider combatStateProvider)
         : base(model, modules, agentAnimationController)
     {
         this.movementStateReader = movementStateReader;
@@ -24,12 +27,15 @@ public class SoldierIdleState : SoldierStateBase
         this.squadFollowSettings = squadFollowSettings;
         this.formationMover = formationMover;
         this.unitRotatorService = unitRotatorService;
+        this.combatStateProvider = combatStateProvider;
+        this.emoteTimer = Random.Range(3f, 10f);
     }
 
     public override void Enter()
     {
         formationMover.Stop();
         agentAnimationController.SetAnimationState(UnitState.Idle);
+        agentAnimationController.StopUpperBodyEmotes();
     }
 
     public override void Tick()
@@ -68,6 +74,16 @@ public class SoldierIdleState : SoldierStateBase
             Soldier.SquadRootView.transform.forward,
             Time.deltaTime,
             squadFollowSettings.SoldierRotationSpeed);
+
+        if (combatStateProvider.State == CombatFlowState.IdleInPreparation)
+        {
+            emoteTimer -= Time.deltaTime;
+            if (emoteTimer <= 0f)
+            {
+                agentAnimationController.SetRandomIdleEmote();
+                emoteTimer = Random.Range(5f, 15f);
+            }
+        }
     }
 
     public override void Exit()

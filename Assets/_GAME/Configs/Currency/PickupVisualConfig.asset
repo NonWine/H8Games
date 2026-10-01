@@ -22,7 +22,7 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 257
     faceDirection: {x: 0, y: 0.8, z: -0.6}
-    preset: 0
+    preset: 4
     custom:
       Interval: {x: 3, y: 5}
       Duration: 0.32
@@ -233,12 +233,12 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    duration: 0.35
+    duration: 0.5
     slotCompression: 0.045
     faceExpand: 0.3
     flatten: 0.45
-    overshoot: 0.2
-    tiltDegrees: 22
+    overshoot: 0.416
+    tiltDegrees: 27.2
     columnKick: 0.45
     propagationDelay: 0.025
     falloff: 0.7
@@ -257,7 +257,7 @@ MonoBehaviour:
   impactMinSpeed: 2.5
   impactFxCooldown: 0.12
   collectDuration: 0.45
-  arcHeight: 2.07
+  arcHeight: 2.15
   collectCurve:
     serializedVersion: 2
     m_Curve:
@@ -282,7 +282,9 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  moveToSlotDuration: 0.15
+  moveToSlotDuration: 0.25
+  collectPunchScale: {x: 0.8, y: -0.5, z: 0.8}
+  collectPunchDuration: 0.35
   spendDuration: 0.35
   jumpPower: 2.02
   spendSpinSpeed: 540

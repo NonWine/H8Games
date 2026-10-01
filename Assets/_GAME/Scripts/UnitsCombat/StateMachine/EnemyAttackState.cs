@@ -90,6 +90,15 @@ public class EnemyAttackState : EnemyStateBase
             return;
         }
 
+        attackData.ShotsFired++;
+        if (attackData.ShotsFired >= 8)
+        {
+            attackData.ShotsFired = 0;
+            agentAnimationController.SetReloadTrigger();
+            attackData.CooldownRemaining += 1.5f; // Extra pause for reload
+            return;
+        }
+
         ICombatTarget target = Enemy.CurrentTarget;
         agentAnimationController.SetAttackTrigger();
         modules.Attack.HandleAttack(

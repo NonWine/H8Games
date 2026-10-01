@@ -94,6 +94,14 @@ public class PickupItemView : MonoBehaviour
             Impact.PlayAtSelf();
     }
 
+    public void PlayJuicyLandingSquash(Vector3 punchScale, float duration)
+    {
+        transform.DOKill();
+        transform.localScale = Vector3.one;
+        transform.DOPunchScale(punchScale, duration, 4, 0.5f)
+                 .SetLink(gameObject);
+    }
+
     public void SetCarrySway(Vector3 worldOffset, float tiltDegrees, Vector3 worldTiltAxis, float smoothTime)
     {
         var parent = visualRoot.parent;
@@ -155,6 +163,9 @@ public class PickupItemView : MonoBehaviour
         // drains the registry, so the pool can hand back an already-destroyed view.
         if (this == null)
             return;
+
+        transform.DOKill();
+        transform.localScale = Vector3.one;
 
         Idle.Stop();
         Animation.ResetAnimationState();

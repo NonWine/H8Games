@@ -1,4 +1,4 @@
-﻿using DG.Tweening;
+using DG.Tweening;
 using UnityEngine;
 using Zenject;
 
@@ -31,11 +31,13 @@ public class SquadBarracksSpawner : MonoBehaviour
     public void Construct(
         SoldierFactory soldierFactory,
         SquadFormationFacade squadFormationFacade,
-        ICinematicCameraFocus cinematicCameraFocus)
+        ICinematicCameraFocus cinematicCameraFocus,
+        SquadCombatStateController squadCombatStateController)
     {
         this.soldierFactory = soldierFactory;
         this.squadFormationFacade = squadFormationFacade;
         this.cinematicCameraFocus = cinematicCameraFocus;
+        this._squadCombatStateController = squadCombatStateController;
     }
 
     private void Awake()
@@ -172,6 +174,6 @@ public class SquadBarracksSpawner : MonoBehaviour
 
     private bool CanSpawnInCurrentPhase()
     {
-        return _squadCombatStateController.State == CombatFlowState.IdleInPreparation;
+        return _squadCombatStateController != null && _squadCombatStateController.State == CombatFlowState.IdleInPreparation;
     }
 }

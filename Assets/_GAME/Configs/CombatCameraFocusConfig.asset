@@ -15,7 +15,7 @@ MonoBehaviour:
   <Enabled>k__BackingField: 1
   <OffsetScale>k__BackingField: 0.62
   <HeightScale>k__BackingField: 0.9
-  <DefaultFieldOfView>k__BackingField: 71.2
+  <DefaultFieldOfView>k__BackingField: 75.7
   <FieldOfView>k__BackingField: 70.2
   <PositionSmoothTime>k__BackingField: 0.45
   <LookAtSmoothTime>k__BackingField: 0.55
@@ -32,7 +32,7 @@ MonoBehaviour:
   <TargetSwitchSmoothTime>k__BackingField: 0.15
   <AttackerMatchRadius>k__BackingField: 1.5
   <UseFocusZoom>k__BackingField: 1
-  <FocusZoomPercent>k__BackingField: 0.05006
+  <FocusZoomPercent>k__BackingField: 0.050324854
   <SwitchPunchDegrees>k__BackingField: 1
   <SwitchPunchDuration>k__BackingField: 0.22
   <SwitchFlashColor>k__BackingField: {r: 0.22, g: 0.85, b: 1, a: 1}

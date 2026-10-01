@@ -36,7 +36,7 @@ public class BaseCombatUnitView : MonoBehaviour, IAgentView
         }
     }
 
-    public void PlayHitFeedback() => SetEmissionHitFlash();
+    public void PlayHitFeedback() { SetEmissionHitFlash(); if (Animator != null) Animator.SetTrigger("HitTrigger"); }
 
     public void SetEmissionHitFlash()
     {

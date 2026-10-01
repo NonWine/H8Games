@@ -10064,6 +10064,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 110000000000000002}
     m_Modifications:
+    - target: {fileID: 1096510889611550207, guid: 31aef631ce218144395ab5b8eb99c56f, type: 3}
+      propertyPath: m_LightProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1456750274349333546, guid: 31aef631ce218144395ab5b8eb99c56f, type: 3}
       propertyPath: m_Name
       value: Coin_Silver_Star

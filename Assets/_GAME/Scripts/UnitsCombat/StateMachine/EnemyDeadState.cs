@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 public class EnemyDeadState : EnemyStateBase
 {
@@ -12,10 +13,17 @@ public class EnemyDeadState : EnemyStateBase
 
     public override void Enter()
     {
-        var ragdoll = (model.View as BaseCombatAgentView)?.RagdollView;
+        var baseView = model.View as BaseCombatAgentView;
+        if (baseView != null && baseView.NavMeshAgent != null)
+        {
+            baseView.NavMeshAgent.enabled = false;
+        }
 
-        var damageData = UnitDamageData.FromHitData(model.LastHitData, model.Transform.position);
-        ragdoll.EnableRagdoll(damageData, true);
+        var ragdoll = baseView?.RagdollView;
+
+        var centerPosition = model.Transform.position + Vector3.up * 1f;
+        var damageData = UnitDamageData.FromHitData(model.LastHitData, centerPosition);
+        ragdoll?.EnableRagdoll(damageData, true);
 
         modules.Death.HandleDeathAsync().Forget();
     }

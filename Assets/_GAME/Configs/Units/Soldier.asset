@@ -13,12 +13,13 @@ MonoBehaviour:
   m_Name: Soldier
   m_EditorClassIdentifier: 
   unitStats:
-    MaxHealth: 30
+    MaxHealth: 50
     MoveSpeed: 3.5
     AttackCooldownRange: {x: 0.8, y: 1.5}
-    Damage: 8
+    Damage: 4
     ProjectileSpeed: 33
     DeathReward: 5
+    DeathPickupId: coin
   targetingData:
     DetectionRadius: 8
     ReservationPenalty: 3
