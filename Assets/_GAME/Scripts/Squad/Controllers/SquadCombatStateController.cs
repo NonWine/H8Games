@@ -45,7 +45,7 @@ public class SquadCombatStateController : IInitializable, ITickable, IDisposable
         if (State != CombatFlowState.MovingToZone || CurrentTargetGroup == null)
             return;
 
-        squadMovementFacade.Stop();
+        squadMovementFacade.FollowHero();
         CurrentTargetGroup.Activate();
         State = CombatFlowState.FightingZone;
     }

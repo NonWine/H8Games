@@ -22,10 +22,25 @@ public class BaseCombatUnitView : MonoBehaviour, IAgentView
 
     private Material[] hitFlashMaterials = Array.Empty<Material>();
     private float lastHitFlashTime = float.NegativeInfinity;
+    private bool hasHitTrigger;
 
     private void Awake()
     {
         CacheHitFlashMaterials();
+        CheckHitTriggerParameter();
+    }
+
+    private void CheckHitTriggerParameter()
+    {
+        if (Animator == null) return;
+        foreach (var p in Animator.parameters)
+        {
+            if (p.nameHash == Animator.StringToHash("HitTrigger"))
+            {
+                hasHitTrigger = true;
+                break;
+            }
+        }
     }
 
     private void OnDestroy()
@@ -36,7 +51,14 @@ public class BaseCombatUnitView : MonoBehaviour, IAgentView
         }
     }
 
-    public void PlayHitFeedback() { SetEmissionHitFlash(); if (Animator != null) Animator.SetTrigger("HitTrigger"); }
+    public void PlayHitFeedback()
+    {
+        SetEmissionHitFlash();
+        if (Animator != null && hasHitTrigger)
+        {
+            Animator.SetTrigger("HitTrigger");
+        }
+    }
 
     public void SetEmissionHitFlash()
     {

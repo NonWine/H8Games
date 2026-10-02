@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -404,8 +404,11 @@ public class UnitRagdollView : MonoBehaviour
                     continue;
                 }
 
-                rigidbodyComponent.linearVelocity = Vector3.zero;
-                rigidbodyComponent.angularVelocity = Vector3.zero;
+                if (!rigidbodyComponent.isKinematic)
+                {
+                    rigidbodyComponent.linearVelocity = Vector3.zero;
+                    rigidbodyComponent.angularVelocity = Vector3.zero;
+                }
                 rigidbodyComponent.isKinematic = true;
                 rigidbodyComponent.detectCollisions = false;
             }
@@ -723,8 +726,11 @@ public class UnitRagdollView : MonoBehaviour
 
                 if (currentWeapon.Rigidbody != null)
                 {
-                    currentWeapon.Rigidbody.linearVelocity = Vector3.zero;
-                    currentWeapon.Rigidbody.angularVelocity = Vector3.zero;
+                    if (!currentWeapon.Rigidbody.isKinematic)
+                    {
+                        currentWeapon.Rigidbody.linearVelocity = Vector3.zero;
+                        currentWeapon.Rigidbody.angularVelocity = Vector3.zero;
+                    }
                     currentWeapon.Rigidbody.isKinematic = true;
                     currentWeapon.Rigidbody.useGravity = false;
                     currentWeapon.Rigidbody.detectCollisions = false;
@@ -816,6 +822,11 @@ public class UnitRagdollView : MonoBehaviour
                     if (currentCollider == null)
                     {
                         continue;
+                    }
+
+                    if (currentCollider is MeshCollider meshCollider && !meshCollider.convex)
+                    {
+                        meshCollider.convex = true;
                     }
 
                     currentCollider.enabled = true;

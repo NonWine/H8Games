@@ -1,6 +1,7 @@
 using System;
+using Zenject;
 
-public class SquadMovementFacade
+public class SquadMovementFacade : ITickable
 {
     private readonly SquadRootStateMachine stateMachine;
     private readonly IMoveProvider squadMoveProvider;
@@ -17,6 +18,11 @@ public class SquadMovementFacade
         stateMachine.ChangeState<SquadMoveToEnemyState>();
     }
 
+    public void FollowHero()
+    {
+        stateMachine.ChangeState<SquadFollowHeroState>();
+    }
+
     public void ReturnHome()
     {
         stateMachine.ChangeState<SquadReturnGroupState>();
@@ -30,5 +36,10 @@ public class SquadMovementFacade
     public void Stop()
     {
         squadMoveProvider.Stop();
+    }
+
+    public void Tick()
+    {
+        stateMachine.Tick();
     }
 }

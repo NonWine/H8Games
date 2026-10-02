@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using DG.Tweening;
 using UnityEngine;
 using Zenject;
@@ -7,11 +7,16 @@ public class StartButtonInteractorView : MonoBehaviour
 {
     [SerializeField] private StartButtleView startButtleView;
     [Inject] private SignalBus signalBus;
+    [Inject] private DiContainer container;
     [SerializeField] private Transform root;
     private BoxCollider boxCollider;
     private void Awake()
     {
         boxCollider = GetComponent<BoxCollider>();
+        if (startButtleView != null && container != null)
+        {
+            container.Inject(startButtleView);
+        }
         signalBus.Subscribe<LoadNextLevelSignal>(ShowRoot);
         signalBus.Subscribe<GameIdleStateSignal>(ShowRoot);
         signalBus.Subscribe<StartButtleSignal>(HideRoot);

@@ -29,6 +29,7 @@ public class EnemySortieState : EnemyStateBase
     public override void Enter()
     {
         moveDeadline = Time.time + sortieConfig.MaxSortieDuration;
+        EnemySortieCoordinator.RegisterSortie(sortiePlanner.Destination);
         isMoving = mover.TryMoveTo(sortiePlanner.Destination, sortieConfig.SortieSpeedMultiplier);
 
         if (isMoving)
@@ -56,6 +57,7 @@ public class EnemySortieState : EnemyStateBase
 
     public override void Exit()
     {
+        EnemySortieCoordinator.UnregisterSortie(sortiePlanner.Destination);
         mover.Stop();
     }
 }

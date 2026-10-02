@@ -42,8 +42,14 @@ public class SoldierIdleState : SoldierStateBase
     {
         if (Soldier.HasValidTarget)
         {
-            ChangeState<SoldierAttackState>();
-            return;
+            Vector3 toTarget = Soldier.CurrentTarget.transform.position - Soldier.Transform.position;
+            toTarget.y = 0f;
+            float engageRange = squadFollowSettings.EngageRange;
+            if (toTarget.sqrMagnitude <= engageRange * engageRange)
+            {
+                ChangeState<SoldierAttackState>();
+                return;
+            }
         }
 
         if (!Soldier.HasFormationAssignment)

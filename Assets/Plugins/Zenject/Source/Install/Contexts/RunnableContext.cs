@@ -1,4 +1,4 @@
-﻿using ModestTree;
+using ModestTree;
 using UnityEngine;
 
 #if !NOT_UNITY3D
@@ -12,6 +12,12 @@ namespace Zenject
         bool _autoRun = true;
 
         static bool _staticAutoRun = true;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            _staticAutoRun = true;
+        }
 
         public bool Initialized { get; private set; }
 

@@ -1,9 +1,16 @@
+using UnityEngine;
+using Zenject;
+
 public class SoldierAttackState : SoldierStateBase
 {
     private readonly BaseCombatAgentView combatView;
     private readonly UnitRotatorService unitRotatorService;
     private readonly ISoldierFormationMover formationMover;
     private readonly AttackRuntimeModel attackData;
+
+    private readonly ISquadSlotPositionProvider squadSlotPositionProvider;
+    private readonly SquadFollowSettings squadFollowSettings;
+    private readonly ISquadMovementStateReader movementStateReader;
 
     public SoldierAttackState(
         SoldierRuntimeModel model,
@@ -12,13 +19,19 @@ public class SoldierAttackState : SoldierStateBase
         BaseCombatAgentView combatView,
         UnitRotatorService unitRotatorService,
         ISoldierFormationMover formationMover,
-        AttackRuntimeModel attackData)
+        AttackRuntimeModel attackData,
+        ISquadSlotPositionProvider squadSlotPositionProvider,
+        SquadFollowSettings squadFollowSettings,
+        [InjectOptional] ISquadMovementStateReader movementStateReader = null)
         : base(model, modules, agentAnimationController)
     {
         this.combatView = combatView;
         this.unitRotatorService = unitRotatorService;
         this.formationMover = formationMover;
         this.attackData = attackData;
+        this.squadSlotPositionProvider = squadSlotPositionProvider;
+        this.squadFollowSettings = squadFollowSettings;
+        this.movementStateReader = movementStateReader;
     }
 
     public override void Enter()

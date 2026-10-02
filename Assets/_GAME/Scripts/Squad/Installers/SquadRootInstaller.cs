@@ -45,6 +45,7 @@ public class SquadRootInstaller : MonoInstaller
         Container.BindInterfacesAndSelfTo<SquadRootIdleState>().AsSingle();
         Container.BindInterfacesAndSelfTo<SquadMoveToEnemyState>().AsSingle();
         Container.BindInterfacesAndSelfTo<SquadReturnGroupState>().AsSingle();
+        Container.BindInterfacesAndSelfTo<SquadFollowHeroState>().AsSingle();
         Container.Bind<SquadRootStateMachine>().AsSingle();
     }
 }

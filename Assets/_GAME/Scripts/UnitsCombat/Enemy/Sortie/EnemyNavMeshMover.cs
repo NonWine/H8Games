@@ -7,6 +7,9 @@ public class EnemyNavMeshMover
     private const float AccelerationMultiplier = 6f;
     private const float MinSpeed = 0.01f;
 
+    private const float AvoidanceRadius = 0.55f;
+    private readonly int avoidancePriority;
+
     private readonly BaseCombatAgentView combatView;
     private readonly UnitStats unitStats;
 
@@ -14,11 +17,23 @@ public class EnemyNavMeshMover
     {
         this.combatView = combatView;
         this.unitStats = unitStats;
+        avoidancePriority = Random.Range(30, 70);
+        ConfigureAgent();
     }
 
     public Vector3 Heading => IsAgentReady(Agent) ? Agent.desiredVelocity : Vector3.zero;
 
     private NavMeshAgent Agent => combatView.NavMeshAgent;
+
+    private void ConfigureAgent()
+    {
+        NavMeshAgent agent = Agent;
+        if (agent == null) return;
+
+        agent.radius = AvoidanceRadius;
+        agent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+        agent.avoidancePriority = avoidancePriority;
+    }
 
     public bool TryMoveTo(Vector3 destination, float speedMultiplier)
     {
@@ -30,6 +45,7 @@ public class EnemyNavMeshMover
             return false;
         }
 
+        ConfigureAgent();
         float speed = Mathf.Max(MinSpeed, unitStats.MoveSpeed * speedMultiplier);
         agent.speed = speed;
         agent.acceleration = speed * AccelerationMultiplier;
@@ -60,6 +76,7 @@ public class EnemyNavMeshMover
             return;
         }
 
+        ConfigureAgent();
         agent.isStopped = true;
         agent.velocity = Vector3.zero;
         agent.ResetPath();

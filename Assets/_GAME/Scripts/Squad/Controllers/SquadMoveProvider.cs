@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using Zenject;
 
@@ -70,6 +70,12 @@ public class SquadMoveProvider : ITickable, IMoveProvider , ISquadMovementStateR
         reachedPath = true;
         onReached = null;
         currentSpeed = 0f;
+        IsMoving = false;
+    }
+
+    public void SetExternalMoving(bool isMoving)
+    {
+        IsMoving = isMoving;
     }
 
     // Ramps in and brakes on approach instead of translating at a flat speed,

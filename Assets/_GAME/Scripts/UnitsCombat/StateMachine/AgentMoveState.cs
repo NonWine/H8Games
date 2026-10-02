@@ -84,11 +84,6 @@ public class SoldierMoveState : SoldierStateBase
             return false;
         }
 
-        if (!movementStateReader.IsMoving)
-        {
-            return true;
-        }
-
         Vector3 toTarget = Soldier.CurrentTarget.transform.position - Soldier.Transform.position;
         toTarget.y = 0f;
 
