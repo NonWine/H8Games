@@ -13,16 +13,16 @@ MonoBehaviour:
   m_Name: EnemySortieConfig
   m_EditorClassIdentifier: 
   chance: 0.65
-  firstSortieDelayRange: {x: 1.2, y: 3.5}
+  firstSortieDelayRange: {x: 0.5, y: 3}
   repeatSortieDelayRange: {x: 3, y: 6}
   maxSortiesPerFight: 10
   maxConcurrentSorties: 2
   stepDistanceRange: {x: 2, y: 3.8}
   minStepDistance: 0.4
   leashRadius: 9
-  minDistanceToTarget: 3.8
-  minAlliedSeparation: 2.2
-  headingJitterAngle: 50
+  minDistanceToTarget: 3
+  minAlliedSeparation: 2.86
+  headingJitterAngle: 64.8
   sortieSpeedMultiplier: 1.2
   returnSpeedMultiplier: 1
   maxSortieDuration: 3
