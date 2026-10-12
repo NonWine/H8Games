@@ -20,12 +20,22 @@ public class SoldierCombatAgentInstaller : CombatAgentInstaller
     private void BindTargeting()
     {
         Container.Bind<ICombatTargetProvider>()
-            .FromMethod(context => new CombatPhaseGatedTargetProvider(
-                new NearestEnemyCombatTargetProvider(
-                    context.Container.Resolve<Transform>(),
-                    context.Container.Resolve<TargetingData>(),
-                    context.Container.Resolve<IEnemyCandidateSource>()),
-                context.Container.Resolve<ICombatStateProvider>()))
+            .FromMethod(context =>
+            {
+                TargetingData targetingData = context.Container.Resolve<TargetingData>();
+                SquadFollowSettings settings = context.Container.Resolve<SquadFollowSettings>();
+                if (settings != null && targetingData != null)
+                {
+                    targetingData.DetectionRadius = Mathf.Max(targetingData.DetectionRadius, settings.VisionRange);
+                }
+
+                return new CombatPhaseGatedTargetProvider(
+                    new NearestEnemyCombatTargetProvider(
+                        context.Container.Resolve<Transform>(),
+                        targetingData,
+                        context.Container.Resolve<IEnemyCandidateSource>()),
+                    context.Container.Resolve<ICombatStateProvider>());
+            })
             .AsSingle();
     }
 

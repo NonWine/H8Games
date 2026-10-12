@@ -182,6 +182,39 @@ public class SoldierNavMeshFormationMover : ISoldierFormationMover
         return SoldierFormationState.MovingToSlot;
     }
 
+    public SoldierFormationState MoveTowardsPosition(Vector3 destination, float stoppingDistance, float deltaTime)
+    {
+        NavMeshAgent agent = Agent;
+
+        if (!IsAgentReady(agent))
+        {
+            return SoldierFormationState.WaitingInFormation;
+        }
+
+        Vector3 desiredPosition = destination;
+        desiredPosition.y = combatView.Transform.position.y;
+
+        Vector3 delta = desiredPosition - combatView.Transform.position;
+        delta.y = 0f;
+
+        ConfigureAgent(true);
+        agent.stoppingDistance = stoppingDistance;
+
+        if (delta.sqrMagnitude <= stoppingDistance * stoppingDistance)
+        {
+            Stop();
+            RotateTowards(delta, deltaTime);
+            return SoldierFormationState.WaitingInFormation;
+        }
+
+        TrySetDestination(agent, desiredPosition);
+
+        Vector3 moveDir = agent.velocity.sqrMagnitude > MinPlanarSqrMagnitude ? agent.velocity : delta;
+        RotateTowards(moveDir, deltaTime);
+
+        return SoldierFormationState.MovingToSlot;
+    }
+
     public bool IsAt(Vector3 worldPosition, float threshold)
     {
         Vector3 delta = worldPosition - combatView.Transform.position;

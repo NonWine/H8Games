@@ -212,9 +212,18 @@ public class SquadCombatStateController : IInitializable, ITickable, IDisposable
         State = CombatFlowState.IdleInPreparation;
     }
 
+    private void HandleUnitDamaged(UnitDamagedSignal signal)
+    {
+        if (State == CombatFlowState.MovingToZone)
+        {
+            signalBus.Fire(new SquadReachedEnemySignal());
+        }
+    }
+
     public void Initialize()
     {
         signalBus.Subscribe<SquadReachedEnemySignal>(HandleCombatStartedBattle);
+        signalBus.Subscribe<UnitDamagedSignal>(HandleUnitDamaged);
         signalBus.Subscribe<SquadRegroupCompletedSignal>(HandleSquadRegroupCompleted);
         signalBus.Subscribe<SquadDefeatedSignal>(SetDefeated);
         signalBus.Subscribe<HeroDefeatedSignal>(SetDefeated);
@@ -223,6 +232,7 @@ public class SquadCombatStateController : IInitializable, ITickable, IDisposable
     public void Dispose()
     {
         signalBus.Unsubscribe<SquadRegroupCompletedSignal>(HandleSquadRegroupCompleted);
+        signalBus.Unsubscribe<UnitDamagedSignal>(HandleUnitDamaged);
         signalBus.Unsubscribe<SquadReachedEnemySignal>(HandleCombatStartedBattle);
         signalBus.Unsubscribe<SquadDefeatedSignal>(SetDefeated);
         signalBus.Unsubscribe<HeroDefeatedSignal>(SetDefeated);

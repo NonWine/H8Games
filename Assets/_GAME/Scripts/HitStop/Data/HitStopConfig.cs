@@ -28,4 +28,9 @@ public class HitStopConfig : ScriptableObject
     [Range(0f, 1f)] public float HeroDefeatTimeScale = 0.15f;
 
     [Range(0f, 1f)] public float HeroDefeatDuration = 0.35f;
+
+    [Header("Final kill")]
+    [Range(0f, 1f)] public float FinalKillTimeScale = 0.15f;
+
+    [Range(0f, 3f)] public float FinalKillDuration = 0.9f;
 }

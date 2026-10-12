@@ -21,7 +21,7 @@ MonoBehaviour:
     DeathReward: 5
     DeathPickupId: coin
   targetingData:
-    DetectionRadius: 8
+    DetectionRadius: 15
     ReservationPenalty: 3
     RetargetInterval: 0.35
     TargetLockDuration: 0.35

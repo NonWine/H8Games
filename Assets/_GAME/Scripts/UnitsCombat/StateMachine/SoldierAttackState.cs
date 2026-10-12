@@ -52,6 +52,20 @@ public class SoldierAttackState : SoldierStateBase
             return;
         }
 
+        Vector3 toTarget = Soldier.CurrentTarget.transform.position - Soldier.Transform.position;
+        toTarget.y = 0f;
+        float maxShootingRange = squadFollowSettings.EngageRange + 0.5f;
+
+        if (toTarget.sqrMagnitude > maxShootingRange * maxShootingRange)
+        {
+            if (Soldier.HasFormationAssignment)
+                ChangeState<SoldierMoveState>();
+            else
+                ChangeState<SoldierIdleState>();
+
+            return;
+        }
+
         attackData.CooldownRemaining -= UnityEngine.Time.deltaTime;
 
         if (attackData.CooldownRemaining <= 0f)

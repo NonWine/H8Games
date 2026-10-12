@@ -55,6 +55,8 @@ public class SquadFollowSettings : ScriptableObject
     [Header("Combat Positioning")]
     [Min(0.5f)]
     [SerializeField] private float engageRange = 5f;
+    [Min(1f)]
+    [SerializeField] private float visionRange = 15f;
 
     public float RootMoveSpeed => rootMoveSpeed;
     public float RootFollowSmoothness => rootFollowSmoothness;
@@ -76,6 +78,7 @@ public class SquadFollowSettings : ScriptableObject
     public float MovingSwayFrequencyMax => Mathf.Max(movingSwayFrequencyRange.x, movingSwayFrequencyRange.y);
     public float SoldierAvoidanceRadius => soldierAvoidanceRadius;
     public float EngageRange => engageRange;
+    public float VisionRange => Mathf.Max(engageRange + 1f, visionRange);
     public float SoldierMoveSpeedMultiplierMin => Mathf.Min(soldierMoveSpeedMultiplierRange.x, soldierMoveSpeedMultiplierRange.y);
     public float SoldierMoveSpeedMultiplierMax => Mathf.Max(soldierMoveSpeedMultiplierRange.x, soldierMoveSpeedMultiplierRange.y);
     public float SoldierRotationSpeedMultiplierMin => Mathf.Min(soldierRotationSpeedMultiplierRange.x, soldierRotationSpeedMultiplierRange.y);

@@ -24,12 +24,14 @@ public class CombatHitStopListener : IInitializable, IDisposable
     {
         signalBus.Subscribe<UnitDiedSignal>(OnUnitDied);
         signalBus.Subscribe<HeroDefeatedSignal>(OnHeroDefeated);
+        signalBus.Subscribe<LevelCompletedSignal>(OnLevelCompleted);
     }
 
     public void Dispose()
     {
         signalBus.Unsubscribe<UnitDiedSignal>(OnUnitDied);
         signalBus.Unsubscribe<HeroDefeatedSignal>(OnHeroDefeated);
+        signalBus.Unsubscribe<LevelCompletedSignal>(OnLevelCompleted);
     }
 
     // Only enemy deaths freeze. A soldier going down is a loss, and rewarding it
@@ -58,5 +60,10 @@ public class CombatHitStopListener : IInitializable, IDisposable
     private void OnHeroDefeated()
     {
         hitStop.Request(config.HeroDefeatTimeScale, config.HeroDefeatDuration);
+    }
+
+    private void OnLevelCompleted()
+    {
+        hitStop.Request(config.FinalKillTimeScale, config.FinalKillDuration);
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
@@ -8,6 +9,8 @@ public class SoldierMoveState : SoldierStateBase
     private readonly SquadFollowSettings squadFollowSettings;
     private readonly ISoldierFormationMover formationMover;
     private readonly SignalBus signalBus;
+    private readonly ICombatStateProvider combatStateProvider;
+    private readonly IEnemyCandidateSource candidateSource;
 
     public SoldierMoveState(
         SoldierRuntimeModel model,
@@ -17,7 +20,9 @@ public class SoldierMoveState : SoldierStateBase
         ISquadSlotPositionProvider squadSlotPositionProvider,
         SquadFollowSettings squadFollowSettings,
         ISoldierFormationMover formationMover,
-        SignalBus signalBus)
+        SignalBus signalBus,
+        [InjectOptional] ICombatStateProvider combatStateProvider = null,
+        [InjectOptional] IEnemyCandidateSource candidateSource = null)
         : base(model, modules, agentAnimationController)
     {
         this.movementStateReader = movementStateReader;
@@ -25,6 +30,8 @@ public class SoldierMoveState : SoldierStateBase
         this.squadFollowSettings = squadFollowSettings;
         this.formationMover = formationMover;
         this.signalBus = signalBus;
+        this.combatStateProvider = combatStateProvider;
+        this.candidateSource = candidateSource;
     }
 
     public override void Enter()
@@ -38,6 +45,14 @@ public class SoldierMoveState : SoldierStateBase
         if (ShouldEngageTarget())
         {
             ChangeState<SoldierAttackState>();
+            return;
+        }
+
+        bool inBattle = combatStateProvider != null && combatStateProvider.State == CombatFlowState.FightingZone;
+
+        if (inBattle)
+        {
+            UpdateBattleAssaultMovement();
             return;
         }
 
@@ -67,6 +82,71 @@ public class SoldierMoveState : SoldierStateBase
         }
 
         UpdateIdleSlotMovement(slotCenter);
+    }
+
+    private void UpdateBattleAssaultMovement()
+    {
+        float assaultStoppingDistance = squadFollowSettings.EngageRange * 0.85f;
+
+        if (Soldier.HasValidTarget)
+        {
+            formationMover.MoveTowardsPosition(
+                Soldier.CurrentTarget.transform.position,
+                assaultStoppingDistance,
+                Time.deltaTime);
+            return;
+        }
+
+        ITargetSelectionCandidate nearestLiving = GetNearestLivingEnemyCandidate();
+        if (nearestLiving != null)
+        {
+            formationMover.MoveTowardsPosition(
+                nearestLiving.Position,
+                assaultStoppingDistance,
+                Time.deltaTime);
+            return;
+        }
+
+        formationMover.Stop();
+        ChangeState<SoldierIdleState>();
+    }
+
+    private ITargetSelectionCandidate GetNearestLivingEnemyCandidate()
+    {
+        if (candidateSource == null)
+        {
+            return null;
+        }
+
+        IReadOnlyList<ITargetSelectionCandidate> candidates = candidateSource.Candidates;
+        if (candidates == null || candidates.Count == 0)
+        {
+            return null;
+        }
+
+        Vector3 myPos = Soldier.Transform.position;
+        ITargetSelectionCandidate best = null;
+        float bestDistSq = float.MaxValue;
+
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            ITargetSelectionCandidate c = candidates[i];
+            if (c == null || !c.IsAlive)
+            {
+                continue;
+            }
+
+            Vector3 delta = c.Position - myPos;
+            delta.y = 0f;
+            float distSq = delta.sqrMagnitude;
+            if (distSq < bestDistSq)
+            {
+                bestDistSq = distSq;
+                best = c;
+            }
+        }
+
+        return best;
     }
 
     public override void Exit()

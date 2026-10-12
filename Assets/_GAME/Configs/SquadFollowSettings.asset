@@ -34,3 +34,4 @@ MonoBehaviour:
   avoidancePriorityRange: {x: 30, y: 70}
   soldierAvoidanceRadius: 0.65
   engageRange: 5
+  visionRange: 15

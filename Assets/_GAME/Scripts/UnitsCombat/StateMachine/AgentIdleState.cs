@@ -50,6 +50,17 @@ public class SoldierIdleState : SoldierStateBase
                 ChangeState<SoldierAttackState>();
                 return;
             }
+            else
+            {
+                ChangeState<SoldierMoveState>();
+                return;
+            }
+        }
+
+        if (combatStateProvider != null && combatStateProvider.State == CombatFlowState.FightingZone)
+        {
+            ChangeState<SoldierMoveState>();
+            return;
         }
 
         if (!Soldier.HasFormationAssignment)

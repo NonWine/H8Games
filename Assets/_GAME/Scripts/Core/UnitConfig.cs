@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 [CreateAssetMenu(menuName = "Configs/Unit Config", fileName = "UnitConfig", order = 0)]
 public class UnitConfig : ScriptableObject
@@ -17,7 +17,7 @@ public class UnitConfig : ScriptableObject
     
     public TargetingData CreateTargetingData()
     {
-        return targetingData;
+        return targetingData.Clone();
     }
     
 }

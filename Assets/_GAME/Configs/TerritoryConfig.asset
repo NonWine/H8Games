@@ -32,7 +32,7 @@ MonoBehaviour:
   FadeInDuration: 4.68
   FadeOutDuration: 1.2
   FillAlpha: 0.8
-  StaticFillColor: {r: 0.5283019, g: 0.5283019, b: 0.5283019, a: 1}
+  StaticFillColor: {r: 1, g: 0.5330188, b: 0.5330188, a: 1}
   PulseColorA: {r: 1, g: 0.41960785, b: 0.41960785, a: 1}
   PulseColorB: {r: 1, g: 0.41960785, b: 0.41960785, a: 1}
   PulseFrequency: 21.54
